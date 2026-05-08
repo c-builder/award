@@ -27,7 +27,7 @@ export const RecipientCard: React.FC<RecipientCardProps> = ({
         position: 'relative',
         padding: '8px 12px',
         backgroundColor: '#fff',
-        border: `1px solid ${isCrossDepartment ? '#4a6cf7' : '#e2e8f0'}`,
+        border: `1px solid ${isCrossDepartment ? '#1890ff' : '#e2e8f0'}`,
         borderRadius: '4px',
         fontSize: '13px',
         transition: 'all 0.2s',
@@ -92,7 +92,7 @@ export const RecipientCard: React.FC<RecipientCardProps> = ({
         className="recipient-department"
         style={{
           fontSize: '11px',
-          color: isCrossDepartment ? '#4a6cf7' : '#9ca3af',
+          color: isCrossDepartment ? '#1890ff' : '#9ca3af',
           fontWeight: isCrossDepartment ? 500 : 400,
         }}
       >

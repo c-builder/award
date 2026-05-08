@@ -46,4 +46,6 @@ export interface Award {
   teams?: Team[];
   /** 是否被选中用于展播 */
   selected?: boolean;
+  /** 是否可删除（通过弹框添加的为 true，默认数据为 false） */
+  deletable?: boolean;
 }

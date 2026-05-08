@@ -303,18 +303,32 @@ function App() {
     );
   };
 
+  // 处理删除整个奖项
+  const handleRemoveAward = (awardId: string) => {
+    setAwards((prev) => prev.filter((award) => award.id !== awardId));
+  };
+
   // 处理添加奖项
   const handleAddAward = (selectedAwards: any[]) => {
-    const newAwards: Award[] = selectedAwards.map((item) => ({
-      id: String(Date.now() + Math.random()),
-      title: item.name,
-      issuingDepartment: item.issuingDepartment,
-      awardType: item.category === '团队奖' ? 'team' : 'individual',
-      recipients: [],
-      teams: item.category === '团队奖' ? [] : undefined,
-      selected: false,
-    }));
-    setAwards((prev) => [...prev, ...newAwards]);
+    setAwards((prev) => {
+      // 1. 保留默认数据（deletable=false）
+      const defaultAwards = prev.filter((award) => !award.deletable);
+
+      // 2. 创建新选中的奖项
+      const newAwards: Award[] = selectedAwards.map((item) => ({
+        id: String(Date.now() + Math.random()),
+        title: item.name,
+        issuingDepartment: item.issuingDepartment,
+        awardType: item.category === '团队奖' ? 'team' : 'individual',
+        recipients: [],
+        teams: item.category === '团队奖' ? [] : undefined,
+        selected: false,
+        deletable: true, // 通过弹框添加的奖项可删除
+      }));
+
+      // 3. 合并：默认数据 + 新选中的奖项
+      return [...defaultAwards, ...newAwards];
+    });
     setAddAwardModalVisible(false);
   };
 
@@ -429,7 +443,7 @@ function App() {
                     height: '32px',
                     borderRadius: '50%',
                     backgroundColor:
-                      index <= currentStep ? '#4a6cf7' : '#f1f5f9',
+                      index <= currentStep ? '#1890ff' : '#f1f5f9',
                     color: index <= currentStep ? '#fff' : '#94a3b8',
                     display: 'flex',
                     alignItems: 'center',
@@ -443,7 +457,7 @@ function App() {
                 <span
                   style={{
                     fontSize: '14px',
-                    color: index <= currentStep ? '#4a6cf7' : '#94a3b8',
+                    color: index <= currentStep ? '#1890ff' : '#94a3b8',
                     fontWeight: index === currentStep ? 500 : 400,
                   }}
                 >
@@ -456,7 +470,7 @@ function App() {
                     width: '120px',
                     height: '2px',
                     backgroundColor:
-                      index < currentStep ? '#4a6cf7' : '#f1f5f9',
+                      index < currentStep ? '#1890ff' : '#f1f5f9',
                     margin: '0 16px',
                     marginBottom: '24px',
                   }}
@@ -468,7 +482,7 @@ function App() {
       </div>
 
       {/* 主内容区 */}
-      <main style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+      <main style={{ padding: '24px 24px 80px 24px', maxWidth: '1200px', margin: '0 auto' }}>
         {currentStep === 0 && (
           <>
             {/* 数据范围筛选和操作按钮 */}
@@ -490,7 +504,7 @@ function App() {
                 onClick={() => setAddAwardModalVisible(true)}
                 style={{
                   padding: '8px 16px',
-                  backgroundColor: '#4a6cf7',
+                  backgroundColor: '#1890ff',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '4px',
@@ -511,11 +525,11 @@ function App() {
               style={{
                 marginBottom: '16px',
                 padding: '12px 16px',
-                backgroundColor: '#eef2ff',
-                border: '1px solid #c7d2fe',
+                backgroundColor: '#e6f7ff',
+                border: '1px solid #91d5ff',
                 borderRadius: '6px',
                 fontSize: '14px',
-                color: '#4a6cf7',
+                color: '#1890ff',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
@@ -580,6 +594,7 @@ function App() {
                         ? (team) => handleUpdateTeam(award.id, team)
                         : undefined
                     }
+                    onRemoveAward={() => handleRemoveAward(award.id)}
                   />
                 ))}
               </div>
@@ -663,7 +678,7 @@ function App() {
             disabled={currentStep === 0 && selectedAwardsCount === 0}
             style={{
               padding: '8px 24px',
-              backgroundColor: currentStep === 0 && selectedAwardsCount === 0 ? '#e2e8f0' : '#4a6cf7',
+              backgroundColor: currentStep === 0 && selectedAwardsCount === 0 ? '#e2e8f0' : '#1890ff',
               color: '#fff',
               border: 'none',
               borderRadius: '4px',
@@ -709,6 +724,7 @@ function App() {
         visible={addAwardModalVisible}
         onCancel={() => setAddAwardModalVisible(false)}
         onConfirm={handleAddAward}
+        existingAwards={awards}
       />
     </div>
   );

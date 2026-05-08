@@ -13,6 +13,8 @@ export interface AwardCardProps {
   onAddTeam?: () => void;
   onRemoveTeam?: (team: Team) => void;
   onUpdateTeam?: (team: Team) => void;
+  /** 删除整个奖项 */
+  onRemoveAward?: () => void;
 }
 
 /**
@@ -28,7 +30,10 @@ export const AwardCard: React.FC<AwardCardProps> = ({
   onAddTeam,
   onRemoveTeam,
   onUpdateTeam,
+  onRemoveAward,
 }) => {
+  // 鼠标悬停状态
+  const [isHovered, setIsHovered] = useState(false);
   // 计算跨部门人员
   const crossDepartmentRecipients = useMemo(() => {
     return award.recipients.filter(
@@ -79,10 +84,49 @@ export const AwardCard: React.FC<AwardCardProps> = ({
         borderRadius: '8px',
         padding: '16px',
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-        border: selected ? '2px solid #4a6cf7' : '1px solid #e8e8e8',
+        border: selected ? '2px solid #1890ff' : '1px solid #e8e8e8',
         transition: 'all 0.2s',
+        position: 'relative',
       }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
+      {/* 删除按钮 - 鼠标悬停时显示（仅可删除的奖项显示） */}
+      {onRemoveAward && award.deletable && isHovered && (
+        <button
+          onClick={onRemoveAward}
+          style={{
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
+            width: '24px',
+            height: '24px',
+            borderRadius: '50%',
+            backgroundColor: '#ff4d4f',
+            color: '#fff',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10,
+            transition: 'all 0.2s',
+            boxShadow: '0 2px 4px rgba(255, 77, 79, 0.3)',
+          }}
+          title="删除奖项"
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#ff7875';
+            e.currentTarget.style.transform = 'scale(1.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#ff4d4f';
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+        >
+          ×
+        </button>
+      )}
       {/* 奖项标题区域 */}
       <div
         className="award-header"
@@ -105,8 +149,8 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                 width: '18px',
                 height: '18px',
                 borderRadius: '4px',
-                border: `2px solid ${selected ? '#4a6cf7' : '#d9d9d9'}`,
-                backgroundColor: selected ? '#4a6cf7' : '#fff',
+                border: `2px solid ${selected ? '#1890ff' : '#d9d9d9'}`,
+                backgroundColor: selected ? '#1890ff' : '#fff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -141,8 +185,8 @@ export const AwardCard: React.FC<AwardCardProps> = ({
               <span
                 style={{
                   padding: '2px 8px',
-                  backgroundColor: isTeamAward ? '#eef2ff' : '#f0fdf4',
-                  color: isTeamAward ? '#4a6cf7' : '#16a34a',
+                  backgroundColor: isTeamAward ? '#e6f7ff' : '#f0fdf4',
+                  color: isTeamAward ? '#1890ff' : '#16a34a',
                   borderRadius: '4px',
                   fontSize: '12px',
                   fontWeight: 500,
@@ -186,7 +230,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
               style={{
                 padding: '4px 12px',
                 backgroundColor: 'transparent',
-                color: '#4a6cf7',
+                color: '#1890ff',
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: '13px',
@@ -282,7 +326,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                       style={{
                         background: 'none',
                         border: 'none',
-                        color: '#4a6cf7',
+                        color: '#1890ff',
                         fontSize: '12px',
                         cursor: 'pointer',
                         padding: '2px 0',
@@ -294,7 +338,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                     >
                       <span>详情</span>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="6 9 12 15 18 9" />
+                        <polyline points="9 18 15 12 9 6" />
                       </svg>
                     </button>
                   </div>
@@ -314,7 +358,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
               style={{
                 padding: '4px 12px',
                 backgroundColor: 'transparent',
-                color: '#4a6cf7',
+                color: '#1890ff',
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: '13px',
@@ -359,7 +403,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
               className="cross-dept-summary"
               style={{
                 fontSize: '12px',
-                color: '#4a6cf7',
+                color: '#1890ff',
                 marginTop: '8px',
                 padding: '4px 0',
               }}
