@@ -144,7 +144,6 @@ function App() {
   const currentUserDepartmentPath = ['IT平台服务部'];
 
   // 指定部门筛选
-  const [specificDepartment, setSpecificDepartment] = useState<string>('');
   const [specificDepartmentPath, setSpecificDepartmentPath] = useState<string[]>([]);
 
   // 根据数据范围筛选奖项
@@ -171,11 +170,10 @@ function App() {
   }, [awards, dataRange, specificDepartmentPath, currentUserDepartment]);
 
   // 处理数据范围变化
-  const handleDataRangeChange = (range: DataRangeOption, specificDept?: string, specificDeptPath?: string[]) => {
+  const handleDataRangeChange = (range: DataRangeOption, _specificDept?: string, specificDeptPath?: string[]) => {
     setDataRange(range);
     if (range === 'specific' && specificDeptPath) {
       setSpecificDepartmentPath(specificDeptPath);
-      setSpecificDepartment(specificDept || specificDeptPath.join('/'));
     }
   };
 

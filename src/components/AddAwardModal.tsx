@@ -429,7 +429,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
           {/* 表格内容 */}
           <div>
             {filteredAwards.length > 0 ? (
-              filteredAwards.map((award, index) => {
+              filteredAwards.map((award) => {
                 const isSelected = selectedAwardIds.has(award.id);
                 return (
                   <div

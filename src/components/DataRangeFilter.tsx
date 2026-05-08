@@ -93,12 +93,11 @@ export const DataRangeFilter: React.FC<DataRangeFilterProps> = ({
   value = 'all',
   onChange,
   className = '',
-  myDepartment = 'IT平台服务部',
   myDepartmentPath = ['IT平台服务部'],
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [specificDeptSearch, setSpecificDeptSearch] = useState('');
-  const [selectedSpecificDept, setSelectedSpecificDept] = useState<string>('');
+  const [_selectedSpecificDept, setSelectedSpecificDept] = useState<string>('');
   const [selectedPath, setSelectedPath] = useState<string[]>([]);
   const [showSpecificPanel, setShowSpecificPanel] = useState(false);
   const [cascadeLevel, setCascadeLevel] = useState(0);
@@ -158,7 +157,7 @@ export const DataRangeFilter: React.FC<DataRangeFilterProps> = ({
     }
   };
 
-  const handleSpecificDeptSelect = (dept: string, path: string[]) => {
+  const handleSpecificDeptSelect = (_dept: string, path: string[]) => {
     // 保存完整路径
     setSelectedSpecificDept(path.join('/'));
     setSelectedPath(path);
@@ -452,7 +451,7 @@ export const DataRangeFilter: React.FC<DataRangeFilterProps> = ({
                     return (
                       <div
                         key={node.name}
-                        onClick={() => handleDeptClick(node.name, hasChildren)}
+                        onClick={() => handleDeptClick(node.name, !!hasChildren)}
                         style={{
                           padding: '10px 12px',
                           cursor: 'pointer',

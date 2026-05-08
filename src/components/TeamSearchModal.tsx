@@ -111,7 +111,6 @@ const queryEmployeeById = async (employeeId: string): Promise<QueryResult | null
  */
 export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
   visible,
-  awardId,
   onCancel,
   onConfirm,
 }) => {

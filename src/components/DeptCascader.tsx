@@ -156,7 +156,7 @@ export const DeptCascader: React.FC<DeptCascaderProps> = ({
     ? searchDepartments()
     : getCurrentLevelDepts();
 
-  const handleDeptClick = (dept: string, hasChildren: boolean, path: string[]) => {
+  const handleDeptClick = (_dept: string, hasChildren: boolean, path: string[]) => {
     if (hasChildren) {
       setCurrentPath(path);
       setSearchKeyword('');
@@ -339,7 +339,7 @@ export const DeptCascader: React.FC<DeptCascaderProps> = ({
                 return (
                   <div
                     key={node.name}
-                    onClick={() => handleDeptClick(node.name, hasChildren, path)}
+                    onClick={() => handleDeptClick(node.name, !!hasChildren, path)}
                     style={{
                       padding: '10px 12px',
                       cursor: 'pointer',

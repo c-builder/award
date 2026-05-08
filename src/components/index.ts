@@ -26,7 +26,6 @@ export { AddRecipientModal, type AddRecipientModalProps } from './AddRecipientMo
 export {
   TeamSearchModal,
   type TeamSearchModalProps,
-  type Team,
   type Employee,
   type QueryResult,
 } from './TeamSearchModal';

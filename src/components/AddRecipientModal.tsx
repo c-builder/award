@@ -36,7 +36,6 @@ const mockAwards: Record<string, string> = {
  */
 export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
   visible,
-  awardId,
   currentDepartment,
   onCancel,
   onConfirm,
