@@ -488,21 +488,16 @@ function App() {
       <main style={{ padding: '24px 24px 80px 24px', maxWidth: '1200px', margin: '0 auto' }}>
         {currentStep === 0 && (
           <>
-            {/* 数据范围筛选和操作按钮 */}
+            {/* 操作按钮和数据范围筛选 - 按钮放左侧便于高频操作 */}
             <div
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 marginBottom: '24px',
+                gap: '16px',
               }}
             >
-              <DataRangeFilter
-                value={selectedDepartment}
-                onChange={handleDepartmentChange}
-                accessibleDepartments={accessibleDepartments}
-                currentUserDepartment={currentUserDepartment}
-              />
               <button
                 onClick={() => setAddAwardModalVisible(true)}
                 style={{
@@ -516,11 +511,18 @@ function App() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '4px',
+                  whiteSpace: 'nowrap',
                 }}
               >
                 <span>+</span>
                 <span>添加展播奖项</span>
               </button>
+              <DataRangeFilter
+                value={selectedDepartment}
+                onChange={handleDepartmentChange}
+                accessibleDepartments={accessibleDepartments}
+                currentUserDepartment={currentUserDepartment}
+              />
             </div>
 
             {/* 提示文本 */}

@@ -282,7 +282,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
               color: '#333',
             }}
           >
-            通过工号查询团队
+            通过工号查询团队奖
           </h3>
           <button
             onClick={onCancel}

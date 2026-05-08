@@ -35,6 +35,7 @@ const mockEmployeeData: Record<string, { name: string; employeeId: string; depar
 /**
  * 团队详情弹框组件
  * 支持查看、添加（通过工号）、删除成员，并同步更新团队数据
+ * 样式统一为蓝色主题
  */
 export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
   visible,
@@ -137,12 +138,12 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
       <div
         style={{
           backgroundColor: '#fff',
-          borderRadius: '8px',
+          borderRadius: '12px',
           width: '520px',
           maxHeight: '80vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -152,15 +153,17 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            padding: '16px 24px',
+            padding: '20px 24px',
             borderBottom: '1px solid #f0f0f0',
+            background: 'linear-gradient(135deg, #e6f7ff 0%, #f0f9ff 100%)',
+            borderRadius: '12px 12px 0 0',
           }}
         >
           <div>
-            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#333' }}>
+            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, color: '#1890ff' }}>
               🏆 {team.name}
             </h3>
-            <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#666' }}>
+            <p style={{ margin: '6px 0 0 0', fontSize: '14px', color: '#666' }}>
               共 {members.length} 人
             </p>
           </div>
@@ -169,15 +172,25 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
             style={{
               background: 'none',
               border: 'none',
-              fontSize: '20px',
+              fontSize: '24px',
               color: '#999',
               cursor: 'pointer',
               padding: '0',
-              width: '32px',
-              height: '32px',
+              width: '36px',
+              height: '36px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
+              borderRadius: '50%',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#f5f5f5';
+              e.currentTarget.style.color = '#666';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+              e.currentTarget.style.color = '#999';
             }}
           >
             ×
@@ -187,12 +200,13 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
         {/* 添加成员区域 */}
         <div
           style={{
-            padding: '16px 24px',
+            padding: '20px 24px',
             borderBottom: '1px solid #f0f0f0',
+            backgroundColor: '#fafafa',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '14px', color: '#333', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: '14px', color: '#333', whiteSpace: 'nowrap', fontWeight: 500 }}>
               添加成员:
             </span>
             <input
@@ -202,31 +216,48 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
               onChange={(e) => setEmployeeId(e.target.value)}
               onKeyDown={handleKeyDown}
               style={{
-                padding: '6px 12px',
+                padding: '10px 14px',
                 border: '1px solid #d9d9d9',
-                borderRadius: '4px',
+                borderRadius: '8px',
                 fontSize: '14px',
-                width: '160px',
+                width: '200px',
                 outline: 'none',
+                transition: 'all 0.3s',
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
               }}
               onFocus={(e) => {
                 e.target.style.borderColor = '#1890ff';
+                e.target.style.boxShadow = '0 0 0 3px rgba(24, 144, 255, 0.1)';
               }}
               onBlur={(e) => {
                 e.target.style.borderColor = '#d9d9d9';
+                e.target.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
               }}
             />
             <button
               onClick={handleAddMember}
               disabled={!employeeId.trim()}
               style={{
-                padding: '6px 16px',
+                padding: '10px 20px',
                 backgroundColor: !employeeId.trim() ? '#d9d9d9' : '#1890ff',
                 color: '#fff',
                 border: 'none',
-                borderRadius: '4px',
+                borderRadius: '8px',
                 fontSize: '14px',
+                fontWeight: 500,
                 cursor: !employeeId.trim() ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: !employeeId.trim() ? 'none' : '0 2px 4px rgba(24, 144, 255, 0.3)',
+              }}
+              onMouseEnter={(e) => {
+                if (employeeId.trim()) {
+                  e.currentTarget.style.backgroundColor = '#40a9ff';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = !employeeId.trim() ? '#d9d9d9' : '#1890ff';
+                e.currentTarget.style.transform = 'translateY(0)';
               }}
             >
               添加
@@ -235,16 +266,20 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
           {addError && (
             <div
               style={{
-                marginTop: '8px',
-                padding: '6px 12px',
+                marginTop: '10px',
+                padding: '8px 14px',
                 backgroundColor: '#fff2f0',
                 border: '1px solid #ffccc7',
-                borderRadius: '4px',
+                borderRadius: '6px',
                 color: '#ff4d4f',
                 fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
               }}
             >
-              {addError}
+              <span>⚠️</span>
+              <span>{addError}</span>
             </div>
           )}
         </div>
@@ -254,11 +289,12 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
           style={{
             flex: 1,
             overflow: 'auto',
-            padding: '16px 24px',
+            padding: '20px 24px',
+            backgroundColor: '#fff',
           }}
         >
           {members.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {members.map((member) => (
                 <div
                   key={member.employeeId}
@@ -266,40 +302,50 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '10px 12px',
-                    backgroundColor: '#f6ffed',
-                    borderRadius: '6px',
-                    border: '1px solid #b7eb8f',
+                    padding: '12px 16px',
+                    backgroundColor: '#f0f9ff',
+                    borderRadius: '8px',
+                    border: '1px solid #d9f0ff',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#e6f7ff';
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(24, 144, 255, 0.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f0f9ff';
+                    e.currentTarget.style.boxShadow = 'none';
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span
                       style={{
-                        width: '28px',
-                        height: '28px',
+                        width: '36px',
+                        height: '36px',
                         borderRadius: '50%',
-                        backgroundColor: '#52c41a',
+                        backgroundColor: '#1890ff',
                         color: '#fff',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        fontSize: '12px',
-                        fontWeight: 500,
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        boxShadow: '0 2px 4px rgba(24, 144, 255, 0.3)',
                       }}
                     >
                       {member.name.charAt(0)}
                     </span>
                     <div>
-                      <div style={{ fontSize: '14px', fontWeight: 500, color: '#333' }}>
+                      <div style={{ fontSize: '15px', fontWeight: 500, color: '#333' }}>
                         {member.name}
                       </div>
-                      <div style={{ fontSize: '12px', color: '#999' }}>
+                      <div style={{ fontSize: '13px', color: '#666', marginTop: '2px' }}>
                         {member.department}
                       </div>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ fontSize: '12px', color: '#666' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ fontSize: '13px', color: '#999', fontFamily: 'monospace' }}>
                       {member.employeeId}
                     </div>
                     <button
@@ -308,21 +354,24 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
                         background: 'none',
                         border: 'none',
                         color: '#ff4d4f',
-                        fontSize: '18px',
+                        fontSize: '20px',
                         cursor: 'pointer',
                         padding: '0',
-                        width: '24px',
-                        height: '24px',
+                        width: '28px',
+                        height: '28px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        borderRadius: '4px',
+                        borderRadius: '50%',
+                        transition: 'all 0.2s',
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.backgroundColor = '#fff1f0';
+                        e.currentTarget.style.transform = 'scale(1.1)';
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.transform = 'scale(1)';
                       }}
                       title="删除成员"
                     >
@@ -333,8 +382,9 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
               ))}
             </div>
           ) : (
-            <div style={{ textAlign: 'center', padding: '40px', color: '#999', fontSize: '14px' }}>
-              暂无成员
+            <div style={{ textAlign: 'center', padding: '48px', color: '#999', fontSize: '14px' }}>
+              <div style={{ fontSize: '48px', marginBottom: '12px' }}>👥</div>
+              <div>暂无成员，请添加团队成员</div>
             </div>
           )}
         </div>
@@ -347,18 +397,22 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
             display: 'flex',
             justifyContent: 'flex-end',
             gap: '12px',
+            backgroundColor: '#fafafa',
+            borderRadius: '0 0 12px 12px',
           }}
         >
           <button
             onClick={onClose}
             style={{
-              padding: '8px 24px',
+              padding: '10px 24px',
               backgroundColor: '#fff',
               color: '#666',
               border: '1px solid #d9d9d9',
-              borderRadius: '4px',
+              borderRadius: '8px',
               fontSize: '14px',
               cursor: 'pointer',
+              transition: 'all 0.2s',
+              fontWeight: 500,
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = '#1890ff';
@@ -374,19 +428,26 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
           <button
             onClick={handleConfirm}
             style={{
-              padding: '8px 24px',
+              padding: '10px 24px',
               backgroundColor: '#1890ff',
               color: '#fff',
               border: 'none',
-              borderRadius: '4px',
+              borderRadius: '8px',
               fontSize: '14px',
               cursor: 'pointer',
+              transition: 'all 0.2s',
+              fontWeight: 500,
+              boxShadow: '0 2px 4px rgba(24, 144, 255, 0.3)',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = '#40a9ff';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.boxShadow = '0 4px 8px rgba(24, 144, 255, 0.4)';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.backgroundColor = '#1890ff';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 2px 4px rgba(24, 144, 255, 0.3)';
             }}
           >
             确定
