@@ -16,6 +16,9 @@ const mockAwards: Award[] = [
     issuingDepartment: '华为公司',
     awardType: 'individual',
     recipients: [
+      { name: '李山花', employeeId: '00494097', department: '华为公司' },
+      { name: '王五', employeeId: '00507890', department: '华为公司' },
+      { name: '赵六', employeeId: '00501111', department: '华为公司' },
       { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
       { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
     ],
@@ -232,12 +235,12 @@ function App() {
   // 当前选中的部门（默认全部部门）
   const [selectedDepartment, setSelectedDepartment] = useState<string>('全部部门');
 
-  // 根据选中的部门筛选奖项
+  // 根据选中的部门筛选奖项（使用包含匹配，子部门也能匹配到父部门）
   const filteredAwards = useMemo(() => {
     if (selectedDepartment === '全部部门') {
       return awards;
     }
-    return awards.filter((award) => award.issuingDepartment === selectedDepartment);
+    return awards.filter((award) => award.issuingDepartment.startsWith(selectedDepartment));
   }, [awards, selectedDepartment]);
 
   // 处理部门切换
@@ -524,18 +527,27 @@ function App() {
             <div
               style={{
                 marginBottom: '16px',
-                padding: '12px 16px',
-                backgroundColor: '#e6f7ff',
-                border: '1px solid #91d5ff',
-                borderRadius: '6px',
+                padding: '14px 18px',
+                background: 'linear-gradient(135deg, #e6f7ff 0%, #f0f9ff 100%)',
+                border: '1px solid #1890ff',
+                borderRadius: '8px',
                 fontSize: '14px',
                 color: '#1890ff',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '10px',
+                boxShadow: '0 2px 8px rgba(24, 144, 255, 0.12)',
+                fontWeight: 500,
               }}
             >
-              <span style={{ fontSize: '16px' }}>💡</span>
+              <span 
+                style={{ 
+                  fontSize: '18px',
+                  filter: 'drop-shadow(0 1px 2px rgba(24, 144, 255, 0.2))',
+                }}
+              >
+                💡
+              </span>
               <span>已为您筛选出近期获奖数据，请您从中挑选用于展播的奖项。</span>
             </div>
 
@@ -725,6 +737,7 @@ function App() {
         onCancel={() => setAddAwardModalVisible(false)}
         onConfirm={handleAddAward}
         existingAwards={awards}
+        externalDeptPath={selectedDepartment === '全部部门' ? [] : [selectedDepartment]}
       />
     </div>
   );

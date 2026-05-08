@@ -38,6 +38,8 @@ export interface AddAwardModalProps {
   onConfirm: (selectedAwards: AwardItem[]) => void;
   /** 当前已存在的奖项列表（用于重复检测） */
   existingAwards?: Award[];
+  /** 外部部门筛选状态（与主页面同步） */
+  externalDeptPath?: string[];
 }
 
 /**
@@ -272,6 +274,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
   onCancel,
   onConfirm,
   existingAwards = [],
+  externalDeptPath = [],
 }) => {
   // 筛选状态
   const [year, setYear] = useState<string>('2025');
@@ -287,23 +290,42 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
   // 已存在奖项提示
   const [existingAwardAlert, setExistingAwardAlert] = useState<string | null>(null);
 
-  // 弹窗打开时，根据已存在的自定义奖项初始化选中状态
+  // 弹窗打开时，同步外部部门筛选状态，并根据当前筛选条件初始化选中状态
   useEffect(() => {
     if (visible) {
-      // 获取已存在的自定义奖项的ID集合
+      // 同步外部部门筛选状态
+      setSelectedDeptPath(externalDeptPath);
+
+      // 获取当前筛选条件下可见的奖项（使用外部部门筛选状态）
+      const visibleAwards = MOCK_AWARDS.filter((award) => {
+        // 部门筛选（使用外部部门筛选状态）
+        if (externalDeptPath.length > 0) {
+          const match = externalDeptPath.every((dept, index) => 
+            award.issuingDepartmentPath[index] === dept
+          );
+          if (!match) return false;
+        }
+        // 搜索关键词筛选
+        if (searchKeyword && !award.name.toLowerCase().includes(searchKeyword.toLowerCase())) {
+          return false;
+        }
+        return true;
+      });
+
+      // 获取已存在的自定义奖项的ID集合（只包含当前可见的）
       const customAwardIds = new Set<string>();
       existingAwards.forEach(existingAward => {
         if (existingAward.deletable) {
-          // 在MOCK_AWARDS中查找对应的奖项ID
-          const mockAward = MOCK_AWARDS.find(mock => mock.name === existingAward.title);
-          if (mockAward) {
-            customAwardIds.add(mockAward.id);
+          // 在可见的奖项中查找对应的奖项ID
+          const visibleAward = visibleAwards.find(mock => mock.name === existingAward.title);
+          if (visibleAward) {
+            customAwardIds.add(visibleAward.id);
           }
         }
       });
       setSelectedAwardIds(customAwardIds);
     }
-  }, [visible, existingAwards]);
+  }, [visible, existingAwards, externalDeptPath, searchKeyword]);
 
   // 弹窗关闭时重置状态
   useEffect(() => {
@@ -327,10 +349,9 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
     return new Set(existingAwards.filter(award => award.deletable).map(award => award.title));
   }, [existingAwards]);
 
-  // 筛选后的奖项列表（包含已选中的奖项，即使不符合筛选条件）
+  // 筛选后的奖项列表（只显示当前筛选条件下的奖项）
   const filteredAwards = useMemo(() => {
-    // 先筛选符合部门条件的奖项
-    const departmentFiltered = MOCK_AWARDS.filter((award) => {
+    return MOCK_AWARDS.filter((award) => {
       // 部门筛选 - 检查奖项部门路径是否以选中的部门路径开头
       if (selectedDeptPath.length > 0) {
         const match = selectedDeptPath.every((dept, index) => 
@@ -344,16 +365,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
       }
       return true;
     });
-
-    // 获取已选中但不在筛选结果中的奖项
-    const selectedButNotInFilter = MOCK_AWARDS.filter(award => 
-      selectedAwardIds.has(award.id) && 
-      !departmentFiltered.some(filtered => filtered.id === award.id)
-    );
-
-    // 合并：筛选结果 + 已选中但不在筛选结果中的奖项
-    return [...departmentFiltered, ...selectedButNotInFilter];
-  }, [selectedDeptPath, searchKeyword, selectedAwardIds]);
+  }, [selectedDeptPath, searchKeyword]);
 
   // 已选奖项列表
   const selectedAwards = useMemo(() => {
@@ -752,11 +764,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                         title={award.name}
                       >
                         {award.name}
-                        {isDefaultExisting && (
-                          <span style={{ fontSize: '12px', color: '#999', marginLeft: '8px' }}>
-                            (已添加)
-                          </span>
-                        )}
                       </div>
 
                       {/* 奖项类别 */}
@@ -830,7 +837,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                               cursor: 'not-allowed',
                             }}
                           >
-                            已添加
                           </span>
                         ) : isCustomExisting ? (
                           <span

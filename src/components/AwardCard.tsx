@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Award, Recipient, Team } from './types';
 import { RecipientCard } from './RecipientCard';
 import { TeamMembersModal } from './TeamMembersModal';
@@ -34,25 +34,6 @@ export const AwardCard: React.FC<AwardCardProps> = ({
 }) => {
   // 鼠标悬停状态
   const [isHovered, setIsHovered] = useState(false);
-  // 计算跨部门人员
-  const crossDepartmentRecipients = useMemo(() => {
-    return award.recipients.filter(
-      (recipient) => recipient.department !== award.issuingDepartment
-    );
-  }, [award.recipients, award.issuingDepartment]);
-
-  // 生成跨部门人员汇总提示文本
-  const crossDeptSummary = useMemo(() => {
-    if (crossDepartmentRecipients.length === 0) {
-      return null;
-    }
-
-    const summary = crossDepartmentRecipients
-      .map((r) => `${r.name}(${r.department})`)
-      .join('，');
-
-    return `已添加跨部门人员：${summary}`;
-  }, [crossDepartmentRecipients]);
 
   // 判断是否为团队奖
   const isTeamAward = award.awardType === 'team';
@@ -255,76 +236,92 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                 gap: '12px',
               }}
             >
-              {award.teams.map((team) => (
-                <div
-                  key={team.id}
-                  style={{
-                    padding: '12px 16px',
-                    backgroundColor: '#f8fafc',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '6px',
-                    minWidth: '180px',
-                    position: 'relative',
-                  }}
-                >
-                  {/* 移除按钮 */}
-                  {onRemoveTeam && (
-                    <button
-                      onClick={() => onRemoveTeam(team)}
+              {award.teams.map((team) => {
+                // 团队卡片悬停状态
+                const [isTeamHovered, setIsTeamHovered] = useState(false);
+                
+                return (
+                  <div
+                    key={team.id}
+                    style={{
+                      padding: '12px 16px',
+                      backgroundColor: '#f8fafc',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '6px',
+                      minWidth: '180px',
+                      position: 'relative',
+                    }}
+                    onMouseEnter={() => setIsTeamHovered(true)}
+                    onMouseLeave={() => setIsTeamHovered(false)}
+                  >
+                    {/* 移除按钮 - 鼠标悬停时显示 */}
+                    {onRemoveTeam && isTeamHovered && (
+                      <button
+                        onClick={() => onRemoveTeam(team)}
+                        style={{
+                          position: 'absolute',
+                          top: '-6px',
+                          right: '-6px',
+                          width: '16px',
+                          height: '16px',
+                          borderRadius: '50%',
+                          backgroundColor: '#ef4444',
+                          color: '#fff',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontSize: '10px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.2s',
+                          boxShadow: '0 2px 4px rgba(239, 68, 68, 0.3)',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#ff7875';
+                          e.currentTarget.style.transform = 'scale(1.1)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#ef4444';
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }}
+                      >
+                        ×
+                      </button>
+                    )}
+                    
+                    {/* 团队名称 */}
+                    <div
                       style={{
-                        position: 'absolute',
-                        top: '-6px',
-                        right: '-6px',
-                        width: '16px',
-                        height: '16px',
-                        borderRadius: '50%',
-                        backgroundColor: '#ef4444',
-                        color: '#fff',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontSize: '10px',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        color: '#1a1a2e',
+                        marginBottom: '4px',
+                      }}
+                    >
+                      {team.name}
+                    </div>
+                    
+                    {/* 成员数 + 展开按钮 */}
+                    <div
+                      style={{
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center',
+                        justifyContent: 'space-between',
+                        marginTop: '4px',
                       }}
                     >
-                      ×
-                    </button>
-                  )}
-                  
-                  {/* 团队名称 */}
-                  <div
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 500,
-                      color: '#1a1a2e',
-                      marginBottom: '4px',
-                    }}
-                  >
-                    {team.name}
-                  </div>
-                  
-                  {/* 成员数 + 展开按钮 */}
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginTop: '4px',
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: '12px',
-                        color: '#6b7280',
-                      }}
-                    >
-                      成员: {team.memberCount}人
-                    </span>
-                    <button
-                      onClick={() => handleShowMembers(team)}
-                      style={{
-                        background: 'none',
+                      <span
+                        style={{
+                          fontSize: '12px',
+                          color: '#6b7280',
+                        }}
+                      >
+                        成员: {team.memberCount}人
+                      </span>
+                      <button
+                        onClick={() => handleShowMembers(team)}
+                        style={{
+                          background: 'none',
                         border: 'none',
                         color: '#1890ff',
                         fontSize: '12px',
@@ -343,7 +340,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                     </button>
                   </div>
                 </div>
-              ))}
+              );})}
             </div>
           )}
         </>
@@ -381,7 +378,6 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                 display: 'flex',
                 flexWrap: 'wrap',
                 gap: '8px',
-                marginBottom: crossDeptSummary ? '8px' : '0',
               }}
             >
               {award.recipients.map((recipient, index) => (
@@ -397,20 +393,6 @@ export const AwardCard: React.FC<AwardCardProps> = ({
             </div>
           )}
 
-          {/* 跨部门人员汇总提示 */}
-          {crossDeptSummary && (
-            <div
-              className="cross-dept-summary"
-              style={{
-                fontSize: '12px',
-                color: '#1890ff',
-                marginTop: '8px',
-                padding: '4px 0',
-              }}
-            >
-              {crossDeptSummary}
-            </div>
-          )}
         </>
       )}
 
