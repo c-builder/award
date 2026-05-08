@@ -383,7 +383,7 @@ export const DeptCascader: React.FC<DeptCascaderProps> = ({
                       )}
                     </span>
                     {hasChildren && (
-                      <span style={{ fontSize: '12px', color: '#999', marginLeft: '8px' }}>›</span>
+                      <span style={{ fontSize: '16px', color: '#999', marginLeft: '8px', fontWeight: 500 }}>›</span>
                     )}
                   </div>
                 );
