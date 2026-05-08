@@ -9,6 +9,7 @@ export interface Team {
   leaderName: string;
   leaderId: string;
   memberCount: number;
+  members?: TeamMember[];
 }
 
 /**
@@ -21,6 +22,16 @@ export interface Employee {
 }
 
 /**
+ * 团队成员信息
+ */
+export interface TeamMember {
+  name: string;
+  employeeId: string;
+  department: string;
+  role: string;
+}
+
+/**
  * 查询结果
  */
 export interface QueryResult {
@@ -30,7 +41,6 @@ export interface QueryResult {
 
 export interface TeamSearchModalProps {
   visible: boolean;
-  awardId: string;
   onCancel: () => void;
   onConfirm: (selectedTeams: Team[]) => void;
 }
@@ -49,42 +59,66 @@ const mockEmployeeData: Record<string, Employee> = {
   '00506666': { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
 };
 
+// 生成模拟团队成员
+const generateMockMembers = (count: number, prefix: string): TeamMember[] => {
+  const departments = [
+    'IT平台服务部/平台开发部',
+    'IT平台服务部/平台运维部',
+    '质量与流程IT部/质量部/测试组',
+    '质量与流程IT部/流程部/优化组',
+    '智能汽车解决方案部/智能驾驶组',
+    '智能汽车解决方案部/智能座舱组',
+    '云与计算业务部/云计算组',
+    '云与计算业务部/大数据组',
+    'IT平台服务部/技术支持部',
+    '质量与流程IT部/IT部/开发组',
+  ];
+  const roles = ['开发工程师', '测试工程师', '运维工程师', '产品经理', '项目经理', '架构师', '技术专家', 'UI设计师'];
+
+  return Array.from({ length: count }, (_, i) => ({
+    name: `${prefix}成员${i + 1}`,
+    employeeId: `005${String(Math.floor(Math.random() * 90000) + 10000)}`,
+    department: departments[Math.floor(Math.random() * departments.length)],
+    role: roles[Math.floor(Math.random() * roles.length)],
+  }));
+};
+
 // 模拟团队数据
 const mockTeamsData: Record<string, Team[]> = {
   '00494097': [
-    { id: 'team-001', name: '新员工OCC实践培训优秀团队', leaderName: '赵六', leaderId: '00501111', memberCount: 10 },
-    { id: 'team-002', name: 'CIO值班优秀团队', leaderName: '钱七', leaderId: '00502222', memberCount: 8 },
-    { id: 'team-003', name: 'OCC委员会和OCC运营大会组织优秀团队', leaderName: '孙八', leaderId: '00503333', memberCount: 12 },
+    { id: 'team-001', name: '新员工OCC实践培训优秀团队', leaderName: '赵六', leaderId: '00501111', memberCount: 10, members: generateMockMembers(10, 'OCC培训') },
+    { id: 'team-002', name: 'CIO值班优秀团队', leaderName: '钱七', leaderId: '00502222', memberCount: 8, members: generateMockMembers(8, 'CIO值班') },
+    { id: 'team-003', name: 'OCC委员会和OCC运营大会组织优秀团队', leaderName: '孙八', leaderId: '00503333', memberCount: 12, members: generateMockMembers(12, 'OCC运营') },
   ],
   '00501234': [
-    { id: 'team-004', name: '质量改进优秀团队', leaderName: '张三', leaderId: '00501234', memberCount: 15 },
-    { id: 'team-005', name: '流程优化项目组', leaderName: '李四', leaderId: '00505678', memberCount: 6 },
+    { id: 'team-004', name: '质量改进优秀团队', leaderName: '张三', leaderId: '00501234', memberCount: 15, members: generateMockMembers(15, '质量改进') },
+    { id: 'team-005', name: '流程优化项目组', leaderName: '李四', leaderId: '00505678', memberCount: 6, members: generateMockMembers(6, '流程优化') },
   ],
   '00505678': [
-    { id: 'team-006', name: '智能汽车研发一组', leaderName: '王五', leaderId: '00507890', memberCount: 20 },
+    { id: 'team-006', name: '智能汽车研发一组', leaderName: '王五', leaderId: '00507890', memberCount: 20, members: generateMockMembers(20, '智能汽车') },
   ],
   '00507890': [
-    { id: 'team-007', name: '云计算架构团队', leaderName: '王五', leaderId: '00507890', memberCount: 18 },
-    { id: 'team-008', name: '容器化改造小组', leaderName: '周九', leaderId: '00504444', memberCount: 12 },
+    { id: 'team-007', name: '云计算架构团队', leaderName: '王五', leaderId: '00507890', memberCount: 18, members: generateMockMembers(18, '云计算') },
+    { id: 'team-008', name: '容器化改造小组', leaderName: '周九', leaderId: '00504444', memberCount: 12, members: generateMockMembers(12, '容器化') },
   ],
   '00501111': [
-    { id: 'team-009', name: '平台运维保障团队', leaderName: '赵六', leaderId: '00501111', memberCount: 25 },
-    { id: 'team-010', name: 'DevOps转型推进团队', leaderName: '吴十', leaderId: '00505555', memberCount: 20 },
+    { id: 'team-009', name: '平台运维保障团队', leaderName: '赵六', leaderId: '00501111', memberCount: 25, members: generateMockMembers(25, '运维保障') },
+    { id: 'team-010', name: 'DevOps转型推进团队', leaderName: '吴十', leaderId: '00505555', memberCount: 20, members: generateMockMembers(20, 'DevOps') },
   ],
   '00502222': [
-    { id: 'team-011', name: '流程自动化改造团队', leaderName: '钱七', leaderId: '00502222', memberCount: 16 },
+    { id: 'team-011', name: '流程自动化改造团队', leaderName: '钱七', leaderId: '00502222', memberCount: 16, members: generateMockMembers(16, '自动化') },
   ],
   '00503333': [
-    { id: 'team-012', name: '智能座舱交互设计团队', leaderName: '孙八', leaderId: '00503333', memberCount: 14 },
+    { id: 'team-012', name: '智能座舱交互设计团队', leaderName: '孙八', leaderId: '00503333', memberCount: 14, members: generateMockMembers(14, '交互设计') },
   ],
   '00504444': [
-    { id: 'team-013', name: '大数据分析平台团队', leaderName: '周九', leaderId: '00504444', memberCount: 22 },
+    { id: 'team-013', name: '大数据分析平台团队', leaderName: '周九', leaderId: '00504444', memberCount: 22, members: generateMockMembers(22, '大数据') },
   ],
   '00505555': [
-    { id: 'team-014', name: '技术支持响应团队', leaderName: '吴十', leaderId: '00505555', memberCount: 30 },
+    { id: 'team-014', name: '技术支持响应团队', leaderName: '吴十', leaderId: '00505555', memberCount: 30, members: generateMockMembers(30, '技术支持') },
   ],
   '00506666': [
-    { id: 'team-015', name: '内部工具开发团队', leaderName: '郑十一', leaderId: '00506666', memberCount: 10 },
+    { id: 'team-015', name: '内部工具开发团队', leaderName: '郑十一', leaderId: '00506666', memberCount: 10, members: generateMockMembers(10, '工具开发') },
   ],
 };
 
@@ -117,6 +151,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
   const [employeeId, setEmployeeId] = useState('');
   const [queryResult, setQueryResult] = useState<QueryResult | null>(null);
   const [selectedTeams, setSelectedTeams] = useState<Set<string>>(new Set());
+  const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -126,6 +161,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
       setEmployeeId('');
       setQueryResult(null);
       setSelectedTeams(new Set());
+      setExpandedTeams(new Set());
       setError('');
       setLoading(false);
     }
@@ -166,6 +202,18 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
       newSelected.add(teamId);
     }
     setSelectedTeams(newSelected);
+  };
+
+  // 切换团队展开状态
+  const toggleTeamExpand = (e: React.MouseEvent, teamId: string) => {
+    e.stopPropagation();
+    const newExpanded = new Set(expandedTeams);
+    if (newExpanded.has(teamId)) {
+      newExpanded.delete(teamId);
+    } else {
+      newExpanded.add(teamId);
+    }
+    setExpandedTeams(newExpanded);
   };
 
   // 确认添加
@@ -390,108 +438,212 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {queryResult.teams.map((team) => {
                     const isSelected = selectedTeams.has(team.id);
+                    const isExpanded = expandedTeams.has(team.id);
                     return (
                       <div
                         key={team.id}
-                        onClick={() => toggleTeamSelection(team.id)}
                         style={{
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          gap: '12px',
-                          padding: '16px',
                           backgroundColor: isSelected ? '#e6f7ff' : '#f5f5f5',
                           border: `1px solid ${isSelected ? '#1890ff' : '#d9d9d9'}`,
                           borderRadius: '6px',
-                          cursor: 'pointer',
                           transition: 'all 0.3s',
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!isSelected) {
-                            e.currentTarget.style.borderColor = '#1890ff';
-                            e.currentTarget.style.backgroundColor = '#f0f5ff';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isSelected) {
-                            e.currentTarget.style.borderColor = '#d9d9d9';
-                            e.currentTarget.style.backgroundColor = '#f5f5f5';
-                          }
+                          overflow: 'hidden',
                         }}
                       >
-                        {/* 复选框 */}
                         <div
+                          onClick={() => toggleTeamSelection(team.id)}
                           style={{
-                            width: '18px',
-                            height: '18px',
-                            borderRadius: '50%',
-                            border: `2px solid ${isSelected ? '#1890ff' : '#d9d9d9'}`,
-                            backgroundColor: isSelected ? '#1890ff' : '#fff',
                             display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexShrink: 0,
-                            marginTop: '2px',
+                            alignItems: 'flex-start',
+                            gap: '12px',
+                            padding: '16px',
+                            cursor: 'pointer',
                           }}
                         >
-                          {isSelected && (
+                          {/* 复选框 */}
+                          <div
+                            style={{
+                              width: '18px',
+                              height: '18px',
+                              borderRadius: '50%',
+                              border: `2px solid ${isSelected ? '#1890ff' : '#d9d9d9'}`,
+                              backgroundColor: isSelected ? '#1890ff' : '#fff',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                              marginTop: '2px',
+                            }}
+                          >
+                            {isSelected && (
+                              <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                              >
+                                <path
+                                  d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
+                                  fill="#fff"
+                                />
+                              </svg>
+                            )}
+                          </div>
+
+                          {/* 团队信息 */}
+                          <div style={{ flex: 1 }}>
+                            <div
+                              style={{
+                                fontSize: '14px',
+                                fontWeight: 500,
+                                color: '#333',
+                                marginBottom: '6px',
+                              }}
+                            >
+                              {team.name}
+                            </div>
+                            <div
+                              style={{
+                                fontSize: '13px',
+                                color: '#666',
+                                lineHeight: '1.6',
+                              }}
+                            >
+                              <div>团队负责人: {team.leaderName} ({team.leaderId})</div>
+                              <div>团队成员: {team.memberCount}人</div>
+                            </div>
+                          </div>
+
+                          {/* 箭头图标 - 点击展开/折叠 */}
+                          <div
+                            onClick={(e) => toggleTeamExpand(e, team.id)}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              borderRadius: '4px',
+                              border: `1px solid ${isSelected ? '#1890ff' : '#d9d9d9'}`,
+                              backgroundColor: '#fff',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                              marginTop: '2px',
+                              cursor: 'pointer',
+                              transition: 'all 0.3s',
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.borderColor = '#1890ff';
+                              e.currentTarget.style.backgroundColor = '#e6f7ff';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.borderColor = isSelected ? '#1890ff' : '#d9d9d9';
+                              e.currentTarget.style.backgroundColor = '#fff';
+                            }}
+                          >
                             <svg
-                              width="12"
-                              height="12"
+                              width="14"
+                              height="14"
                               viewBox="0 0 24 24"
                               fill="none"
+                              style={{
+                                color: '#666',
+                                transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                                transition: 'transform 0.3s',
+                              }}
                             >
                               <path
-                                d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"
-                                fill="#fff"
+                                d="M9 18l6-6-6-6"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
                               />
                             </svg>
-                          )}
-                        </div>
-
-                        {/* 团队信息 */}
-                        <div style={{ flex: 1 }}>
-                          <div
-                            style={{
-                              fontSize: '14px',
-                              fontWeight: 500,
-                              color: '#333',
-                              marginBottom: '6px',
-                            }}
-                          >
-                            {team.name}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: '13px',
-                              color: '#666',
-                              lineHeight: '1.6',
-                            }}
-                          >
-                            <div>团队负责人: {team.leaderName} ({team.leaderId})</div>
-                            <div>团队成员: {team.memberCount}人</div>
                           </div>
                         </div>
 
-                        {/* 箭头图标 */}
-                        <svg
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          style={{
-                            color: '#999',
-                            flexShrink: 0,
-                            marginTop: '4px',
-                          }}
-                        >
-                          <path
-                            d="M9 18l6-6-6-6"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
+                        {/* 展开的成员列表 */}
+                        {isExpanded && team.members && team.members.length > 0 && (
+                          <div
+                            style={{
+                              padding: '0 16px 16px 16px',
+                              backgroundColor: isSelected ? '#e6f7ff' : '#f5f5f5',
+                            }}
+                          >
+                            <div
+                              style={{
+                                padding: '12px',
+                                backgroundColor: '#fff',
+                                borderRadius: '4px',
+                                border: `1px solid ${isSelected ? '#91d5ff' : '#e8e8e8'}`,
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontSize: '13px',
+                                  fontWeight: 500,
+                                  color: '#333',
+                                  marginBottom: '10px',
+                                  paddingBottom: '8px',
+                                  borderBottom: '1px solid #e8e8e8',
+                                }}
+                              >
+                                团队成员 ({team.members.length}人)
+                              </div>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                {team.members.map((member, index) => (
+                                  <div
+                                    key={member.employeeId || index}
+                                    style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'space-between',
+                                      padding: '8px 12px',
+                                      backgroundColor: '#f6ffed',
+                                      borderRadius: '4px',
+                                      border: '1px solid #b7eb8f',
+                                    }}
+                                  >
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                      <span
+                                        style={{
+                                          width: '24px',
+                                          height: '24px',
+                                          borderRadius: '50%',
+                                          backgroundColor: '#52c41a',
+                                          color: '#fff',
+                                          fontSize: '11px',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          flexShrink: 0,
+                                        }}
+                                      >
+                                        {member.name.charAt(0)}
+                                      </span>
+                                      <div>
+                                        <div style={{ fontSize: '13px', color: '#333', fontWeight: 500 }}>
+                                          {member.name}
+                                        </div>
+                                        <div style={{ fontSize: '11px', color: '#666' }}>
+                                          {member.employeeId}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div style={{ textAlign: 'right' }}>
+                                      <div style={{ fontSize: '12px', color: '#666' }}>
+                                        {member.role}
+                                      </div>
+                                      <div style={{ fontSize: '11px', color: '#999' }}>
+                                        {member.department}
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     );
                   })}

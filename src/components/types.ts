@@ -44,4 +44,6 @@ export interface Award {
   awardType: AwardType;
   recipients: Recipient[];
   teams?: Team[];
+  /** 是否被选中用于展播 */
+  selected?: boolean;
 }

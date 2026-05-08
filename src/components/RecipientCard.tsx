@@ -10,7 +10,7 @@ export interface RecipientCardProps {
 /**
  * 获奖人卡片组件
  * 显示获奖人姓名、工号、部门信息
- * 跨部门人员使用蓝色高亮样式（蓝色边框+蓝色部门文字）
+ * 跨部门人员使用主题色高亮样式
  */
 export const RecipientCard: React.FC<RecipientCardProps> = ({
   recipient,
@@ -27,7 +27,7 @@ export const RecipientCard: React.FC<RecipientCardProps> = ({
         position: 'relative',
         padding: '8px 12px',
         backgroundColor: '#fff',
-        border: `1px solid ${isCrossDepartment ? '#1890ff' : '#d9d9d9'}`,
+        border: `1px solid ${isCrossDepartment ? '#4a6cf7' : '#e2e8f0'}`,
         borderRadius: '4px',
         fontSize: '13px',
         transition: 'all 0.2s',
@@ -39,6 +39,7 @@ export const RecipientCard: React.FC<RecipientCardProps> = ({
         <button
           className="recipient-remove-btn"
           onClick={onRemove}
+          title="删除"
           style={{
             position: 'absolute',
             top: '-6px',
@@ -46,7 +47,7 @@ export const RecipientCard: React.FC<RecipientCardProps> = ({
             width: '16px',
             height: '16px',
             borderRadius: '50%',
-            backgroundColor: '#ff4d4f',
+            backgroundColor: '#ef4444',
             color: '#fff',
             border: 'none',
             cursor: 'pointer',
@@ -54,11 +55,6 @@ export const RecipientCard: React.FC<RecipientCardProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            opacity: 0,
-            transition: 'opacity 0.2s',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.opacity = '1';
           }}
         >
           ×
@@ -70,7 +66,7 @@ export const RecipientCard: React.FC<RecipientCardProps> = ({
         className="recipient-name"
         style={{
           fontWeight: 500,
-          color: '#333',
+          color: '#1a1a2e',
           marginBottom: '2px',
         }}
       >
@@ -83,7 +79,7 @@ export const RecipientCard: React.FC<RecipientCardProps> = ({
           className="recipient-employee-id"
           style={{
             fontSize: '11px',
-            color: '#666',
+            color: '#6b7280',
             marginBottom: '2px',
           }}
         >
@@ -91,12 +87,12 @@ export const RecipientCard: React.FC<RecipientCardProps> = ({
         </div>
       )}
 
-      {/* 部门 - 跨部门人员使用蓝色高亮 */}
+      {/* 部门 - 跨部门人员使用主题色高亮 */}
       <div
         className="recipient-department"
         style={{
           fontSize: '11px',
-          color: isCrossDepartment ? '#1890ff' : '#999',
+          color: isCrossDepartment ? '#4a6cf7' : '#9ca3af',
           fontWeight: isCrossDepartment ? 500 : 400,
         }}
       >

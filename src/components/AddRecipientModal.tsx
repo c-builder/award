@@ -4,7 +4,6 @@ import { DeptCascader } from './DeptCascader';
 
 export interface AddRecipientModalProps {
   visible: boolean;
-  awardId: string;
   currentDepartment: string;
   onCancel: () => void;
   onConfirm: (selectedRecipients: Recipient[]) => void;

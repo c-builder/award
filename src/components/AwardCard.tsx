@@ -1,13 +1,18 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Award, Recipient, Team } from './types';
 import { RecipientCard } from './RecipientCard';
+import { TeamMembersModal } from './TeamMembersModal';
 
 export interface AwardCardProps {
   award: Award;
+  index?: number;
+  selected?: boolean;
+  onToggleSelection?: () => void;
   onAddRecipient?: () => void;
   onRemoveRecipient?: (recipient: Recipient) => void;
   onAddTeam?: () => void;
   onRemoveTeam?: (team: Team) => void;
+  onUpdateTeam?: (team: Team) => void;
 }
 
 /**
@@ -16,10 +21,13 @@ export interface AwardCardProps {
  */
 export const AwardCard: React.FC<AwardCardProps> = ({
   award,
+  selected = false,
+  onToggleSelection,
   onAddRecipient,
   onRemoveRecipient,
   onAddTeam,
   onRemoveTeam,
+  onUpdateTeam,
 }) => {
   // 计算跨部门人员
   const crossDepartmentRecipients = useMemo(() => {
@@ -49,14 +57,30 @@ export const AwardCard: React.FC<AwardCardProps> = ({
     ? (award.teams?.length || 0) 
     : award.recipients.length;
 
+  // 团队成员弹窗状态
+  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+  const [membersModalVisible, setMembersModalVisible] = useState(false);
+
+  const handleShowMembers = (team: Team) => {
+    setSelectedTeam(team);
+    setMembersModalVisible(true);
+  };
+
+  const handleCloseMembers = () => {
+    setMembersModalVisible(false);
+    setSelectedTeam(null);
+  };
+
   return (
     <div
       className="award-card"
       style={{
-        backgroundColor: '#fff',
+        backgroundColor: selected ? '#f0f7ff' : '#fff',
         borderRadius: '8px',
         padding: '16px',
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+        border: selected ? '2px solid #4a6cf7' : '1px solid #e8e8e8',
+        transition: 'all 0.2s',
       }}
     >
       {/* 奖项标题区域 */}
@@ -69,67 +93,81 @@ export const AwardCard: React.FC<AwardCardProps> = ({
           marginBottom: '12px',
         }}
       >
-        <div>
-          <h3
-            className="award-title"
-            style={{
-              fontSize: '16px',
-              fontWeight: 600,
-              color: '#333',
-              margin: 0,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}
-          >
-            <span
-              className="award-id-badge"
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+          {/* 选中复选框 */}
+          {onToggleSelection && (
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleSelection();
+              }}
               style={{
-                width: '20px',
-                height: '20px',
-                backgroundColor: '#1890ff',
-                color: '#fff',
+                width: '18px',
+                height: '18px',
                 borderRadius: '4px',
+                border: `2px solid ${selected ? '#4a6cf7' : '#d9d9d9'}`,
+                backgroundColor: selected ? '#4a6cf7' : '#fff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '12px',
+                cursor: 'pointer',
                 flexShrink: 0,
+                transition: 'all 0.2s',
               }}
             >
-              {award.id}
-            </span>
-            {award.title}
-            {/* 奖项类型标签 */}
-            <span
+              {selected && (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              )}
+            </div>
+          )}
+
+          <div style={{ flex: 1 }}>
+            <h3
+              className="award-title"
               style={{
-                padding: '2px 8px',
-                backgroundColor: isTeamAward ? '#e6f7ff' : '#f6ffed',
-                color: isTeamAward ? '#1890ff' : '#52c41a',
-                borderRadius: '4px',
-                fontSize: '12px',
-                fontWeight: 400,
+                fontSize: '16px',
+                fontWeight: 600,
+                color: '#1a1a2e',
+                margin: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
               }}
             >
-              {isTeamAward ? '团队奖' : '个人奖'}
-            </span>
-          </h3>
-          <p
-            className="award-department"
-            style={{
-              fontSize: '12px',
-              color: '#666',
-              margin: '4px 0 0 28px',
-            }}
-          >
-            颁发部门: {award.issuingDepartment}
-          </p>
+              {award.title}
+              {/* 奖项类型标签 */}
+              <span
+                style={{
+                  padding: '2px 8px',
+                  backgroundColor: isTeamAward ? '#eef2ff' : '#f0fdf4',
+                  color: isTeamAward ? '#4a6cf7' : '#16a34a',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                }}
+              >
+                {isTeamAward ? '团队奖' : '个人奖'}
+              </span>
+            </h3>
+            <p
+              className="award-department"
+              style={{
+                fontSize: '12px',
+                color: '#6b7280',
+                margin: '4px 0 0 0',
+              }}
+            >
+              颁发部门: {award.issuingDepartment}
+            </p>
+          </div>
         </div>
         <span
           className="award-recipient-count"
           style={{
             fontSize: '12px',
-            color: '#999',
+            color: '#9ca3af',
             flexShrink: 0,
           }}
         >
@@ -148,7 +186,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
               style={{
                 padding: '4px 12px',
                 backgroundColor: 'transparent',
-                color: '#1890ff',
+                color: '#4a6cf7',
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: '13px',
@@ -178,8 +216,8 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                   key={team.id}
                   style={{
                     padding: '12px 16px',
-                    backgroundColor: '#f6ffed',
-                    border: '1px solid #b7eb8f',
+                    backgroundColor: '#f8fafc',
+                    border: '1px solid #e2e8f0',
                     borderRadius: '6px',
                     minWidth: '180px',
                     position: 'relative',
@@ -196,7 +234,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                         width: '16px',
                         height: '16px',
                         borderRadius: '50%',
-                        backgroundColor: '#ff4d4f',
+                        backgroundColor: '#ef4444',
                         color: '#fff',
                         border: 'none',
                         cursor: 'pointer',
@@ -215,32 +253,50 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                     style={{
                       fontSize: '14px',
                       fontWeight: 500,
-                      color: '#333',
+                      color: '#1a1a2e',
                       marginBottom: '4px',
                     }}
                   >
-                    🏆 {team.name}
+                    {team.name}
                   </div>
                   
-                  {/* 负责人 */}
+                  {/* 成员数 + 展开按钮 */}
                   <div
                     style={{
-                      fontSize: '12px',
-                      color: '#666',
-                      marginBottom: '2px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginTop: '4px',
                     }}
                   >
-                    负责人: {team.leaderName} ({team.leaderId})
-                  </div>
-                  
-                  {/* 成员数 */}
-                  <div
-                    style={{
-                      fontSize: '12px',
-                      color: '#999',
-                    }}
-                  >
-                    成员: {team.memberCount}人
+                    <span
+                      style={{
+                        fontSize: '12px',
+                        color: '#6b7280',
+                      }}
+                    >
+                      成员: {team.memberCount}人
+                    </span>
+                    <button
+                      onClick={() => handleShowMembers(team)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#4a6cf7',
+                        fontSize: '12px',
+                        cursor: 'pointer',
+                        padding: '2px 0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                      title="查看成员列表"
+                    >
+                      <span>详情</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="6 9 12 15 18 9" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               ))}
@@ -258,7 +314,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
               style={{
                 padding: '4px 12px',
                 backgroundColor: 'transparent',
-                color: '#1890ff',
+                color: '#4a6cf7',
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: '13px',
@@ -303,7 +359,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
               className="cross-dept-summary"
               style={{
                 fontSize: '12px',
-                color: '#1890ff',
+                color: '#4a6cf7',
                 marginTop: '8px',
                 padding: '4px 0',
               }}
@@ -313,6 +369,18 @@ export const AwardCard: React.FC<AwardCardProps> = ({
           )}
         </>
       )}
+
+      {/* 团队成员弹窗 */}
+      <TeamMembersModal
+        visible={membersModalVisible}
+        team={selectedTeam || { id: '', name: '', leaderName: '', leaderId: '', memberCount: 0 }}
+        onClose={handleCloseMembers}
+        onConfirm={(updatedTeam) => {
+          if (onUpdateTeam) {
+            onUpdateTeam(updatedTeam);
+          }
+        }}
+      />
     </div>
   );
 };
