@@ -28,7 +28,7 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
 }) => {
   // 分页状态
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 20;
+  const pageSize = 10;
 
   // 搜索关键词
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -105,6 +105,8 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 2000,
+        overflow: 'hidden',
+        overscrollBehavior: 'contain',
       }}
       onClick={handleClose}
     >
@@ -255,6 +257,7 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
             padding: '0',
             display: 'flex',
             flexDirection: 'column',
+            overscrollBehavior: 'contain',
           }}
         >
           {/* 表格头部 */}

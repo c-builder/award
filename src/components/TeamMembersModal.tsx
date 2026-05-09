@@ -170,6 +170,8 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 2000,
+        overflow: 'hidden',
+        overscrollBehavior: 'contain',
       }}
       onClick={onClose}
     >
@@ -287,7 +289,7 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
         </div>
 
         {/* 表格 */}
-        <div style={{ flex: 1, overflow: 'auto' }}>
+        <div style={{ flex: 1, overflow: 'auto', overscrollBehavior: 'contain' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ backgroundColor: '#fafafa' }}>

@@ -137,6 +137,8 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1000,
+        overflow: 'hidden',
+        overscrollBehavior: 'contain',
       }}
       onClick={onCancel}
     >
@@ -241,7 +243,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
         </div>
 
         {/* 内容区域 */}
-        <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', overscrollBehavior: 'contain' }}>
           {/* 表格 */}
           <div style={{ flex: 1, overflow: 'auto', padding: '16px 0' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
