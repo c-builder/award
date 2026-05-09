@@ -249,20 +249,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
                         跨
                       </span>
                     )}
-                    {isExistingRecipient(queryResult.employeeId) && (
-                      <span
-                        style={{
-                          marginLeft: '8px',
-                          padding: '2px 6px',
-                          backgroundColor: '#fa8c16',
-                          color: '#fff',
-                          fontSize: '11px',
-                          borderRadius: '3px',
-                        }}
-                      >
-                        已存在
-                      </span>
-                    )}
+
                   </div>
                   <div style={{ fontSize: '13px', color: '#666' }}>
                     工号: {queryResult.employeeId} | 部门: {queryResult.department}
@@ -310,13 +297,12 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
           {selectedRecipients.length === 0 ? (
             <div
               style={{
-                padding: '48px 24px',
+                padding: '88px 24px',
                 textAlign: 'center',
                 color: '#999',
                 fontSize: '14px',
               }}
             >
-              <div style={{ fontSize: '48px', marginBottom: '12px' }}>👤</div>
               <div style={{ fontSize: '13px', marginTop: '8px' }}>请通过工号查询添加获奖人</div>
             </div>
           ) : (
