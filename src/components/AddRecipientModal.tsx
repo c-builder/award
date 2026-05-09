@@ -247,13 +247,10 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ backgroundColor: '#fafafa' }}>
-                  <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0', width: '40px' }}>
-                    <input
-                      ref={headerCheckboxRef}
-                      type="checkbox"
-                      checked={isAllSelected}
-                      disabled={isHeaderDisabled}
-                      onChange={() => {
+                  <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0', width: '60px' }}>
+                    <div
+                      onClick={() => {
+                        if (isHeaderDisabled) return;
                         if (isAllSelected) {
                           setSelectedRecipients(prev => prev.filter(r => !selectableEmployees.some(e => e.employeeId === r.employeeId)));
                         } else {
@@ -264,8 +261,45 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
                           });
                         }
                       }}
-                      style={{ cursor: isHeaderDisabled ? 'not-allowed' : 'pointer' }}
-                    />
+                      style={{
+                        width: '18px',
+                        height: '18px',
+                        border: `2px solid ${isHeaderDisabled ? '#d9d9d9' : isAllSelected || isIndeterminate ? '#1890ff' : '#d9d9d9'}`,
+                        borderRadius: '3px',
+                        backgroundColor: isAllSelected || isIndeterminate ? '#1890ff' : '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: '0 auto',
+                        cursor: isHeaderDisabled ? 'not-allowed' : 'pointer',
+                        transition: 'all 0.2s',
+                        opacity: isHeaderDisabled ? 0.5 : 1,
+                      }}
+                    >
+                      {isAllSelected ? (
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#fff"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      ) : isIndeterminate ? (
+                        <div
+                          style={{
+                            width: '10px',
+                            height: '2px',
+                            backgroundColor: '#fff',
+                            borderRadius: '1px',
+                          }}
+                        />
+                      ) : null}
+                    </div>
                   </th>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>姓名</th>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>工号</th>
@@ -287,14 +321,37 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
                       }}
                       onClick={() => toggleSelection(emp)}
                     >
-                      <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0' }}>
-                        <input
-                          type="checkbox"
-                          checked={selected}
-                          disabled={existing}
-                          onChange={() => {}}
-                          style={{ cursor: existing ? 'not-allowed' : 'pointer' }}
-                        />
+                      <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', textAlign: 'center' }}>
+                        <div
+                          style={{
+                            width: '18px',
+                            height: '18px',
+                            border: `2px solid ${existing ? '#d9d9d9' : selected ? '#1890ff' : '#d9d9d9'}`,
+                            borderRadius: '3px',
+                            backgroundColor: selected ? '#1890ff' : '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto',
+                            transition: 'all 0.2s',
+                            opacity: existing ? 0.5 : 1,
+                          }}
+                        >
+                          {selected && (
+                            <svg
+                              width="12"
+                              height="12"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="#fff"
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                        </div>
                       </td>
                       <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', color: '#333' }}>
                         {emp.name}

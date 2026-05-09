@@ -78,6 +78,18 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
     }
   };
 
+  // 全选/取消全选
+  const isAllSelected = filteredRecipients.length > 0 && filteredRecipients.every(r => r.isSelected);
+  const isIndeterminate = filteredRecipients.length > 0 && filteredRecipients.some(r => r.isSelected) && !isAllSelected;
+  const toggleAll = () => {
+    if (!onSelectRecipient) return;
+    filteredRecipients.forEach(recipient => {
+      if (recipient.isSelected !== !isAllSelected) {
+        onSelectRecipient(recipient);
+      }
+    });
+  };
+
   if (!visible) return null;
 
   return (
@@ -259,7 +271,47 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
               flexShrink: 0,
             }}
           >
-            <div style={{ textAlign: 'center' }}>选中</div>
+            <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center' }}>
+              <div
+                onClick={toggleAll}
+                style={{
+                  width: '18px',
+                  height: '18px',
+                  border: `2px solid ${isAllSelected || isIndeterminate ? '#1890ff' : '#d9d9d9'}`,
+                  borderRadius: '3px',
+                  backgroundColor: isAllSelected || isIndeterminate ? '#1890ff' : '#fff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: onSelectRecipient ? 'pointer' : 'default',
+                  transition: 'all 0.2s',
+                }}
+              >
+                {isAllSelected ? (
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#fff"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                ) : isIndeterminate ? (
+                  <div
+                    style={{
+                      width: '10px',
+                      height: '2px',
+                      backgroundColor: '#fff',
+                      borderRadius: '1px',
+                    }}
+                  />
+                ) : null}
+              </div>
+            </div>
             <div>姓名</div>
             <div>工号</div>
             <div>部门</div>

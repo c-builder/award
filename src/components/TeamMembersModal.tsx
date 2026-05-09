@@ -74,6 +74,7 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
   const members = team.members || [];
 
   const isAllSelected = members.length > 0 && members.every(m => selectedMemberIds.has(m.employeeId));
+  const isIndeterminate = members.length > 0 && selectedMemberIds.size > 0 && selectedMemberIds.size < members.length;
 
   const toggleMember = (employeeId: string) => {
     setSelectedMemberIds(prev => {
@@ -290,13 +291,47 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ backgroundColor: '#fafafa' }}>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0', width: '40px' }}>
-                  <input
-                    type="checkbox"
-                    checked={isAllSelected}
-                    onChange={toggleAll}
-                    style={{ cursor: 'pointer' }}
-                  />
+                <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0', width: '60px' }}>
+                  <div
+                    onClick={toggleAll}
+                    style={{
+                      width: '18px',
+                      height: '18px',
+                      border: `2px solid ${isAllSelected || isIndeterminate ? '#1890ff' : '#d9d9d9'}`,
+                      borderRadius: '3px',
+                      backgroundColor: isAllSelected || isIndeterminate ? '#1890ff' : '#fff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      margin: '0 auto',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {isAllSelected ? (
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#fff"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    ) : isIndeterminate ? (
+                      <div
+                        style={{
+                          width: '10px',
+                          height: '2px',
+                          backgroundColor: '#fff',
+                          borderRadius: '1px',
+                        }}
+                      />
+                    ) : null}
+                  </div>
                 </th>
                 <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>姓名</th>
                 <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>工号</th>
@@ -316,13 +351,36 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
                     }}
                     onClick={() => toggleMember(member.employeeId)}
                   >
-                    <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0' }}>
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => {}}
-                        style={{ cursor: 'pointer' }}
-                      />
+                    <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', textAlign: 'center' }}>
+                      <div
+                        style={{
+                          width: '18px',
+                          height: '18px',
+                          border: `2px solid ${checked ? '#1890ff' : '#d9d9d9'}`,
+                          borderRadius: '3px',
+                          backgroundColor: checked ? '#1890ff' : '#fff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          margin: '0 auto',
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        {checked && (
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#fff"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </div>
                     </td>
                     <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', color: '#333' }}>
                       {member.name}
