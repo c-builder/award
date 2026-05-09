@@ -360,7 +360,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
           }}
         >
           <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 500, color: '#333' }}>
-            添加团队奖
+            添加获奖团队
           </h3>
           <button
             onClick={onCancel}

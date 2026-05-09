@@ -253,7 +253,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                 }}
               >
                 <span>+</span>
-                <span>添加团队奖</span>
+                <span>添加获奖团队</span>
               </button>
             )}
             {/* 全选/取消全选按钮 */}
