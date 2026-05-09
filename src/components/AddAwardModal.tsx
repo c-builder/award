@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { DeptCascader } from './DeptCascader';
+import { Pagination } from './Pagination';
 import { Award } from './types';
 
 /**
@@ -183,6 +184,55 @@ const MOCK_RECIPIENTS: Record<string, Recipient[]> = {
     { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
     { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
   ],
+  'award-009': [
+    { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+    { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+    { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+    { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+    { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+    { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+    { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+    { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
+    { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
+    { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+  ],
+  'award-010': [
+    { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+    { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+    { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+    { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+    { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+    { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+    { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+    { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
+    { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
+    { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+    { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+    { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+  ],
+  'award-011': [
+    { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+    { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+    { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+    { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+    { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+  ],
+  'award-012': [
+    { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+    { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+    { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+    { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+    { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+    { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+    { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+    { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
+    { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
+    { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+    { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+    { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+    { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+    { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+  ],
 };
 
 /**
@@ -261,6 +311,42 @@ const MOCK_AWARDS: AwardItem[] = [
     issuingDepartmentPath: ['智能汽车解决方案部', '车联网组'],
     recipients: MOCK_RECIPIENTS['award-008'],
   },
+  {
+    id: 'award-009',
+    name: '2025年优秀项目经理奖',
+    category: '个人奖',
+    recipientCount: 10,
+    issuingDepartment: '华为公司/人力资源部',
+    issuingDepartmentPath: ['华为公司', '人力资源部'],
+    recipients: MOCK_RECIPIENTS['award-009'],
+  },
+  {
+    id: 'award-010',
+    name: '2025年技术创新团队奖',
+    category: '团队奖',
+    recipientCount: 12,
+    issuingDepartment: 'IT平台服务部/平台开发部',
+    issuingDepartmentPath: ['IT平台服务部', '平台开发部'],
+    recipients: MOCK_RECIPIENTS['award-010'],
+  },
+  {
+    id: 'award-011',
+    name: '2025年质量之星奖',
+    category: '个人奖',
+    recipientCount: 5,
+    issuingDepartment: '质量与流程IT部/质量部',
+    issuingDepartmentPath: ['质量与流程IT部', '质量部'],
+    recipients: MOCK_RECIPIENTS['award-011'],
+  },
+  {
+    id: 'award-012',
+    name: '2025年数字化转型优秀团队奖',
+    category: '团队奖',
+    recipientCount: 14,
+    issuingDepartment: '云与计算业务部/云计算组',
+    issuingDepartmentPath: ['云与计算业务部', '云计算组'],
+    recipients: MOCK_RECIPIENTS['award-012'],
+  },
 ];
 
 /**
@@ -336,8 +422,13 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
       setSelectedAwardIds(new Set());
       setExpandedAwardIds(new Set());
       setExistingAwardAlert(null);
+      setCurrentPage(1);
     }
   }, [visible]);
+
+  // 分页状态
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   // 获取已存在的默认奖项名称集合（deletable=false 的默认数据）
   const existingDefaultAwardNames = useMemo(() => {
@@ -365,6 +456,17 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
       }
       return true;
     });
+  }, [selectedDeptPath, searchKeyword]);
+
+  // 分页后的奖项列表
+  const paginatedAwards = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredAwards.slice(startIndex, startIndex + pageSize);
+  }, [filteredAwards, currentPage]);
+
+  // 筛选条件改变时重置页码
+  useEffect(() => {
+    setCurrentPage(1);
   }, [selectedDeptPath, searchKeyword]);
 
   // 已选奖项列表
@@ -665,6 +767,8 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
             flex: 1,
             overflow: 'auto',
             padding: '0',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
           {/* 表格头部 */}
@@ -678,6 +782,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
               fontSize: '14px',
               fontWeight: 500,
               color: '#666',
+              flexShrink: 0,
             }}
           >
             <div></div>
@@ -689,9 +794,9 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
           </div>
 
           {/* 表格内容 */}
-          <div>
-            {filteredAwards.length > 0 ? (
-              filteredAwards.map((award) => {
+          <div style={{ flex: 1, overflow: 'auto' }}>
+            {paginatedAwards.length > 0 ? (
+              paginatedAwards.map((award) => {
                 const isSelected = selectedAwardIds.has(award.id);
                 const isExpanded = expandedAwardIds.has(award.id);
                 const recipients = award.recipients || [];
@@ -997,6 +1102,25 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
               </div>
             )}
           </div>
+
+          {/* 分页器 - 固定在表格底部 */}
+          {filteredAwards.length > 0 && (
+            <div
+              style={{
+                padding: '0 24px',
+                borderTop: '1px solid #f0f0f0',
+                backgroundColor: '#fff',
+                flexShrink: 0,
+              }}
+            >
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={filteredAwards.length}
+                onChange={setCurrentPage}
+              />
+            </div>
+          )}
         </div>
 
         {/* 已添加奖项区域 */}

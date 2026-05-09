@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Recipient } from './types';
 import { DeptCascader } from './DeptCascader';
+import { Pagination } from './Pagination';
 
 export interface AddRecipientModalProps {
   visible: boolean;
@@ -21,6 +22,26 @@ const mockEmployees: Recipient[] = [
   { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
   { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
   { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+  { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+  { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+  { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+  { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+  { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+  { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
+  { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
+  { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+  { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+  { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
+  { name: '秦二二', employeeId: '00517777', department: 'IT平台服务部/技术支持部' },
+  { name: '尤二三', employeeId: '00518888', department: '质量与流程IT部/IT部/开发组' },
+  { name: '许二四', employeeId: '00519999', department: '智能汽车解决方案部/智能座舱组' },
+  { name: '何二五', employeeId: '00520000', department: '云与计算业务部/大数据组' },
+  { name: '吕二六', employeeId: '00521111', department: 'IT平台服务部/平台开发部' },
+  { name: '施二七', employeeId: '00522222', department: '质量与流程IT部/质量部/测试组' },
+  { name: '张二八', employeeId: '00523333', department: '智能汽车解决方案部/智能驾驶组' },
+  { name: '孔二九', employeeId: '00524444', department: '云与计算业务部/云计算组' },
+  { name: '曹三十', employeeId: '00525555', department: 'IT平台服务部/平台运维部' },
+  { name: '严三一', employeeId: '00526666', department: '质量与流程IT部/流程部/优化组' },
 ];
 
 // 模拟已获奖项数据
@@ -43,14 +64,24 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
   const [selectedDeptPath, setSelectedDeptPath] = useState<string[]>([]);
   const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set());
 
+  // 分页状态
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
   // 弹窗关闭时重置状态
   useEffect(() => {
     if (!visible) {
       setSearchKeyword('');
       setSelectedDeptPath([]);
       setSelectedRecipients(new Set());
+      setCurrentPage(1);
     }
   }, [visible]);
+
+  // 筛选条件改变时重置页码
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchKeyword, selectedDeptPath]);
 
   // 过滤人员列表
   const filteredEmployees = useMemo(() => {
@@ -72,6 +103,12 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
       return departmentMatch && searchMatch;
     });
   }, [searchKeyword, selectedDeptPath]);
+
+  // 分页后的人员列表
+  const paginatedEmployees = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredEmployees.slice(startIndex, startIndex + pageSize);
+  }, [filteredEmployees, currentPage]);
 
   // 切换选中状态
   const toggleSelection = (employeeId: string) => {
@@ -266,6 +303,8 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
             flex: 1,
             overflow: 'auto',
             padding: '0 24px',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
           <table
@@ -275,7 +314,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
               fontSize: '14px',
             }}
           >
-            <thead>
+            <thead style={{ position: 'sticky', top: 0, zIndex: 1 }}>
               <tr
                 style={{
                   backgroundColor: '#fafafa',
@@ -341,7 +380,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
               </tr>
             </thead>
             <tbody>
-              {filteredEmployees.map((employee, index) => {
+              {paginatedEmployees.map((employee, index) => {
                 const isSelected = selectedRecipients.has(employee.employeeId);
                 const isCrossDept = isCrossDepartment(employee.department);
                 const award = mockAwards[employee.employeeId] || '-';
@@ -398,6 +437,25 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
               )}
             </tbody>
           </table>
+
+          {/* 分页器 - 固定在表格底部 */}
+          {filteredEmployees.length > 0 && (
+            <div
+              style={{
+                padding: '0',
+                borderTop: '1px solid #f0f0f0',
+                backgroundColor: '#fff',
+                flexShrink: 0,
+              }}
+            >
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={filteredEmployees.length}
+                onChange={setCurrentPage}
+              />
+            </div>
+          )}
         </div>
 
         {/* 已选择摘要 */}

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Pagination } from './Pagination';
 import { Team, TeamMember } from './types';
 
 export interface TeamMembersModalProps {
@@ -30,6 +31,16 @@ const mockEmployeeData: Record<string, { name: string; employeeId: string; depar
   '00514444': { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/质量部/测试组' },
   '00515555': { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
   '00516666': { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
+  '00517777': { name: '秦二二', employeeId: '00517777', department: 'IT平台服务部/平台运维部' },
+  '00518888': { name: '尤二三', employeeId: '00518888', department: '质量与流程IT部/流程部/优化组' },
+  '00519999': { name: '许二四', employeeId: '00519999', department: '智能汽车解决方案部/智能座舱组' },
+  '00520000': { name: '何二五', employeeId: '00520000', department: '云与计算业务部/大数据组' },
+  '00521111': { name: '吕二六', employeeId: '00521111', department: 'IT平台服务部/技术支持部' },
+  '00522222': { name: '施二七', employeeId: '00522222', department: '质量与流程IT部/IT部/开发组' },
+  '00523333': { name: '张二八', employeeId: '00523333', department: '智能汽车解决方案部/智能驾驶组' },
+  '00524444': { name: '孔二九', employeeId: '00524444', department: '云与计算业务部/云计算组' },
+  '00525555': { name: '曹三十', employeeId: '00525555', department: 'IT平台服务部/平台开发部' },
+  '00526666': { name: '严三一', employeeId: '00526666', department: '质量与流程IT部/质量部/测试组' },
 };
 
 /**
@@ -47,6 +58,10 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
   const [employeeId, setEmployeeId] = useState('');
   const [addError, setAddError] = useState('');
 
+  // 分页状态
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
   // 弹窗打开时，初始化成员列表
   useEffect(() => {
     if (visible && team.members) {
@@ -59,8 +74,14 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
     if (!visible) {
       setEmployeeId('');
       setAddError('');
+      setCurrentPage(1);
     }
   }, [visible]);
+
+  // 成员列表改变时重置页码
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [members.length]);
 
   // 删除成员
   const handleRemoveMember = (employeeIdToRemove: string) => {
@@ -116,6 +137,12 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
     onConfirm(updatedTeam);
     onClose();
   };
+
+  // 分页后的成员列表
+  const paginatedMembers = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return members.slice(startIndex, startIndex + pageSize);
+  }, [members, currentPage]);
 
   if (!visible) return null;
 
@@ -291,11 +318,14 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
             overflow: 'auto',
             padding: '20px 24px',
             backgroundColor: '#fff',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
           {members.length > 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {members.map((member) => (
+            <>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1, overflow: 'auto' }}>
+                {paginatedMembers.map((member) => (
                 <div
                   key={member.employeeId}
                   style={{
@@ -380,7 +410,28 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
                   </div>
                 </div>
               ))}
-            </div>
+              </div>
+
+              {/* 分页器 - 固定在成员列表底部 */}
+              {members.length > 0 && (
+                <div
+                  style={{
+                    padding: '12px 0 0 0',
+                    borderTop: '1px solid #f0f0f0',
+                    backgroundColor: '#fff',
+                    flexShrink: 0,
+                    marginTop: 'auto',
+                  }}
+                >
+                  <Pagination
+                    current={currentPage}
+                    pageSize={pageSize}
+                    total={members.length}
+                    onChange={setCurrentPage}
+                  />
+                </div>
+              )}
+            </>
           ) : (
             <div style={{ textAlign: 'center', padding: '48px', color: '#999', fontSize: '14px' }}>
               <div style={{ fontSize: '48px', marginBottom: '12px' }}>👥</div>

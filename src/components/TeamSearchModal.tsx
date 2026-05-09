@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Pagination } from './Pagination';
 
 /**
  * 团队信息
@@ -57,6 +58,16 @@ const mockEmployeeData: Record<string, Employee> = {
   '00504444': { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
   '00505555': { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
   '00506666': { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+  '00507777': { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+  '00508888': { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+  '00509999': { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+  '00510000': { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+  '00511111': { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+  '00512222': { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
+  '00513333': { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
+  '00514444': { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+  '00515555': { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+  '00516666': { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
 };
 
 // 生成模拟团队成员
@@ -89,36 +100,85 @@ const mockTeamsData: Record<string, Team[]> = {
     { id: 'team-001', name: '新员工OCC实践培训优秀团队', leaderName: '赵六', leaderId: '00501111', memberCount: 10, members: generateMockMembers(10, 'OCC培训') },
     { id: 'team-002', name: 'CIO值班优秀团队', leaderName: '钱七', leaderId: '00502222', memberCount: 8, members: generateMockMembers(8, 'CIO值班') },
     { id: 'team-003', name: 'OCC委员会和OCC运营大会组织优秀团队', leaderName: '孙八', leaderId: '00503333', memberCount: 12, members: generateMockMembers(12, 'OCC运营') },
+    { id: 'team-016', name: '平台开发核心团队', leaderName: '李山花', leaderId: '00494097', memberCount: 15, members: generateMockMembers(15, '平台开发') },
+    { id: 'team-017', name: '微服务架构改造团队', leaderName: '张三', leaderId: '00501234', memberCount: 18, members: generateMockMembers(18, '微服务') },
+    { id: 'team-018', name: '云原生技术推进团队', leaderName: '李四', leaderId: '00505678', memberCount: 20, members: generateMockMembers(20, '云原生') },
+    { id: 'team-019', name: 'DevOps工具链建设团队', leaderName: '王五', leaderId: '00507890', memberCount: 12, members: generateMockMembers(12, 'DevOps工具') },
+    { id: 'team-020', name: 'AI平台研发团队', leaderName: '赵六', leaderId: '00501111', memberCount: 25, members: generateMockMembers(25, 'AI平台') },
+    { id: 'team-021', name: '数据中台建设团队', leaderName: '钱七', leaderId: '00502222', memberCount: 22, members: generateMockMembers(22, '数据中台') },
+    { id: 'team-022', name: '智能运维研发团队', leaderName: '孙八', leaderId: '00503333', memberCount: 16, members: generateMockMembers(16, '智能运维') },
+    { id: 'team-023', name: '安全合规建设团队', leaderName: '周九', leaderId: '00504444', memberCount: 14, members: generateMockMembers(14, '安全合规') },
+    { id: 'team-024', name: '用户体验优化团队', leaderName: '吴十', leaderId: '00505555', memberCount: 19, members: generateMockMembers(19, '用户体验') },
   ],
   '00501234': [
     { id: 'team-004', name: '质量改进优秀团队', leaderName: '张三', leaderId: '00501234', memberCount: 15, members: generateMockMembers(15, '质量改进') },
     { id: 'team-005', name: '流程优化项目组', leaderName: '李四', leaderId: '00505678', memberCount: 6, members: generateMockMembers(6, '流程优化') },
+    { id: 'team-025', name: '测试自动化团队', leaderName: '王五', leaderId: '00507890', memberCount: 18, members: generateMockMembers(18, '测试自动化') },
+    { id: 'team-026', name: '持续集成建设团队', leaderName: '赵六', leaderId: '00501111', memberCount: 12, members: generateMockMembers(12, '持续集成') },
+    { id: 'team-027', name: '代码质量分析团队', leaderName: '钱七', leaderId: '00502222', memberCount: 10, members: generateMockMembers(10, '代码质量') },
+    { id: 'team-028', name: '缺陷预防研究团队', leaderName: '孙八', leaderId: '00503333', memberCount: 14, members: generateMockMembers(14, '缺陷预防') },
+    { id: 'team-029', name: '敏捷教练团队', leaderName: '周九', leaderId: '00504444', memberCount: 8, members: generateMockMembers(8, '敏捷教练') },
+    { id: 'team-030', name: '效能度量分析团队', leaderName: '吴十', leaderId: '00505555', memberCount: 11, members: generateMockMembers(11, '效能度量') },
   ],
   '00505678': [
     { id: 'team-006', name: '智能汽车研发一组', leaderName: '王五', leaderId: '00507890', memberCount: 20, members: generateMockMembers(20, '智能汽车') },
+    { id: 'team-031', name: '自动驾驶算法团队', leaderName: '赵六', leaderId: '00501111', memberCount: 25, members: generateMockMembers(25, '自动驾驶') },
+    { id: 'team-032', name: '车联网平台团队', leaderName: '钱七', leaderId: '00502222', memberCount: 18, members: generateMockMembers(18, '车联网') },
+    { id: 'team-033', name: '智能座舱软件团队', leaderName: '孙八', leaderId: '00503333', memberCount: 22, members: generateMockMembers(22, '座舱软件') },
+    { id: 'team-034', name: '车载芯片适配团队', leaderName: '周九', leaderId: '00504444', memberCount: 15, members: generateMockMembers(15, '芯片适配') },
+    { id: 'team-035', name: '车路协同研发团队', leaderName: '吴十', leaderId: '00505555', memberCount: 20, members: generateMockMembers(20, '车路协同') },
   ],
   '00507890': [
     { id: 'team-007', name: '云计算架构团队', leaderName: '王五', leaderId: '00507890', memberCount: 18, members: generateMockMembers(18, '云计算') },
     { id: 'team-008', name: '容器化改造小组', leaderName: '周九', leaderId: '00504444', memberCount: 12, members: generateMockMembers(12, '容器化') },
+    { id: 'team-036', name: 'Serverless研发团队', leaderName: '郑十一', leaderId: '00506666', memberCount: 16, members: generateMockMembers(16, 'Serverless') },
+    { id: 'team-037', name: '边缘计算平台团队', leaderName: '李山花', leaderId: '00494097', memberCount: 20, members: generateMockMembers(20, '边缘计算') },
+    { id: 'team-038', name: '云存储研发团队', leaderName: '张三', leaderId: '00501234', memberCount: 14, members: generateMockMembers(14, '云存储') },
+    { id: 'team-039', name: '云网络研发团队', leaderName: '李四', leaderId: '00505678', memberCount: 18, members: generateMockMembers(18, '云网络') },
+    { id: 'team-040', name: '云安全研发团队', leaderName: '赵六', leaderId: '00501111', memberCount: 15, members: generateMockMembers(15, '云安全') },
   ],
   '00501111': [
     { id: 'team-009', name: '平台运维保障团队', leaderName: '赵六', leaderId: '00501111', memberCount: 25, members: generateMockMembers(25, '运维保障') },
     { id: 'team-010', name: 'DevOps转型推进团队', leaderName: '吴十', leaderId: '00505555', memberCount: 20, members: generateMockMembers(20, 'DevOps') },
+    { id: 'team-041', name: 'SRE体系建设团队', leaderName: '钱七', leaderId: '00502222', memberCount: 18, members: generateMockMembers(18, 'SRE') },
+    { id: 'team-042', name: '监控告警平台团队', leaderName: '孙八', leaderId: '00503333', memberCount: 14, members: generateMockMembers(14, '监控告警') },
+    { id: 'team-043', name: '故障演练平台团队', leaderName: '周九', leaderId: '00504444', memberCount: 12, members: generateMockMembers(12, '故障演练') },
+    { id: 'team-044', name: '容量规划团队', leaderName: '郑十一', leaderId: '00506666', memberCount: 10, members: generateMockMembers(10, '容量规划') },
   ],
   '00502222': [
     { id: 'team-011', name: '流程自动化改造团队', leaderName: '钱七', leaderId: '00502222', memberCount: 16, members: generateMockMembers(16, '自动化') },
+    { id: 'team-045', name: 'RPA实施团队', leaderName: '李山花', leaderId: '00494097', memberCount: 12, members: generateMockMembers(12, 'RPA') },
+    { id: 'team-046', name: '低代码平台团队', leaderName: '张三', leaderId: '00501234', memberCount: 18, members: generateMockMembers(18, '低代码') },
+    { id: 'team-047', name: '流程挖掘分析团队', leaderName: '李四', leaderId: '00505678', memberCount: 10, members: generateMockMembers(10, '流程挖掘') },
+    { id: 'team-048', name: 'BPM平台研发团队', leaderName: '王五', leaderId: '00507890', memberCount: 15, members: generateMockMembers(15, 'BPM') },
   ],
   '00503333': [
     { id: 'team-012', name: '智能座舱交互设计团队', leaderName: '孙八', leaderId: '00503333', memberCount: 14, members: generateMockMembers(14, '交互设计') },
+    { id: 'team-049', name: 'HMI开发团队', leaderName: '赵六', leaderId: '00501111', memberCount: 20, members: generateMockMembers(20, 'HMI') },
+    { id: 'team-050', name: '语音交互研发团队', leaderName: '钱七', leaderId: '00502222', memberCount: 18, members: generateMockMembers(18, '语音交互') },
+    { id: 'team-051', name: '手势识别研发团队', leaderName: '周九', leaderId: '00504444', memberCount: 12, members: generateMockMembers(12, '手势识别') },
+    { id: 'team-052', name: 'AR-HUD研发团队', leaderName: '吴十', leaderId: '00505555', memberCount: 16, members: generateMockMembers(16, 'AR-HUD') },
   ],
   '00504444': [
     { id: 'team-013', name: '大数据分析平台团队', leaderName: '周九', leaderId: '00504444', memberCount: 22, members: generateMockMembers(22, '大数据') },
+    { id: 'team-053', name: '实时计算平台团队', leaderName: '郑十一', leaderId: '00506666', memberCount: 18, members: generateMockMembers(18, '实时计算') },
+    { id: 'team-054', name: '数据治理平台团队', leaderName: '李山花', leaderId: '00494097', memberCount: 15, members: generateMockMembers(15, '数据治理') },
+    { id: 'team-055', name: '机器学习平台团队', leaderName: '张三', leaderId: '00501234', memberCount: 20, members: generateMockMembers(20, '机器学习') },
+    { id: 'team-056', name: '数据可视化团队', leaderName: '李四', leaderId: '00505678', memberCount: 12, members: generateMockMembers(12, '数据可视化') },
   ],
   '00505555': [
     { id: 'team-014', name: '技术支持响应团队', leaderName: '吴十', leaderId: '00505555', memberCount: 30, members: generateMockMembers(30, '技术支持') },
+    { id: 'team-057', name: '客户服务优化团队', leaderName: '王五', leaderId: '00507890', memberCount: 22, members: generateMockMembers(22, '客户服务') },
+    { id: 'team-058', name: '知识库建设团队', leaderName: '赵六', leaderId: '00501111', memberCount: 14, members: generateMockMembers(14, '知识库') },
+    { id: 'team-059', name: '智能客服研发团队', leaderName: '钱七', leaderId: '00502222', memberCount: 18, members: generateMockMembers(18, '智能客服') },
+    { id: 'team-060', name: '工单系统研发团队', leaderName: '孙八', leaderId: '00503333', memberCount: 16, members: generateMockMembers(16, '工单系统') },
   ],
   '00506666': [
     { id: 'team-015', name: '内部工具开发团队', leaderName: '郑十一', leaderId: '00506666', memberCount: 10, members: generateMockMembers(10, '工具开发') },
+    { id: 'team-061', name: '开发者平台团队', leaderName: '周九', leaderId: '00504444', memberCount: 20, members: generateMockMembers(20, '开发者平台') },
+    { id: 'team-062', name: 'API网关研发团队', leaderName: '吴十', leaderId: '00505555', memberCount: 15, members: generateMockMembers(15, 'API网关') },
+    { id: 'team-063', name: '文档自动化团队', leaderName: '李山花', leaderId: '00494097', memberCount: 12, members: generateMockMembers(12, '文档自动化') },
+    { id: 'team-064', name: '代码审查工具团队', leaderName: '张三', leaderId: '00501234', memberCount: 14, members: generateMockMembers(14, '代码审查') },
   ],
 };
 
@@ -155,6 +215,10 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // 分页状态
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
   // 弹窗关闭时重置状态
   useEffect(() => {
     if (!visible) {
@@ -164,8 +228,14 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
       setExpandedTeams(new Set());
       setError('');
       setLoading(false);
+      setCurrentPage(1);
     }
   }, [visible]);
+
+  // 查询结果改变时重置页码
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [queryResult]);
 
   // 执行查询
   const handleQuery = async () => {
@@ -223,6 +293,13 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
     const selectedList = queryResult.teams.filter(team => selectedTeams.has(team.id));
     onConfirm(selectedList);
   };
+
+  // 分页后的团队列表
+  const paginatedTeams = useMemo(() => {
+    if (!queryResult) return [];
+    const startIndex = (currentPage - 1) * pageSize;
+    return queryResult.teams.slice(startIndex, startIndex + pageSize);
+  }, [queryResult, currentPage]);
 
   // 处理输入框回车事件
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -378,12 +455,14 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
             flex: 1,
             overflow: 'auto',
             padding: '20px 24px',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
           {queryResult ? (
             <>
               {/* 员工信息 */}
-              <div style={{ marginBottom: '20px' }}>
+              <div style={{ marginBottom: '20px', flexShrink: 0 }}>
                 <h4
                   style={{
                     margin: '0 0 12px 0',
@@ -424,19 +503,20 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
               </div>
 
               {/* 所属团队列表 */}
-              <div>
+              <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
                 <h4
                   style={{
                     margin: '0 0 12px 0',
                     fontSize: '14px',
                     fontWeight: 500,
                     color: '#333',
+                    flexShrink: 0,
                   }}
                 >
                   所属团队奖:
                 </h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {queryResult.teams.map((team) => {
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1, overflow: 'auto' }}>
+                  {paginatedTeams.map((team) => {
                     const isSelected = selectedTeams.has(team.id);
                     const isExpanded = expandedTeams.has(team.id);
                     return (
@@ -648,6 +728,26 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                     );
                   })}
                 </div>
+
+                {/* 分页器 - 固定在团队列表底部 */}
+                {queryResult.teams.length > 0 && (
+                  <div
+                    style={{
+                      padding: '12px 0 0 0',
+                      borderTop: '1px solid #f0f0f0',
+                      backgroundColor: '#fff',
+                      flexShrink: 0,
+                      marginTop: 'auto',
+                    }}
+                  >
+                    <Pagination
+                      current={currentPage}
+                      pageSize={pageSize}
+                      total={queryResult.teams.length}
+                      onChange={setCurrentPage}
+                    />
+                  </div>
+                )}
               </div>
             </>
           ) : (
