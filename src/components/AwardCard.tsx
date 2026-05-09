@@ -235,7 +235,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
       {isTeamAward ? (
         <>
           {/* 添加团队按钮和全选按钮 */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
             {onAddTeam && (
               <button
                 className="add-team-btn"

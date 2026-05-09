@@ -25,8 +25,8 @@ export interface TeamMember {
 export interface Team {
   id: string;
   name: string;
-  leaderName: string;
-  leaderId: string;
+  leaderName?: string;
+  leaderId?: string;
   memberCount: number;
   members?: TeamMember[];
   /** 是否被选中 */

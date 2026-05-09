@@ -56,7 +56,7 @@ const mockAwards: Award[] = [
     recipients: [],
     teams: [
       {
-        id: 'team-1',
+        id: 'team-001',
         name: '新员工OCC实践培训优秀团队',
         leaderName: '赵六',
         leaderId: '00501111',
@@ -76,7 +76,7 @@ const mockAwards: Award[] = [
         ],
       },
       {
-        id: 'team-2',
+        id: 'team-002',
         name: 'CIO值班优秀团队',
         leaderName: '钱七',
         leaderId: '00502222',
@@ -94,7 +94,7 @@ const mockAwards: Award[] = [
         ],
       },
       {
-        id: 'team-3',
+        id: 'team-003',
         name: 'OCC委员会和OCC运营大会组织优秀团队',
         leaderName: '孙八',
         leaderId: '00503333',
@@ -116,7 +116,7 @@ const mockAwards: Award[] = [
         ],
       },
       {
-        id: 'team-4',
+        id: 'team-004',
         name: 'OCC模式复制构建及推广优秀团队',
         leaderName: '周九',
         leaderId: '00504444',
@@ -141,7 +141,7 @@ const mockAwards: Award[] = [
     recipients: [],
     teams: [
       {
-        id: 'team-5',
+        id: 'team-005',
         name: '平台架构优化团队',
         leaderName: '李山花',
         leaderId: '00494097',
@@ -166,7 +166,7 @@ const mockAwards: Award[] = [
         ],
       },
       {
-        id: 'team-6',
+        id: 'team-006',
         name: 'DevOps转型推进团队',
         leaderName: '赵六',
         leaderId: '00501111',
