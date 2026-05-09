@@ -481,6 +481,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                           border: `1px solid ${existing ? '#ffd591' : (isSelected ? '#1890ff' : '#d9d9d9')}`,
                           borderRadius: '6px',
                           overflow: 'hidden',
+                          flexShrink: 0,
                           opacity: existing ? 0.8 : 1,
                         }}
                       >

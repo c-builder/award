@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Recipient } from './types';
 
 export interface RecipientCardProps {
   recipient: Recipient;
   issuingDepartment: string;
+  currentDepartment?: string;
   isSelected?: boolean;
   onSelect?: () => void;
   onRemove?: () => void;
@@ -19,12 +20,16 @@ export interface RecipientCardProps {
 export const RecipientCard: React.FC<RecipientCardProps> = ({
   recipient,
   issuingDepartment,
+  currentDepartment = '',
   isSelected = false,
   onSelect,
   onRemove,
 }) => {
-  // 判断是否为跨部门人员
-  const isCrossDepartment = recipient.department !== issuingDepartment;
+  // 判断是否为跨部门人员：获奖人的一级部门 ≠ 当前选择的部门
+  // 如果没有指定当前部门，则与颁发部门的一级部门比较
+  const isCrossDepartment = currentDepartment
+    ? recipient.department.split('/')[0] !== currentDepartment
+    : recipient.department.split('/')[0] !== issuingDepartment.split('/')[0];
 
   // 鼠标悬停状态
   const [isHovered, setIsHovered] = useState(false);
@@ -38,9 +43,9 @@ export const RecipientCard: React.FC<RecipientCardProps> = ({
         backgroundColor: isSelected ? '#e6f7ff' : '#f8fafc',
         border: isSelected ? '1px solid #1890ff' : '1px solid #e2e8f0',
         borderRadius: '6px',
-        width: 'calc((100% - 60px) / 6)',
-        minWidth: 'calc((100% - 60px) / 6)',
-        maxWidth: 'calc((100% - 60px) / 6)',
+        width: 'calc((100% - 48px) / 5)',
+        minWidth: 'calc((100% - 48px) / 5)',
+        maxWidth: 'calc((100% - 48px) / 5)',
         boxSizing: 'border-box',
         cursor: onSelect ? 'pointer' : 'default',
         transition: 'all 0.2s',

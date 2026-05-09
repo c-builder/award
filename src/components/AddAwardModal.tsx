@@ -401,7 +401,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
       // 获取已存在的自定义奖项的ID集合（只包含当前可见的）
       const customAwardIds = new Set<string>();
       existingAwards.forEach(existingAward => {
-        if (existingAward.deletable) {
+        if (!existingAward.isDefault) {
           // 在可见的奖项中查找对应的奖项ID
           const visibleAward = visibleAwards.find(mock => mock.name === existingAward.title);
           if (visibleAward) {
@@ -430,14 +430,14 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
 
-  // 获取已存在的默认奖项名称集合（deletable=false 的默认数据）
+  // 获取已存在的默认奖项名称集合（isDefault=true 的默认数据）
   const existingDefaultAwardNames = useMemo(() => {
-    return new Set(existingAwards.filter(award => !award.deletable).map(award => award.title));
+    return new Set(existingAwards.filter(award => award.isDefault).map(award => award.title));
   }, [existingAwards]);
 
-  // 获取已存在的自定义奖项名称集合（deletable=true 的数据）
+  // 获取已存在的自定义奖项名称集合（isDefault=false 的数据）
   const existingCustomAwardNames = useMemo(() => {
-    return new Set(existingAwards.filter(award => award.deletable).map(award => award.title));
+    return new Set(existingAwards.filter(award => !award.isDefault).map(award => award.title));
   }, [existingAwards]);
 
   // 筛选后的奖项列表（只显示当前筛选条件下的奖项）
@@ -479,7 +479,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
     const award = MOCK_AWARDS.find(a => a.id === awardId);
     if (!award) return;
 
-    // 检查是否是默认数据（deletable=false），默认数据不可选中
+    // 检查是否是默认数据（isDefault=true），默认数据不可选中
     if (existingDefaultAwardNames.has(award.name)) {
       setExistingAwardAlert(`"${award.name}" 已存在于当前展播中`);
       // 3秒后清除提示
@@ -803,8 +803,8 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                 const isDefaultExisting = existingDefaultAwardNames.has(award.name);
                 const isCustomExisting = existingCustomAwardNames.has(award.name);
                 // 选中状态：
-                // - 默认数据（deletable=false）：只要存在就显示为选中
-                // - 自定义数据（deletable=true）：根据 selectedAwardIds 决定
+                // - 默认数据（isDefault=true）：只要存在就显示为选中
+                // - 自定义数据（isDefault=false）：根据 selectedAwardIds 决定
                 const isChecked = isDefaultExisting ? true : isSelected;
 
                 return (

@@ -7,6 +7,7 @@ export interface RecipientListModalProps {
   awardName: string;
   recipients: Recipient[];
   issuingDepartment: string;
+  currentDepartment?: string;
   onClose: () => void;
   onSelectRecipient?: (recipient: Recipient) => void;
 }
@@ -21,6 +22,7 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
   awardName,
   recipients,
   issuingDepartment,
+  currentDepartment = '',
   onClose,
   onSelectRecipient,
 }) => {
@@ -31,38 +33,15 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
   // 搜索关键词
   const [searchKeyword, setSearchKeyword] = useState('');
 
-  // 部门筛选
-  const [selectedDepartment, setSelectedDepartment] = useState<string>('all');
-
-  // 获取所有部门列表
-  const departments = useMemo(() => {
-    const deptSet = new Set<string>();
-    recipients.forEach((r) => {
-      const mainDept = r.department.split('/')[0];
-      deptSet.add(mainDept);
-    });
-    return Array.from(deptSet).sort();
-  }, [recipients]);
-
-  // 过滤后的列表
   const filteredRecipients = useMemo(() => {
     return recipients.filter((recipient) => {
-      // 搜索过滤
       const searchMatch =
         !searchKeyword ||
         recipient.name.includes(searchKeyword) ||
         recipient.employeeId.includes(searchKeyword);
-
-      // 部门过滤
-      let deptMatch = true;
-      if (selectedDepartment !== 'all') {
-        const mainDept = recipient.department.split('/')[0];
-        deptMatch = mainDept === selectedDepartment;
-      }
-
-      return searchMatch && deptMatch;
+      return searchMatch;
     });
-  }, [recipients, searchKeyword, selectedDepartment]);
+  }, [recipients, searchKeyword]);
 
   // 分页后的列表
   const paginatedRecipients = useMemo(() => {
@@ -70,24 +49,24 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
     return filteredRecipients.slice(startIndex, startIndex + pageSize);
   }, [filteredRecipients, currentPage]);
 
-  // 判断是否为跨部门人员
+  // 判断是否为跨部门人员：获奖人的一级部门 ≠ 当前选择的部门
   const isCrossDepartment = (department: string) => {
-    const issuingMainDept = issuingDepartment.split('/')[0];
     const recipientMainDept = department.split('/')[0];
+    if (currentDepartment) {
+      return recipientMainDept !== currentDepartment;
+    }
+    const issuingMainDept = issuingDepartment.split('/')[0];
     return recipientMainDept !== issuingMainDept;
   };
 
   // 重置筛选条件
   const handleReset = () => {
     setSearchKeyword('');
-    setSelectedDepartment('all');
     setCurrentPage(1);
   };
 
-  // 关闭弹窗时重置状态
   const handleClose = () => {
     setSearchKeyword('');
-    setSelectedDepartment('all');
     setCurrentPage(1);
     onClose();
   };
@@ -228,34 +207,8 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
             }}
           />
 
-          {/* 部门筛选 */}
-          <select
-            value={selectedDepartment}
-            onChange={(e) => {
-              setSelectedDepartment(e.target.value);
-              setCurrentPage(1);
-            }}
-            style={{
-              padding: '8px 12px',
-              border: '1px solid #d9d9d9',
-              borderRadius: '6px',
-              fontSize: '14px',
-              outline: 'none',
-              cursor: 'pointer',
-              backgroundColor: '#fff',
-              minWidth: '140px',
-            }}
-          >
-            <option value="all">全部部门</option>
-            {departments.map((dept) => (
-              <option key={dept} value={dept}>
-                {dept}
-              </option>
-            ))}
-          </select>
-
           {/* 重置按钮 */}
-          {(searchKeyword || selectedDepartment !== 'all') && (
+          {searchKeyword && (
             <button
               onClick={handleReset}
               style={{
@@ -468,6 +421,7 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
                 pageSize={pageSize}
                 total={filteredRecipients.length}
                 onChange={setCurrentPage}
+                showTotal
               />
             </div>
           )}

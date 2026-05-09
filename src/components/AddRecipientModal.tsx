@@ -1,111 +1,125 @@
-import React, { useState, useEffect } from 'react';
-import { Recipient } from './types';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { Recipient, Award } from './types';
+import { DeptCascader } from './DeptCascader';
+import { Pagination } from './Pagination';
 
 export interface AddRecipientModalProps {
   visible: boolean;
-  currentDepartment: string;
+  currentDepartment?: string;
+  currentAward?: Award;
   existingRecipients?: Recipient[];
   onCancel: () => void;
   onConfirm: (selectedRecipients: Recipient[]) => void;
 }
 
+const PAGE_SIZE = 10;
+
 export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
   visible,
-  currentDepartment,
+  currentDepartment = '',
+  currentAward,
   existingRecipients = [],
   onCancel,
   onConfirm,
 }) => {
-  const [employeeId, setEmployeeId] = useState('');
-  const [queryResult, setQueryResult] = useState<Recipient | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [searchText, setSearchText] = useState('');
+  const [selectedDeptPath, setSelectedDeptPath] = useState<string[]>([]);
   const [selectedRecipients, setSelectedRecipients] = useState<Recipient[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const headerCheckboxRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!visible) {
-      setEmployeeId('');
-      setQueryResult(null);
-      setError('');
-      setLoading(false);
+    if (visible) {
+      setSearchText('');
+      setSelectedDeptPath([]);
       setSelectedRecipients([]);
+      setCurrentPage(1);
     }
   }, [visible]);
 
-  const mockEmployeeData: Record<string, Recipient> = {
-    '00494097': { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
-    '00501234': { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
-    '00505678': { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
-    '00507890': { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
-    '00501111': { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
-    '00502222': { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
-    '00503333': { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
-    '00504444': { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
-    '00505555': { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
-    '00506666': { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
-    '00507777': { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
-    '00508888': { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
-    '00509999': { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
-    '00510000': { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
-    '00511111': { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
-    '00512222': { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
-    '00513333': { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
-    '00514444': { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
-    '00515555': { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
-    '00516666': { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
-    '00558888': { name: '袁六三', employeeId: '00558888', department: 'IT平台服务部/平台开发部' },
+  const employeePool = useMemo(() => {
+    if (!currentAward) return [];
+    return currentAward.recipients.map(r => ({
+      name: r.name,
+      employeeId: r.employeeId,
+      department: r.department,
+    }));
+  }, [currentAward]);
+
+  const isSelected = (employeeId: string) => {
+    return selectedRecipients.some(r => r.employeeId === employeeId);
   };
 
-  // 检查员工是否已存在于当前奖项中
-  const isExistingRecipient = (employeeId: string) => {
-    return existingRecipients.some(r => r.employeeId === employeeId);
+  const isExisting = (employeeId: string) => {
+    return existingRecipients.some(r => {
+      if (r.employeeId !== employeeId) return false;
+      if (!currentDepartment) return true;
+      const dept = r.department.split('/')[0];
+      return dept === currentDepartment || r.isManuallyAdded;
+    });
   };
 
-  const handleQuery = async () => {
-    if (!employeeId.trim()) {
-      setError('请输入工号');
-      return;
+  const filteredEmployees = useMemo(() => {
+    return employeePool.filter(emp => {
+      const matchSearch = !searchText || 
+        emp.name.toLowerCase().includes(searchText.toLowerCase()) ||
+        emp.employeeId.includes(searchText);
+      
+      let matchDept = true;
+      if (selectedDeptPath.length > 0) {
+        const deptParts = emp.department.split('/');
+        matchDept = selectedDeptPath.every((dept, index) => deptParts[index] === dept);
+      }
+      
+      return matchSearch && matchDept;
+    });
+  }, [employeePool, searchText, selectedDeptPath]);
+
+  const selectableEmployees = useMemo(() => {
+    return filteredEmployees.filter(e => !isExisting(e.employeeId));
+  }, [filteredEmployees, existingRecipients, currentDepartment]);
+
+  const selectedCount = useMemo(() => {
+    return selectableEmployees.filter(e => isSelected(e.employeeId)).length;
+  }, [selectableEmployees, selectedRecipients]);
+
+  const isAllSelected = selectableEmployees.length > 0 && selectedCount === selectableEmployees.length;
+  const isIndeterminate = selectedCount > 0 && selectedCount < selectableEmployees.length;
+  const isHeaderDisabled = selectableEmployees.length === 0;
+
+  useEffect(() => {
+    if (headerCheckboxRef.current) {
+      headerCheckboxRef.current.indeterminate = isIndeterminate;
     }
-    setLoading(true);
-    setError('');
-    setQueryResult(null);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const employee = mockEmployeeData[employeeId.trim()];
-    if (!employee) {
-      setError('未找到该工号对应的员工');
+  }, [isIndeterminate]);
+
+  const paginatedEmployees = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredEmployees.slice(start, start + PAGE_SIZE);
+  }, [filteredEmployees, currentPage]);
+
+  const toggleSelection = (recipient: Recipient) => {
+    if (isExisting(recipient.employeeId)) return;
+    
+    if (isSelected(recipient.employeeId)) {
+      setSelectedRecipients(prev => prev.filter(r => r.employeeId !== recipient.employeeId));
     } else {
-      setQueryResult(employee);
+      setSelectedRecipients(prev => [...prev, { ...recipient, isSelected: true }]);
     }
-    setLoading(false);
-  };
-
-  const handleAddToSelected = () => {
-    if (!queryResult) return;
-    if (selectedRecipients.some(r => r.employeeId === queryResult.employeeId)) {
-      setError('该员工已在列表中');
-      return;
-    }
-    setSelectedRecipients([...selectedRecipients, queryResult]);
-    setQueryResult(null);
-    setEmployeeId('');
-  };
-
-  const handleRemoveFromSelected = (empId: string) => {
-    setSelectedRecipients(selectedRecipients.filter(r => r.employeeId !== empId));
   };
 
   const handleConfirm = () => {
-    if (selectedRecipients.length === 0) {
-      setError('请至少添加一个获奖人');
-      return;
-    }
     onConfirm(selectedRecipients);
   };
 
-  const isCrossDepartment = (department: string) => {
-    const currentDeptParts = currentDepartment.split('/');
-    const deptParts = department.split('/');
-    return deptParts[0] !== currentDeptParts[0];
+  const handleReset = () => {
+    setSearchText('');
+    setSelectedDeptPath([]);
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   if (!visible) return null;
@@ -130,7 +144,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
         style={{
           backgroundColor: '#fff',
           borderRadius: '8px',
-          width: '600px',
+          width: '900px',
           maxHeight: '80vh',
           display: 'flex',
           flexDirection: 'column',
@@ -138,6 +152,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
         }}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* 标题栏 */}
         <div
           style={{
             padding: '16px 24px',
@@ -148,7 +163,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
           }}
         >
           <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 500, color: '#333' }}>
-            添加获奖人
+            添加获奖人{currentAward ? ` - ${currentAward.title}` : ''}
           </h3>
           <button
             onClick={onCancel}
@@ -166,202 +181,154 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
           </button>
         </div>
 
+        {/* 搜索栏 */}
         <div
           style={{
-            padding: '24px',
+            padding: '16px 24px',
             borderBottom: '1px solid #f0f0f0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <input
-              type="text"
-              placeholder="请输入工号"
-              value={employeeId}
-              onChange={(e) => setEmployeeId(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleQuery()}
-              style={{
-                flex: 1,
-                padding: '8px 12px',
-                border: '1px solid #d9d9d9',
-                borderRadius: '4px',
-                fontSize: '14px',
-                outline: 'none',
-              }}
-            />
-            <button
-              onClick={handleQuery}
-              disabled={loading}
-              style={{
-                padding: '8px 20px',
-                backgroundColor: '#1890ff',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '4px',
-                fontSize: '14px',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                opacity: loading ? 0.7 : 1,
-              }}
-            >
-              {loading ? '查询中...' : '查询'}
-            </button>
-          </div>
-
-          {error && (
-            <div
-              style={{
-                padding: '12px',
-                backgroundColor: '#fff2f0',
-                border: '1px solid #ffccc7',
-                borderRadius: '4px',
-                color: '#ff4d4f',
-                fontSize: '14px',
-                marginBottom: '16px',
-              }}
-            >
-              {error}
-            </div>
-          )}
-
-          {queryResult && (
-            <div
-              style={{
-                padding: '16px',
-                backgroundColor: isExistingRecipient(queryResult.employeeId) ? '#fff7e6' : '#f6ffed',
-                border: `1px solid ${isExistingRecipient(queryResult.employeeId) ? '#ffd591' : '#b7eb8f'}`,
-                borderRadius: '6px',
-                marginBottom: '16px',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ fontSize: '15px', fontWeight: 500, color: '#333', marginBottom: '4px' }}>
-                    {queryResult.name}
-                    {isCrossDepartment(queryResult.department) && (
-                      <span
-                        style={{
-                          marginLeft: '8px',
-                          padding: '2px 6px',
-                          backgroundColor: '#1890ff',
-                          color: '#fff',
-                          fontSize: '11px',
-                          borderRadius: '3px',
-                        }}
-                      >
-                        跨
-                      </span>
-                    )}
-
-                  </div>
-                  <div style={{ fontSize: '13px', color: '#666' }}>
-                    工号: {queryResult.employeeId} | 部门: {queryResult.department}
-                  </div>
-                </div>
-                <button
-                  onClick={handleAddToSelected}
-                  disabled={isExistingRecipient(queryResult.employeeId)}
-                  style={{
-                    padding: '6px 16px',
-                    backgroundColor: isExistingRecipient(queryResult.employeeId) ? '#d9d9d9' : '#52c41a',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '4px',
-                    fontSize: '14px',
-                    cursor: isExistingRecipient(queryResult.employeeId) ? 'not-allowed' : 'pointer',
-                  }}
-                >
-                  {isExistingRecipient(queryResult.employeeId) ? '已存在' : '+ 添加'}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div
-          style={{
-            flex: 1,
-            overflow: 'auto',
-            padding: '0 24px',
-          }}
-        >
-          <div
+          <input
+            type="text"
+            placeholder="搜索姓名/工号"
+            value={searchText}
+            onChange={(e) => { setSearchText(e.target.value); setCurrentPage(1); }}
             style={{
-              padding: '12px 0',
+              padding: '8px 12px',
+              border: '1px solid #d9d9d9',
+              borderRadius: '4px',
               fontSize: '14px',
-              fontWeight: 500,
-              color: '#333',
-              borderBottom: '1px solid #f0f0f0',
+              width: '180px',
+              outline: 'none',
+            }}
+          />
+          <span style={{ color: '#666', fontSize: '14px' }}>部门:</span>
+          <DeptCascader
+            value={selectedDeptPath}
+            onChange={(value) => { setSelectedDeptPath(value); setCurrentPage(1); }}
+            placeholder="全部部门"
+          />
+          <button
+            style={{
+              padding: '8px 20px',
+              backgroundColor: '#1890ff',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '4px',
+              fontSize: '14px',
+              cursor: 'pointer',
             }}
           >
-            已添加列表 ({selectedRecipients.length})
-          </div>
-
-          {selectedRecipients.length === 0 ? (
-            <div
-              style={{
-                padding: '88px 24px',
-                textAlign: 'center',
-                color: '#999',
-                fontSize: '14px',
-              }}
-            >
-              <div style={{ fontSize: '13px', marginTop: '8px' }}>请通过工号查询添加获奖人</div>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px 0' }}>
-              {selectedRecipients.map((recipient) => (
-                <div
-                  key={recipient.employeeId}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '12px 16px',
-                    backgroundColor: '#f8fafc',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: '6px',
-                  }}
-                >
-                  <div>
-                    <div style={{ fontSize: '14px', fontWeight: 500, color: '#333' }}>
-                      {recipient.name}
-                      {isCrossDepartment(recipient.department) && (
-                        <span
-                          style={{
-                            marginLeft: '8px',
-                            padding: '2px 6px',
-                            backgroundColor: '#1890ff',
-                            color: '#fff',
-                            fontSize: '10px',
-                            borderRadius: '3px',
-                          }}
-                        >
-                          跨
-                        </span>
-                      )}
-                    </div>
-                    <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
-                      {recipient.employeeId} | {recipient.department}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleRemoveFromSelected(recipient.employeeId)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#ff4d4f',
-                      fontSize: '18px',
-                      cursor: 'pointer',
-                      padding: '4px',
-                    }}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+            查询
+          </button>
+          <button
+            onClick={handleReset}
+            style={{
+              padding: '8px 20px',
+              backgroundColor: '#fff',
+              color: '#666',
+              border: '1px solid #d9d9d9',
+              borderRadius: '4px',
+              fontSize: '14px',
+              cursor: 'pointer',
+            }}
+          >
+            重置
+          </button>
         </div>
 
+        {/* 内容区域 */}
+        <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+          {/* 表格 */}
+          <div style={{ flex: 1, overflow: 'auto', padding: '16px 0' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#fafafa' }}>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0', width: '40px' }}>
+                    <input
+                      ref={headerCheckboxRef}
+                      type="checkbox"
+                      checked={isAllSelected}
+                      disabled={isHeaderDisabled}
+                      onChange={() => {
+                        if (isAllSelected) {
+                          setSelectedRecipients(prev => prev.filter(r => !selectableEmployees.some(e => e.employeeId === r.employeeId)));
+                        } else {
+                          setSelectedRecipients(prev => {
+                            const existingIds = new Set(prev.map(r => r.employeeId));
+                            const toAdd = selectableEmployees.filter(e => !existingIds.has(e.employeeId)).map(e => ({ ...e, isSelected: true }));
+                            return [...prev, ...toAdd];
+                          });
+                        }
+                      }}
+                      style={{ cursor: isHeaderDisabled ? 'not-allowed' : 'pointer' }}
+                    />
+                  </th>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>姓名</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>工号</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>部门</th>
+                  <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>状态</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedEmployees.map((emp) => {
+                  const selected = isSelected(emp.employeeId);
+                  const existing = isExisting(emp.employeeId);
+                  return (
+                    <tr
+                      key={emp.employeeId}
+                      style={{
+                        backgroundColor: selected ? '#e6f7ff' : 'transparent',
+                        cursor: existing ? 'not-allowed' : 'pointer',
+                        opacity: existing ? 0.6 : 1,
+                      }}
+                      onClick={() => toggleSelection(emp)}
+                    >
+                      <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0' }}>
+                        <input
+                          type="checkbox"
+                          checked={selected}
+                          disabled={existing}
+                          onChange={() => {}}
+                          style={{ cursor: existing ? 'not-allowed' : 'pointer' }}
+                        />
+                      </td>
+                      <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', color: '#333' }}>
+                        {emp.name}
+                      </td>
+                      <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', color: '#666', fontFamily: 'monospace' }}>{emp.employeeId}</td>
+                      <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', color: '#666' }}>{emp.department}</td>
+                      <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', color: '#666' }}>
+                        {existing ? (
+                          <span style={{ fontSize: '12px', color: '#999', backgroundColor: '#f5f5f5', padding: '2px 8px', borderRadius: '3px' }}>已添加</span>
+                        ) : selected ? (
+                          <span style={{ fontSize: '12px', color: '#1890ff', backgroundColor: '#e6f7ff', padding: '2px 8px', borderRadius: '3px' }}>已选中</span>
+                        ) : null}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* 分页器 */}
+          <div style={{ padding: '0 24px', borderTop: '1px solid #f0f0f0', flexShrink: 0 }}>
+            <Pagination
+              current={currentPage}
+              pageSize={PAGE_SIZE}
+              total={filteredEmployees.length}
+              onChange={handlePageChange}
+              showTotal
+            />
+          </div>
+
+        </div>
+
+        {/* 底部按钮 */}
         <div
           style={{
             padding: '16px 24px',
@@ -398,7 +365,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
               cursor: selectedRecipients.length === 0 ? 'not-allowed' : 'pointer',
             }}
           >
-            确认 ({selectedRecipients.length})
+            确认
           </button>
         </div>
       </div>

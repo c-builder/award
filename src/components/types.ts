@@ -7,6 +7,8 @@ export interface Recipient {
   department: string;
   /** 是否被选中 */
   isSelected?: boolean;
+  /** 是否为手动添加的跨部门人员 */
+  isManuallyAdded?: boolean;
 }
 
 /**
@@ -17,6 +19,7 @@ export interface TeamMember {
   employeeId: string;
   department: string;
   role?: string;
+  isSelected?: boolean;
 }
 
 /**
@@ -31,6 +34,8 @@ export interface Team {
   members?: TeamMember[];
   /** 是否被选中 */
   isSelected?: boolean;
+  /** 是否为手动添加的跨部门团队 */
+  isManuallyAdded?: boolean;
 }
 
 /**
@@ -50,6 +55,15 @@ export interface Award {
   teams?: Team[];
   /** 是否被选中用于展播 */
   selected?: boolean;
-  /** 是否可删除（通过弹框添加的为 true，默认数据为 false） */
-  deletable?: boolean;
+  /** 
+   * 是否为默认推送数据
+   * - true: 首页首次加载时加载的近期数据，不允许删除
+   * - false: 通过"添加展播奖项"弹框自定义添加的奖项，支持删除
+   */
+  isDefault?: boolean;
+  /** 
+   * 推送日期，用于判断是否为近期数据
+   * 格式: YYYY-MM-DD
+   */
+  pushDate?: string;
 }
