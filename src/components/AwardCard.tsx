@@ -84,8 +84,20 @@ export const AwardCard: React.FC<AwardCardProps> = ({
     setRecipientListModalVisible(false);
   };
 
+  // 对获奖人进行排序：选中的排在前面
+  const sortedRecipients = [...award.recipients].sort((a, b) => {
+    if (a.isSelected === b.isSelected) return 0;
+    return a.isSelected ? -1 : 1;
+  });
+
+  // 对团队进行排序：选中的排在前面
+  const sortedTeams = award.teams ? [...award.teams].sort((a, b) => {
+    if (a.isSelected === b.isSelected) return 0;
+    return a.isSelected ? -1 : 1;
+  }) : undefined;
+
   // 获取显示的获奖人列表（限制数量）
-  const displayRecipients = award.recipients.slice(0, MAX_DISPLAY_RECIPIENTS);
+  const displayRecipients = sortedRecipients.slice(0, MAX_DISPLAY_RECIPIENTS);
   const hasMoreRecipients = award.recipients.length > MAX_DISPLAY_RECIPIENTS;
 
   return (
@@ -287,7 +299,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                 gap: '12px',
               }}
             >
-              {award.teams.map((team) => {
+              {sortedTeams?.map((team) => {
                 // 团队卡片悬停状态
                 const [isTeamHovered, setIsTeamHovered] = useState(false);
 
