@@ -4,7 +4,7 @@ import { RecipientCard } from './RecipientCard';
 import { TeamMembersModal } from './TeamMembersModal';
 import { RecipientListModal } from './RecipientListModal';
 
-const MAX_DISPLAY_RECIPIENTS = 12;
+const MAX_DISPLAY_RECIPIENTS = 60;
 
 export interface AwardCardProps {
   award: Award;
