@@ -437,7 +437,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
         <>
           {/* 个人奖显示 */}
           {/* 添加获奖人按钮和全选按钮 */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
             {onAddRecipient && (
               <button
                 className="add-recipient-btn"
