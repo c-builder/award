@@ -53,6 +53,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
     '00514444': { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
     '00515555': { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
     '00516666': { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
+    '00558888': { name: '袁六三', employeeId: '00558888', department: 'IT平台服务部/平台开发部' },
   };
 
   // 检查员工是否已存在于当前奖项中
