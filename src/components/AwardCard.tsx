@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { Award, Recipient, Team } from './types';
 import { RecipientCard } from './RecipientCard';
 import { TeamMembersModal } from './TeamMembersModal';
+import { RecipientListModal } from './RecipientListModal';
+
+const MAX_DISPLAY_RECIPIENTS = 12;
 
 export interface AwardCardProps {
   award: Award;
@@ -47,6 +50,9 @@ export const AwardCard: React.FC<AwardCardProps> = ({
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [membersModalVisible, setMembersModalVisible] = useState(false);
 
+  // 获奖人列表弹窗状态
+  const [recipientListModalVisible, setRecipientListModalVisible] = useState(false);
+
   const handleShowMembers = (team: Team) => {
     setSelectedTeam(team);
     setMembersModalVisible(true);
@@ -56,6 +62,18 @@ export const AwardCard: React.FC<AwardCardProps> = ({
     setMembersModalVisible(false);
     setSelectedTeam(null);
   };
+
+  const handleShowRecipientList = () => {
+    setRecipientListModalVisible(true);
+  };
+
+  const handleCloseRecipientList = () => {
+    setRecipientListModalVisible(false);
+  };
+
+  // 获取显示的获奖人列表（限制数量）
+  const displayRecipients = award.recipients.slice(0, MAX_DISPLAY_RECIPIENTS);
+  const hasMoreRecipients = award.recipients.length > MAX_DISPLAY_RECIPIENTS;
 
   return (
     <div
@@ -239,7 +257,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
               {award.teams.map((team) => {
                 // 团队卡片悬停状态
                 const [isTeamHovered, setIsTeamHovered] = useState(false);
-                
+
                 return (
                   <div
                     key={team.id}
@@ -248,7 +266,10 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                       backgroundColor: '#f8fafc',
                       border: '1px solid #e2e8f0',
                       borderRadius: '6px',
-                      minWidth: '180px',
+                      width: 'calc((100% - 60px) / 6)',
+                      minWidth: 'calc((100% - 60px) / 6)',
+                      maxWidth: 'calc((100% - 60px) / 6)',
+                      boxSizing: 'border-box',
                       position: 'relative',
                     }}
                     onMouseEnter={() => setIsTeamHovered(true)}
@@ -377,10 +398,10 @@ export const AwardCard: React.FC<AwardCardProps> = ({
               style={{
                 display: 'flex',
                 flexWrap: 'wrap',
-                gap: '8px',
+                gap: '12px',
               }}
             >
-              {award.recipients.map((recipient, index) => (
+              {displayRecipients.map((recipient, index) => (
                 <RecipientCard
                   key={`${recipient.employeeId || recipient.name}-${index}`}
                   recipient={recipient}
@@ -390,6 +411,42 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                   }
                 />
               ))}
+
+              {/* 查看全部按钮 */}
+              {hasMoreRecipients && (
+                <button
+                  onClick={handleShowRecipientList}
+                  style={{
+                    padding: '12px 16px',
+                    backgroundColor: '#f0f9ff',
+                    border: '1px dashed #1890ff',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    color: '#1890ff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    transition: 'all 0.2s',
+                    width: 'calc((100% - 60px) / 6)',
+                    minWidth: 'calc((100% - 60px) / 6)',
+                    maxWidth: 'calc((100% - 60px) / 6)',
+                    boxSizing: 'border-box',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#e6f7ff';
+                    e.currentTarget.style.borderStyle = 'solid';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f0f9ff';
+                    e.currentTarget.style.borderStyle = 'dashed';
+                  }}
+                >
+                  <span>等共{award.recipients.length}人</span>
+                  <span style={{ fontWeight: 600 }}>查看全部 →</span>
+                </button>
+              )}
             </div>
           )}
 
@@ -406,6 +463,15 @@ export const AwardCard: React.FC<AwardCardProps> = ({
             onUpdateTeam(updatedTeam);
           }
         }}
+      />
+
+      {/* 获奖人列表弹窗 */}
+      <RecipientListModal
+        visible={recipientListModalVisible}
+        awardName={award.title}
+        recipients={award.recipients}
+        issuingDepartment={award.issuingDepartment}
+        onClose={handleCloseRecipientList}
       />
     </div>
   );

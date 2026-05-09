@@ -10,8 +10,8 @@ export interface RecipientCardProps {
 /**
  * 获奖人卡片组件
  * 显示获奖人姓名、工号、部门信息
- * 跨部门人员使用主题色高亮样式
  * 样式与团队奖卡片保持一致
+ * 一行最多显示6个卡片
  */
 export const RecipientCard: React.FC<RecipientCardProps> = ({
   recipient,
@@ -20,7 +20,7 @@ export const RecipientCard: React.FC<RecipientCardProps> = ({
 }) => {
   // 判断是否为跨部门人员
   const isCrossDepartment = recipient.department !== issuingDepartment;
-  
+
   // 鼠标悬停状态
   const [isHovered, setIsHovered] = useState(false);
 
@@ -31,11 +31,12 @@ export const RecipientCard: React.FC<RecipientCardProps> = ({
         position: 'relative',
         padding: '12px 16px',
         backgroundColor: '#f8fafc',
-        border: `1px solid ${isCrossDepartment ? '#1890ff' : '#e2e8f0'}`,
+        border: '1px solid #e2e8f0',
         borderRadius: '6px',
-        fontSize: '14px',
-        transition: 'all 0.2s',
-        minWidth: '180px',
+        width: 'calc((100% - 60px) / 6)',
+        minWidth: 'calc((100% - 60px) / 6)',
+        maxWidth: 'calc((100% - 60px) / 6)',
+        boxSizing: 'border-box',
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -98,46 +99,50 @@ export const RecipientCard: React.FC<RecipientCardProps> = ({
         </span>
       )}
 
-      {/* 姓名 */}
+      {/* 姓名和工号同一行 */}
       <div
-        className="recipient-name"
-        style={{
-          fontSize: '14px',
-          fontWeight: 500,
-          color: '#1a1a2e',
-          marginBottom: '4px',
-        }}
-      >
-        {recipient.name}
-      </div>
-
-      {/* 工号 + 部门信息行 */}
-      <div
+        className="recipient-header"
         style={{
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          marginTop: '4px',
+          gap: '8px',
+          marginBottom: '4px',
         }}
       >
+        <span
+          className="recipient-name"
+          style={{
+            fontSize: '14px',
+            fontWeight: 500,
+            color: '#1a1a2e',
+          }}
+        >
+          {recipient.name}
+        </span>
         <span
           style={{
             fontSize: '12px',
             color: '#6b7280',
+            fontFamily: 'monospace',
           }}
         >
           {recipient.employeeId}
         </span>
       </div>
 
-      {/* 部门 - 跨部门人员使用主题色高亮 */}
+      {/* 部门 - 超长使用省略号 */}
       <div
         className="recipient-department"
         style={{
           fontSize: '12px',
-          color: isCrossDepartment ? '#1890ff' : '#6b7280',
-          marginTop: '4px',
+          color: '#6b7280',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          maxWidth: '100%',
+          display: 'block',
         }}
+        title={recipient.department}
       >
         {recipient.department}
       </div>

@@ -12,6 +12,8 @@ export { TeamSearchModal, type TeamSearchModalProps, type Employee, type QueryRe
 
 export { TeamMembersModal, type TeamMembersModalProps } from './TeamMembersModal';
 
+export { RecipientListModal, type RecipientListModalProps } from './RecipientListModal';
+
 export { AddAwardModal, type AddAwardModalProps, type AwardItem, type AwardCategory } from './AddAwardModal';
 
 export type { Recipient, Award, Team, TeamMember, AwardType } from './types';
