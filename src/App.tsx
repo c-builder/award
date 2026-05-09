@@ -16,36 +16,36 @@ const mockAwards: Award[] = [
     issuingDepartment: '华为公司',
     awardType: 'individual',
     recipients: [
-      { name: '李山花', employeeId: '00494097', department: '华为公司' },
-      { name: '王五', employeeId: '00507890', department: '华为公司' },
-      { name: '赵六', employeeId: '00501111', department: '华为公司' },
-      { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
-      { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
-      { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
-      { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
-      { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
-      { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
-      { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
-      { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
-      { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
-      { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
-      { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
-      { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
-      { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
-      { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
-      { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
-      { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
-      { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
-      { name: '秦二二', employeeId: '00517777', department: 'IT平台服务部/平台开发部' },
-      { name: '尤二三', employeeId: '00518888', department: '质量与流程IT部/IT部/开发组' },
-      { name: '许二四', employeeId: '00519999', department: '智能汽车解决方案部/智能座舱组' },
-      { name: '何二五', employeeId: '00520000', department: '云与计算业务部/大数据组' },
-      { name: '吕二六', employeeId: '00521111', department: 'IT平台服务部/技术支持部' },
-      { name: '施二七', employeeId: '00522222', department: '质量与流程IT部/质量部/测试组' },
-      { name: '张二八', employeeId: '00523333', department: '智能汽车解决方案部/智能驾驶组' },
-      { name: '孔二九', employeeId: '00524444', department: '云与计算业务部/云计算组' },
-      { name: '曹三十', employeeId: '00525555', department: 'IT平台服务部/平台运维部' },
-      { name: '严三一', employeeId: '00526666', department: '质量与流程IT部/流程部/优化组' },
+      { name: '李山花', employeeId: '00494097', department: '华为公司', isSelected: true },
+      { name: '王五', employeeId: '00507890', department: '华为公司', isSelected: true },
+      { name: '赵六', employeeId: '00501111', department: '华为公司', isSelected: true },
+      { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组', isSelected: true },
+      { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组', isSelected: true },
+      { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组', isSelected: true },
+      { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组', isSelected: true },
+      { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组', isSelected: true },
+      { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部', isSelected: true },
+      { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组', isSelected: true },
+      { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组', isSelected: true },
+      { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组', isSelected: true },
+      { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部', isSelected: true },
+      { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组', isSelected: true },
+      { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组', isSelected: true },
+      { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组', isSelected: true },
+      { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部', isSelected: true },
+      { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组', isSelected: true },
+      { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组', isSelected: true },
+      { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组', isSelected: true },
+      { name: '秦二二', employeeId: '00517777', department: 'IT平台服务部/平台开发部', isSelected: true },
+      { name: '尤二三', employeeId: '00518888', department: '质量与流程IT部/IT部/开发组', isSelected: true },
+      { name: '许二四', employeeId: '00519999', department: '智能汽车解决方案部/智能座舱组', isSelected: true },
+      { name: '何二五', employeeId: '00520000', department: '云与计算业务部/大数据组', isSelected: true },
+      { name: '吕二六', employeeId: '00521111', department: 'IT平台服务部/技术支持部', isSelected: true },
+      { name: '施二七', employeeId: '00522222', department: '质量与流程IT部/质量部/测试组', isSelected: true },
+      { name: '张二八', employeeId: '00523333', department: '智能汽车解决方案部/智能驾驶组', isSelected: true },
+      { name: '孔二九', employeeId: '00524444', department: '云与计算业务部/云计算组', isSelected: true },
+      { name: '曹三十', employeeId: '00525555', department: 'IT平台服务部/平台运维部', isSelected: true },
+      { name: '严三一', employeeId: '00526666', department: '质量与流程IT部/流程部/优化组', isSelected: true },
     ],
   },
   {
@@ -61,6 +61,7 @@ const mockAwards: Award[] = [
         leaderName: '赵六',
         leaderId: '00501111',
         memberCount: 10,
+        isSelected: true,
         members: [
           { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部', role: '组长' },
           { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
@@ -80,6 +81,7 @@ const mockAwards: Award[] = [
         leaderName: '钱七',
         leaderId: '00502222',
         memberCount: 8,
+        isSelected: true,
         members: [
           { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组', role: '值班长' },
           { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
@@ -97,6 +99,7 @@ const mockAwards: Award[] = [
         leaderName: '孙八',
         leaderId: '00503333',
         memberCount: 12,
+        isSelected: true,
         members: [
           { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
           { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
@@ -118,6 +121,7 @@ const mockAwards: Award[] = [
         leaderName: '周九',
         leaderId: '00504444',
         memberCount: 6,
+        isSelected: true,
         members: [
           { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
           { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
@@ -142,6 +146,7 @@ const mockAwards: Award[] = [
         leaderName: '李山花',
         leaderId: '00494097',
         memberCount: 15,
+        isSelected: true,
         members: [
           { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部', role: '架构师' },
           { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
@@ -166,6 +171,7 @@ const mockAwards: Award[] = [
         leaderName: '赵六',
         leaderId: '00501111',
         memberCount: 20,
+        isSelected: true,
         members: [
           { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
           { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
@@ -204,6 +210,7 @@ const mockAwards: Award[] = [
         leaderName: '钱七',
         leaderId: '00502222',
         memberCount: 16,
+        isSelected: true,
         members: [
           { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
           { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
@@ -295,6 +302,24 @@ function App() {
     );
   };
 
+  // 处理选中/取消选中获奖人
+  const handleSelectRecipient = (awardId: string, recipient: any) => {
+    setAwards((prev) =>
+      prev.map((award) =>
+        award.id === awardId
+          ? {
+              ...award,
+              recipients: award.recipients.map((r) =>
+                r.employeeId === recipient.employeeId
+                  ? { ...r, isSelected: !r.isSelected }
+                  : r
+              ),
+            }
+          : award
+      )
+    );
+  };
+
   // 处理添加团队
   const handleAddTeam = (awardId: string) => {
     setCurrentAwardId(awardId);
@@ -309,6 +334,56 @@ function App() {
           ? {
               ...award,
               teams: award.teams?.filter((t) => t.id !== teamToRemove.id) || [],
+            }
+          : award
+      )
+    );
+  };
+
+  // 处理选中/取消选中团队
+  const handleSelectTeam = (awardId: string, team: any) => {
+    setAwards((prev) =>
+      prev.map((award) =>
+        award.id === awardId
+          ? {
+              ...award,
+              teams: award.teams?.map((t) =>
+                t.id === team.id ? { ...t, isSelected: !t.isSelected } : t
+              ) || [],
+            }
+          : award
+      )
+    );
+  };
+
+  // 处理全选/取消全选获奖人
+  const handleSelectAllRecipients = (awardId: string, selectAll: boolean) => {
+    setAwards((prev) =>
+      prev.map((award) =>
+        award.id === awardId
+          ? {
+              ...award,
+              recipients: award.recipients.map((r) => ({
+                ...r,
+                isSelected: selectAll,
+              })),
+            }
+          : award
+      )
+    );
+  };
+
+  // 处理全选/取消全选团队
+  const handleSelectAllTeams = (awardId: string, selectAll: boolean) => {
+    setAwards((prev) =>
+      prev.map((award) =>
+        award.id === awardId
+          ? {
+              ...award,
+              teams: award.teams?.map((t) => ({
+                ...t,
+                isSelected: selectAll,
+              })) || [],
             }
           : award
       )
@@ -402,6 +477,22 @@ function App() {
   // 获取已选中的奖项数量
   const selectedAwardsCount = useMemo(() => {
     return awards.filter((award) => award.selected).length;
+  }, [awards]);
+
+  // 检查是否可以进入下一步（选中的奖项必须都有选中的人或团队）
+  const canProceedToNextStep = useMemo(() => {
+    const selectedAwards = awards.filter((award) => award.selected);
+    if (selectedAwards.length === 0) return false;
+    
+    return selectedAwards.every((award) => {
+      if (award.awardType === 'individual') {
+        // 个人奖：至少有一个选中的获奖人
+        return award.recipients.some((r) => r.isSelected);
+      } else {
+        // 团队奖：至少有一个选中的团队
+        return award.teams?.some((t) => t.isSelected) ?? false;
+      }
+    });
   }, [awards]);
 
   return (
@@ -554,27 +645,25 @@ function App() {
             <div
               style={{
                 marginBottom: '16px',
-                padding: '14px 18px',
-                background: 'linear-gradient(135deg, #e6f7ff 0%, #f0f9ff 100%)',
-                border: '1px solid #1890ff',
-                borderRadius: '8px',
+                padding: '12px 16px',
+                backgroundColor: '#e6f4ff',
+                border: '1px solid #91caff',
+                borderRadius: '6px',
                 fontSize: '14px',
-                color: '#1890ff',
+                color: '#0958d9',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '10px',
-                boxShadow: '0 2px 8px rgba(24, 144, 255, 0.12)',
-                fontWeight: 500,
+                gap: '8px',
               }}
             >
-              <span 
-                style={{ 
-                  fontSize: '18px',
-                  filter: 'drop-shadow(0 1px 2px rgba(24, 144, 255, 0.2))',
-                }}
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="#0958d9"
               >
-                💡
-              </span>
+                <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm6.5-.25A.75.75 0 0 1 7.25 7h1.5a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75zM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+              </svg>
               <span>已为你筛选出近期获奖数据，请你从中挑选用于展播的奖项。</span>
             </div>
 
@@ -618,6 +707,11 @@ function App() {
                         ? (recipient) => handleRemoveRecipient(award.id, recipient)
                         : undefined
                     }
+                    onSelectRecipient={
+                      award.awardType === 'individual'
+                        ? (recipient) => handleSelectRecipient(award.id, recipient)
+                        : undefined
+                    }
                     onAddTeam={
                       award.awardType === 'team'
                         ? () => handleAddTeam(award.id)
@@ -626,6 +720,21 @@ function App() {
                     onRemoveTeam={
                       award.awardType === 'team'
                         ? (team) => handleRemoveTeam(award.id, team)
+                        : undefined
+                    }
+                    onSelectTeam={
+                      award.awardType === 'team'
+                        ? (team) => handleSelectTeam(award.id, team)
+                        : undefined
+                    }
+                    onSelectAllTeams={
+                      award.awardType === 'team'
+                        ? (selectAll) => handleSelectAllTeams(award.id, selectAll)
+                        : undefined
+                    }
+                    onSelectAllRecipients={
+                      award.awardType === 'individual'
+                        ? (selectAll) => handleSelectAllRecipients(award.id, selectAll)
                         : undefined
                     }
                     onUpdateTeam={
@@ -714,14 +823,14 @@ function App() {
         {currentStep < steps.length - 1 && (
           <button
             onClick={() => setCurrentStep(currentStep + 1)}
-            disabled={currentStep === 0 && selectedAwardsCount === 0}
+            disabled={currentStep === 0 ? !canProceedToNextStep : false}
             style={{
               padding: '8px 24px',
-              backgroundColor: currentStep === 0 && selectedAwardsCount === 0 ? '#e2e8f0' : '#1890ff',
+              backgroundColor: currentStep === 0 && !canProceedToNextStep ? '#e2e8f0' : '#1890ff',
               color: '#fff',
               border: 'none',
               borderRadius: '4px',
-              cursor: currentStep === 0 && selectedAwardsCount === 0 ? 'not-allowed' : 'pointer',
+              cursor: currentStep === 0 && !canProceedToNextStep ? 'not-allowed' : 'pointer',
               fontSize: '14px',
             }}
           >
@@ -749,12 +858,14 @@ function App() {
       <AddRecipientModal
         visible={addRecipientModalVisible}
         currentDepartment={currentUserDepartment}
+        existingRecipients={awards.find(a => a.id === currentAwardId)?.recipients || []}
         onCancel={() => setAddRecipientModalVisible(false)}
         onConfirm={handleConfirmAddRecipient}
       />
 
       <TeamSearchModal
         visible={teamSearchModalVisible}
+        existingTeams={awards.find(a => a.id === currentAwardId)?.teams || []}
         onCancel={() => setTeamSearchModalVisible(false)}
         onConfirm={handleConfirmAddTeam}
       />

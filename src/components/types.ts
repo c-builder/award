@@ -5,6 +5,8 @@ export interface Recipient {
   name: string;
   employeeId: string;
   department: string;
+  /** 是否被选中 */
+  isSelected?: boolean;
 }
 
 /**
@@ -27,6 +29,8 @@ export interface Team {
   leaderId: string;
   memberCount: number;
   members?: TeamMember[];
+  /** 是否被选中 */
+  isSelected?: boolean;
 }
 
 /**

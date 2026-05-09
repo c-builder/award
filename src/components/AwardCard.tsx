@@ -13,8 +13,12 @@ export interface AwardCardProps {
   onToggleSelection?: () => void;
   onAddRecipient?: () => void;
   onRemoveRecipient?: (recipient: Recipient) => void;
+  onSelectRecipient?: (recipient: Recipient) => void;
+  onSelectAllRecipients?: (selectAll: boolean) => void;
   onAddTeam?: () => void;
   onRemoveTeam?: (team: Team) => void;
+  onSelectTeam?: (team: Team) => void;
+  onSelectAllTeams?: (selectAll: boolean) => void;
   onUpdateTeam?: (team: Team) => void;
   /** 删除整个奖项 */
   onRemoveAward?: () => void;
@@ -30,8 +34,12 @@ export const AwardCard: React.FC<AwardCardProps> = ({
   onToggleSelection,
   onAddRecipient,
   onRemoveRecipient,
+  onSelectRecipient,
+  onSelectAllRecipients,
   onAddTeam,
   onRemoveTeam,
+  onSelectTeam,
+  onSelectAllTeams,
   onUpdateTeam,
   onRemoveAward,
 }) => {
@@ -41,10 +49,15 @@ export const AwardCard: React.FC<AwardCardProps> = ({
   // 判断是否为团队奖
   const isTeamAward = award.awardType === 'team';
 
-  // 获取已选数量（获奖人或团队）
+  // 获取已选数量（获奖人或团队）- 只统计 isSelected 为 true 的数据
   const selectedCount = isTeamAward 
-    ? (award.teams?.length || 0) 
-    : award.recipients.length;
+    ? (award.teams?.filter(t => t.isSelected).length || 0) 
+    : award.recipients.filter(r => r.isSelected).length;
+
+  // 判断是否全部选中
+  const isAllSelected = isTeamAward
+    ? (award.teams?.length || 0) > 0 && (award.teams?.every(t => t.isSelected) ?? false)
+    : award.recipients.length > 0 && award.recipients.every(r => r.isSelected);
 
   // 团队成员弹窗状态
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
@@ -221,28 +234,48 @@ export const AwardCard: React.FC<AwardCardProps> = ({
       {/* 团队奖显示 */}
       {isTeamAward ? (
         <>
-          {/* 添加团队按钮 */}
-          {onAddTeam && (
-            <button
-              className="add-team-btn"
-              onClick={onAddTeam}
-              style={{
-                padding: '4px 12px',
-                backgroundColor: 'transparent',
-                color: '#1890ff',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '13px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                marginBottom: '12px',
-              }}
-            >
-              <span>+</span>
-              <span>添加团队奖</span>
-            </button>
-          )}
+          {/* 添加团队按钮和全选按钮 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
+            {onAddTeam && (
+              <button
+                className="add-team-btn"
+                onClick={onAddTeam}
+                style={{
+                  padding: '4px 12px',
+                  backgroundColor: 'transparent',
+                  color: '#1890ff',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                <span>+</span>
+                <span>添加团队奖</span>
+              </button>
+            )}
+            {/* 全选/取消全选按钮 */}
+            {onSelectAllTeams && award.teams && award.teams.length > 0 && (
+              <button
+                onClick={() => onSelectAllTeams(!isAllSelected)}
+                style={{
+                  padding: '4px 12px',
+                  backgroundColor: 'transparent',
+                  color: isAllSelected ? '#ff4d4f' : '#1890ff',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                <span>{isAllSelected ? '取消全选' : '全选'}</span>
+              </button>
+            )}
+          </div>
 
           {/* 团队列表 */}
           {award.teams && award.teams.length > 0 && (
@@ -263,22 +296,53 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                     key={team.id}
                     style={{
                       padding: '12px 16px',
-                      backgroundColor: '#f8fafc',
-                      border: '1px solid #e2e8f0',
+                      backgroundColor: team.isSelected ? '#e6f7ff' : '#f8fafc',
+                      border: team.isSelected ? '1px solid #1890ff' : '1px solid #e2e8f0',
                       borderRadius: '6px',
                       width: 'calc((100% - 60px) / 6)',
                       minWidth: 'calc((100% - 60px) / 6)',
                       maxWidth: 'calc((100% - 60px) / 6)',
                       boxSizing: 'border-box',
                       position: 'relative',
+                      cursor: onSelectTeam ? 'pointer' : 'default',
+                      transition: 'all 0.2s',
                     }}
                     onMouseEnter={() => setIsTeamHovered(true)}
                     onMouseLeave={() => setIsTeamHovered(false)}
+                    onClick={() => onSelectTeam && onSelectTeam(team)}
                   >
+                    {/* 选中标记 - 左上角 */}
+                    {team.isSelected && (
+                      <span
+                        style={{
+                          position: 'absolute',
+                          top: '-4px',
+                          left: '-4px',
+                          width: '16px',
+                          height: '16px',
+                          borderRadius: '50%',
+                          backgroundColor: '#1890ff',
+                          color: '#fff',
+                          fontSize: '10px',
+                          fontWeight: 600,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          zIndex: 5,
+                          boxShadow: '0 1px 3px rgba(24, 144, 255, 0.3)',
+                        }}
+                      >
+                        ✓
+                      </span>
+                    )}
+
                     {/* 移除按钮 - 鼠标悬停时显示 */}
                     {onRemoveTeam && isTeamHovered && (
                       <button
-                        onClick={() => onRemoveTeam(team)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRemoveTeam(team);
+                        }}
                         style={{
                           position: 'absolute',
                           top: '-6px',
@@ -309,19 +373,19 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                         ×
                       </button>
                     )}
-                    
+
                     {/* 团队名称 */}
                     <div
                       style={{
                         fontSize: '14px',
                         fontWeight: 500,
-                        color: '#1a1a2e',
+                        color: team.isSelected ? '#1890ff' : '#1a1a2e',
                         marginBottom: '4px',
                       }}
                     >
                       {team.name}
                     </div>
-                    
+
                     {/* 成员数 + 展开按钮 */}
                     <div
                       style={{
@@ -334,62 +398,86 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                       <span
                         style={{
                           fontSize: '12px',
-                          color: '#6b7280',
+                          color: team.isSelected ? '#1890ff' : '#6b7280',
                         }}
                       >
                         成员: {team.memberCount}人
                       </span>
                       <button
-                        onClick={() => handleShowMembers(team)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleShowMembers(team);
+                        }}
                         style={{
                           background: 'none',
-                        border: 'none',
-                        color: '#1890ff',
-                        fontSize: '12px',
-                        cursor: 'pointer',
-                        padding: '2px 0',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px',
-                      }}
-                      title="查看成员列表"
-                    >
-                      <span>详情</span>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="9 18 15 12 9 6" />
-                      </svg>
-                    </button>
+                          border: 'none',
+                          color: '#1890ff',
+                          fontSize: '12px',
+                          cursor: 'pointer',
+                          padding: '2px 0',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                        }}
+                        title="查看成员列表"
+                      >
+                        <span>详情</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              );})}
+                );
+              })}
             </div>
           )}
         </>
       ) : (
         <>
           {/* 个人奖显示 */}
-          {/* 添加获奖人按钮 */}
-          {onAddRecipient && (
-            <button
-              className="add-recipient-btn"
-              onClick={onAddRecipient}
-              style={{
-                padding: '4px 12px',
-                backgroundColor: 'transparent',
-                color: '#1890ff',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '13px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-                marginBottom: '12px',
-              }}
-            >
-              <span>+</span>
-              <span>添加获奖人</span>
-            </button>
-          )}
+          {/* 添加获奖人按钮和全选按钮 */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '12px' }}>
+            {onAddRecipient && (
+              <button
+                className="add-recipient-btn"
+                onClick={onAddRecipient}
+                style={{
+                  padding: '4px 12px',
+                  backgroundColor: 'transparent',
+                  color: '#1890ff',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                <span>+</span>
+                <span>添加获奖人</span>
+              </button>
+            )}
+            {/* 全选/取消全选按钮 */}
+            {onSelectAllRecipients && award.recipients.length > 0 && (
+              <button
+                onClick={() => onSelectAllRecipients(!isAllSelected)}
+                style={{
+                  padding: '4px 12px',
+                  backgroundColor: 'transparent',
+                  color: isAllSelected ? '#ff4d4f' : '#1890ff',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                <span>{isAllSelected ? '取消全选' : '全选'}</span>
+              </button>
+            )}
+          </div>
 
           {/* 获奖人列表 */}
           {award.recipients.length > 0 && (
@@ -406,6 +494,10 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                   key={`${recipient.employeeId || recipient.name}-${index}`}
                   recipient={recipient}
                   issuingDepartment={award.issuingDepartment}
+                  isSelected={recipient.isSelected}
+                  onSelect={
+                    onSelectRecipient ? () => onSelectRecipient(recipient) : undefined
+                  }
                   onRemove={
                     onRemoveRecipient ? () => onRemoveRecipient(recipient) : undefined
                   }
@@ -472,6 +564,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
         recipients={award.recipients}
         issuingDepartment={award.issuingDepartment}
         onClose={handleCloseRecipientList}
+        onSelectRecipient={onSelectRecipient}
       />
     </div>
   );

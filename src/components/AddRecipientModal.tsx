@@ -1,156 +1,106 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Recipient } from './types';
-import { DeptCascader } from './DeptCascader';
-import { Pagination } from './Pagination';
 
 export interface AddRecipientModalProps {
   visible: boolean;
   currentDepartment: string;
+  existingRecipients?: Recipient[];
   onCancel: () => void;
   onConfirm: (selectedRecipients: Recipient[]) => void;
 }
 
-// 模拟人员数据（带完整部门路径）
-const mockEmployees: Recipient[] = [
-  { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
-  { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
-  { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
-  { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
-  { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
-  { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
-  { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
-  { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
-  { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
-  { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
-  { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
-  { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
-  { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
-  { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
-  { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
-  { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
-  { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
-  { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
-  { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
-  { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
-  { name: '秦二二', employeeId: '00517777', department: 'IT平台服务部/技术支持部' },
-  { name: '尤二三', employeeId: '00518888', department: '质量与流程IT部/IT部/开发组' },
-  { name: '许二四', employeeId: '00519999', department: '智能汽车解决方案部/智能座舱组' },
-  { name: '何二五', employeeId: '00520000', department: '云与计算业务部/大数据组' },
-  { name: '吕二六', employeeId: '00521111', department: 'IT平台服务部/平台开发部' },
-  { name: '施二七', employeeId: '00522222', department: '质量与流程IT部/质量部/测试组' },
-  { name: '张二八', employeeId: '00523333', department: '智能汽车解决方案部/智能驾驶组' },
-  { name: '孔二九', employeeId: '00524444', department: '云与计算业务部/云计算组' },
-  { name: '曹三十', employeeId: '00525555', department: 'IT平台服务部/平台运维部' },
-  { name: '严三一', employeeId: '00526666', department: '质量与流程IT部/流程部/优化组' },
-];
-
-// 模拟已获奖项数据
-const mockAwards: Record<string, string> = {
-  '00494097': '半年度优秀个人奖',
-  '00501111': '明日之星',
-};
-
-/**
- * 添加获奖人弹窗组件
- * 支持搜索、部门筛选、批量选择和确认添加
- */
 export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
   visible,
   currentDepartment,
+  existingRecipients = [],
   onCancel,
   onConfirm,
 }) => {
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [selectedDeptPath, setSelectedDeptPath] = useState<string[]>([]);
-  const [selectedRecipients, setSelectedRecipients] = useState<Set<string>>(new Set());
+  const [employeeId, setEmployeeId] = useState('');
+  const [queryResult, setQueryResult] = useState<Recipient | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [selectedRecipients, setSelectedRecipients] = useState<Recipient[]>([]);
 
-  // 分页状态
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
-
-  // 弹窗关闭时重置状态
   useEffect(() => {
     if (!visible) {
-      setSearchKeyword('');
-      setSelectedDeptPath([]);
-      setSelectedRecipients(new Set());
-      setCurrentPage(1);
+      setEmployeeId('');
+      setQueryResult(null);
+      setError('');
+      setLoading(false);
+      setSelectedRecipients([]);
     }
   }, [visible]);
 
-  // 筛选条件改变时重置页码
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchKeyword, selectedDeptPath]);
-
-  // 过滤人员列表
-  const filteredEmployees = useMemo(() => {
-    return mockEmployees.filter((employee) => {
-      // 部门筛选 - 检查员工部门路径是否以选中的部门路径开头
-      let departmentMatch = true;
-      if (selectedDeptPath.length > 0) {
-        const employeeDeptParts = employee.department.split('/');
-        departmentMatch = selectedDeptPath.every((dept, index) => 
-          employeeDeptParts[index] === dept
-        );
-      }
-      
-      // 搜索筛选（姓名或工号）
-      const searchMatch = !searchKeyword || 
-        employee.name.includes(searchKeyword) || 
-        employee.employeeId.includes(searchKeyword);
-      
-      return departmentMatch && searchMatch;
-    });
-  }, [searchKeyword, selectedDeptPath]);
-
-  // 分页后的人员列表
-  const paginatedEmployees = useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize;
-    return filteredEmployees.slice(startIndex, startIndex + pageSize);
-  }, [filteredEmployees, currentPage]);
-
-  // 切换选中状态
-  const toggleSelection = (employeeId: string) => {
-    const newSelected = new Set(selectedRecipients);
-    if (newSelected.has(employeeId)) {
-      newSelected.delete(employeeId);
-    } else {
-      newSelected.add(employeeId);
-    }
-    setSelectedRecipients(newSelected);
-  }
-
-  // 全选/取消全选
-  const toggleSelectAll = () => {
-    if (selectedRecipients.size === filteredEmployees.length && filteredEmployees.length > 0) {
-      setSelectedRecipients(new Set());
-    } else {
-      const allIds = new Set(filteredEmployees.map(e => e.employeeId));
-      setSelectedRecipients(allIds);
-    }
+  const mockEmployeeData: Record<string, Recipient> = {
+    '00494097': { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+    '00501234': { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+    '00505678': { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+    '00507890': { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+    '00501111': { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+    '00502222': { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+    '00503333': { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+    '00504444': { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
+    '00505555': { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
+    '00506666': { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+    '00507777': { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+    '00508888': { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+    '00509999': { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+    '00510000': { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+    '00511111': { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+    '00512222': { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
+    '00513333': { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
+    '00514444': { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+    '00515555': { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+    '00516666': { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
   };
 
-  // 重置筛选
-  const handleReset = () => {
-    setSearchKeyword('');
-    setSelectedDeptPath([]);
+  // 检查员工是否已存在于当前奖项中
+  const isExistingRecipient = (employeeId: string) => {
+    return existingRecipients.some(r => r.employeeId === employeeId);
   };
 
-  // 确认添加
+  const handleQuery = async () => {
+    if (!employeeId.trim()) {
+      setError('请输入工号');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    setQueryResult(null);
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const employee = mockEmployeeData[employeeId.trim()];
+    if (!employee) {
+      setError('未找到该工号对应的员工');
+    } else {
+      setQueryResult(employee);
+    }
+    setLoading(false);
+  };
+
+  const handleAddToSelected = () => {
+    if (!queryResult) return;
+    if (selectedRecipients.some(r => r.employeeId === queryResult.employeeId)) {
+      setError('该员工已在列表中');
+      return;
+    }
+    setSelectedRecipients([...selectedRecipients, queryResult]);
+    setQueryResult(null);
+    setEmployeeId('');
+  };
+
+  const handleRemoveFromSelected = (empId: string) => {
+    setSelectedRecipients(selectedRecipients.filter(r => r.employeeId !== empId));
+  };
+
   const handleConfirm = () => {
-    const selectedList = mockEmployees.filter(e => selectedRecipients.has(e.employeeId));
-    onConfirm(selectedList);
+    if (selectedRecipients.length === 0) {
+      setError('请至少添加一个获奖人');
+      return;
+    }
+    onConfirm(selectedRecipients);
   };
 
-  // 获取已选择人员名称列表
-  const selectedNames = useMemo(() => {
-    return mockEmployees
-      .filter(e => selectedRecipients.has(e.employeeId))
-      .map(e => e.name);
-  }, [selectedRecipients]);
-
-  // 判断是否为跨部门人员
   const isCrossDepartment = (department: string) => {
     const currentDeptParts = currentDepartment.split('/');
     const deptParts = department.split('/');
@@ -161,7 +111,6 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
 
   return (
     <div
-      className="modal-overlay"
       style={{
         position: 'fixed',
         top: 0,
@@ -177,11 +126,10 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
       onClick={onCancel}
     >
       <div
-        className="modal-content"
         style={{
           backgroundColor: '#fff',
           borderRadius: '8px',
-          width: '700px',
+          width: '600px',
           maxHeight: '80vh',
           display: 'flex',
           flexDirection: 'column',
@@ -189,9 +137,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 弹窗标题 */}
         <div
-          className="modal-header"
           style={{
             padding: '16px 24px',
             borderBottom: '1px solid #f0f0f0',
@@ -200,14 +146,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
             alignItems: 'center',
           }}
         >
-          <h3
-            style={{
-              margin: 0,
-              fontSize: '16px',
-              fontWeight: 500,
-              color: '#333',
-            }}
-          >
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 500, color: '#333' }}>
             添加获奖人
           </h3>
           <button
@@ -226,257 +165,217 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
           </button>
         </div>
 
-        {/* 筛选区域 */}
         <div
-          className="modal-filter"
           style={{
-            padding: '16px 24px',
-            display: 'flex',
-            gap: '12px',
-            alignItems: 'center',
-            flexWrap: 'wrap',
+            padding: '24px',
+            borderBottom: '1px solid #f0f0f0',
           }}
         >
-          {/* 搜索框 */}
-          <input
-            type="text"
-            placeholder="搜索姓名/工号"
-            value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
-            style={{
-              padding: '6px 12px',
-              border: '1px solid #d9d9d9',
-              borderRadius: '4px',
-              fontSize: '14px',
-              width: '180px',
-              outline: 'none',
-            }}
-          />
-
-          {/* 部门级联选择器 */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '14px', color: '#666' }}>部门:</span>
-            <DeptCascader
-              value={selectedDeptPath}
-              onChange={(value) => setSelectedDeptPath(value)}
-              placeholder="全部部门"
-            />
-          </div>
-
-          {/* 查询按钮 */}
-          <button
-            onClick={() => {}}
-            style={{
-              padding: '6px 16px',
-              backgroundColor: '#1890ff',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '4px',
-              fontSize: '14px',
-              cursor: 'pointer',
-            }}
-          >
-            查询
-          </button>
-
-          {/* 重置按钮 */}
-          <button
-            onClick={handleReset}
-            style={{
-              padding: '6px 16px',
-              backgroundColor: '#fff',
-              color: '#666',
-              border: '1px solid #d9d9d9',
-              borderRadius: '4px',
-              fontSize: '14px',
-              cursor: 'pointer',
-            }}
-          >
-            重置
-          </button>
-        </div>
-
-        {/* 表格区域 */}
-        <div
-          className="modal-body"
-          style={{
-            flex: 1,
-            overflow: 'auto',
-            padding: '0 24px',
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-        >
-          <table
-            style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              fontSize: '14px',
-            }}
-          >
-            <thead style={{ position: 'sticky', top: 0, zIndex: 1 }}>
-              <tr
-                style={{
-                  backgroundColor: '#fafafa',
-                  borderBottom: '1px solid #f0f0f0',
-                }}
-              >
-                <th
-                  style={{
-                    padding: '12px 8px',
-                    textAlign: 'left',
-                    fontWeight: 500,
-                    color: '#666',
-                    width: '50px',
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={filteredEmployees.length > 0 && selectedRecipients.size === filteredEmployees.length}
-                    onChange={toggleSelectAll}
-                    style={{ cursor: 'pointer' }}
-                  />
-                </th>
-                <th
-                  style={{
-                    padding: '12px 8px',
-                    textAlign: 'left',
-                    fontWeight: 500,
-                    color: '#666',
-                  }}
-                >
-                  姓名
-                </th>
-                <th
-                  style={{
-                    padding: '12px 8px',
-                    textAlign: 'left',
-                    fontWeight: 500,
-                    color: '#666',
-                  }}
-                >
-                  工号
-                </th>
-                <th
-                  style={{
-                    padding: '12px 8px',
-                    textAlign: 'left',
-                    fontWeight: 500,
-                    color: '#666',
-                  }}
-                >
-                  部门
-                </th>
-                <th
-                  style={{
-                    padding: '12px 8px',
-                    textAlign: 'left',
-                    fontWeight: 500,
-                    color: '#666',
-                  }}
-                >
-                  已获奖项
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedEmployees.map((employee, index) => {
-                const isSelected = selectedRecipients.has(employee.employeeId);
-                const isCrossDept = isCrossDepartment(employee.department);
-                const award = mockAwards[employee.employeeId] || '-';
-
-                return (
-                  <tr
-                    key={employee.employeeId}
-                    style={{
-                      borderBottom: '1px solid #f0f0f0',
-                      backgroundColor: index % 2 === 0 ? '#fff' : '#fafafa',
-                    }}
-                  >
-                    <td style={{ padding: '12px 8px' }}>
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={() => toggleSelection(employee.employeeId)}
-                        style={{ cursor: 'pointer' }}
-                      />
-                    </td>
-                    <td style={{ padding: '12px 8px', color: '#333' }}>
-                      {employee.name}
-                    </td>
-                    <td style={{ padding: '12px 8px', color: '#666' }}>
-                      {employee.employeeId}
-                    </td>
-                    <td
-                      style={{
-                        padding: '12px 8px',
-                        color: isCrossDept ? '#1890ff' : '#666',
-                      }}
-                    >
-                      {employee.department}
-                    </td>
-                    <td style={{ padding: '12px 8px', color: '#666' }}>
-                      {award}
-                    </td>
-                  </tr>
-                );
-              })}
-              {filteredEmployees.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={5}
-                    style={{
-                      padding: '48px 24px',
-                      textAlign: 'center',
-                      color: '#999',
-                    }}
-                  >
-                    暂无数据
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-
-          {/* 分页器 - 固定在表格底部 */}
-          {filteredEmployees.length > 0 && (
-            <div
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+            <input
+              type="text"
+              placeholder="请输入工号"
+              value={employeeId}
+              onChange={(e) => setEmployeeId(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleQuery()}
               style={{
-                padding: '0',
-                borderTop: '1px solid #f0f0f0',
-                backgroundColor: '#fff',
-                flexShrink: 0,
+                flex: 1,
+                padding: '8px 12px',
+                border: '1px solid #d9d9d9',
+                borderRadius: '4px',
+                fontSize: '14px',
+                outline: 'none',
+              }}
+            />
+            <button
+              onClick={handleQuery}
+              disabled={loading}
+              style={{
+                padding: '8px 20px',
+                backgroundColor: '#1890ff',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '14px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.7 : 1,
               }}
             >
-              <Pagination
-                current={currentPage}
-                pageSize={pageSize}
-                total={filteredEmployees.length}
-                onChange={setCurrentPage}
-              />
+              {loading ? '查询中...' : '查询'}
+            </button>
+          </div>
+
+          {error && (
+            <div
+              style={{
+                padding: '12px',
+                backgroundColor: '#fff2f0',
+                border: '1px solid #ffccc7',
+                borderRadius: '4px',
+                color: '#ff4d4f',
+                fontSize: '14px',
+                marginBottom: '16px',
+              }}
+            >
+              {error}
+            </div>
+          )}
+
+          {queryResult && (
+            <div
+              style={{
+                padding: '16px',
+                backgroundColor: isExistingRecipient(queryResult.employeeId) ? '#fff7e6' : '#f6ffed',
+                border: `1px solid ${isExistingRecipient(queryResult.employeeId) ? '#ffd591' : '#b7eb8f'}`,
+                borderRadius: '6px',
+                marginBottom: '16px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ fontSize: '15px', fontWeight: 500, color: '#333', marginBottom: '4px' }}>
+                    {queryResult.name}
+                    {isCrossDepartment(queryResult.department) && (
+                      <span
+                        style={{
+                          marginLeft: '8px',
+                          padding: '2px 6px',
+                          backgroundColor: '#1890ff',
+                          color: '#fff',
+                          fontSize: '11px',
+                          borderRadius: '3px',
+                        }}
+                      >
+                        跨
+                      </span>
+                    )}
+                    {isExistingRecipient(queryResult.employeeId) && (
+                      <span
+                        style={{
+                          marginLeft: '8px',
+                          padding: '2px 6px',
+                          backgroundColor: '#fa8c16',
+                          color: '#fff',
+                          fontSize: '11px',
+                          borderRadius: '3px',
+                        }}
+                      >
+                        已存在
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: '13px', color: '#666' }}>
+                    工号: {queryResult.employeeId} | 部门: {queryResult.department}
+                  </div>
+                </div>
+                <button
+                  onClick={handleAddToSelected}
+                  disabled={isExistingRecipient(queryResult.employeeId)}
+                  style={{
+                    padding: '6px 16px',
+                    backgroundColor: isExistingRecipient(queryResult.employeeId) ? '#d9d9d9' : '#52c41a',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    cursor: isExistingRecipient(queryResult.employeeId) ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {isExistingRecipient(queryResult.employeeId) ? '已存在' : '+ 添加'}
+                </button>
+              </div>
             </div>
           )}
         </div>
 
-        {/* 已选择摘要 */}
-        {selectedNames.length > 0 && (
+        <div
+          style={{
+            flex: 1,
+            overflow: 'auto',
+            padding: '0 24px',
+          }}
+        >
           <div
-            className="modal-summary"
             style={{
-              padding: '12px 24px',
-              borderTop: '1px solid #f0f0f0',
+              padding: '12px 0',
               fontSize: '14px',
-              color: '#666',
+              fontWeight: 500,
+              color: '#333',
+              borderBottom: '1px solid #f0f0f0',
             }}
           >
-            <span>已选择: </span>
-            <span style={{ color: '#333' }}>{selectedNames.join('、')}</span>
+            已添加列表 ({selectedRecipients.length})
           </div>
-        )}
 
-        {/* 底部按钮 */}
+          {selectedRecipients.length === 0 ? (
+            <div
+              style={{
+                padding: '48px 24px',
+                textAlign: 'center',
+                color: '#999',
+                fontSize: '14px',
+              }}
+            >
+              <div style={{ fontSize: '48px', marginBottom: '12px' }}>👤</div>
+              <div style={{ fontSize: '13px', marginTop: '8px' }}>请通过工号查询添加获奖人</div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px 0' }}>
+              {selectedRecipients.map((recipient) => (
+                <div
+                  key={recipient.employeeId}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '12px 16px',
+                    backgroundColor: '#f8fafc',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '6px',
+                  }}
+                >
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: 500, color: '#333' }}>
+                      {recipient.name}
+                      {isCrossDepartment(recipient.department) && (
+                        <span
+                          style={{
+                            marginLeft: '8px',
+                            padding: '2px 6px',
+                            backgroundColor: '#1890ff',
+                            color: '#fff',
+                            fontSize: '10px',
+                            borderRadius: '3px',
+                          }}
+                        >
+                          跨
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
+                      {recipient.employeeId} | {recipient.department}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleRemoveFromSelected(recipient.employeeId)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#ff4d4f',
+                      fontSize: '18px',
+                      cursor: 'pointer',
+                      padding: '4px',
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div
-          className="modal-footer"
           style={{
             padding: '16px 24px',
             borderTop: '1px solid #f0f0f0',
@@ -501,18 +400,18 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
           </button>
           <button
             onClick={handleConfirm}
-            disabled={selectedRecipients.size === 0}
+            disabled={selectedRecipients.length === 0}
             style={{
               padding: '8px 24px',
-              backgroundColor: selectedRecipients.size === 0 ? '#d9d9d9' : '#1890ff',
+              backgroundColor: selectedRecipients.length === 0 ? '#d9d9d9' : '#1890ff',
               color: '#fff',
               border: 'none',
               borderRadius: '4px',
               fontSize: '14px',
-              cursor: selectedRecipients.size === 0 ? 'not-allowed' : 'pointer',
+              cursor: selectedRecipients.length === 0 ? 'not-allowed' : 'pointer',
             }}
           >
-            确认
+            确认 ({selectedRecipients.length})
           </button>
         </div>
       </div>

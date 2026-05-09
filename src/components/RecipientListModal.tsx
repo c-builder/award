@@ -8,6 +8,7 @@ export interface RecipientListModalProps {
   recipients: Recipient[];
   issuingDepartment: string;
   onClose: () => void;
+  onSelectRecipient?: (recipient: Recipient) => void;
 }
 
 /**
@@ -21,6 +22,7 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
   recipients,
   issuingDepartment,
   onClose,
+  onSelectRecipient,
 }) => {
   // 分页状态
   const [currentPage, setCurrentPage] = useState(1);
@@ -88,6 +90,13 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
     setSelectedDepartment('all');
     setCurrentPage(1);
     onClose();
+  };
+
+  // 处理点击选中/取消选中
+  const handleRowClick = (recipient: Recipient) => {
+    if (onSelectRecipient) {
+      onSelectRecipient(recipient);
+    }
   };
 
   if (!visible) return null;
@@ -287,7 +296,7 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: '60px 1.5fr 1fr 2fr 80px',
+              gridTemplateColumns: '50px 1.5fr 1fr 2fr 80px',
               padding: '12px 24px',
               backgroundColor: '#fafafa',
               borderBottom: '1px solid #e8e8e8',
@@ -297,7 +306,7 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
               flexShrink: 0,
             }}
           >
-            <div style={{ textAlign: 'center' }}>序号</div>
+            <div style={{ textAlign: 'center' }}>选中</div>
             <div>姓名</div>
             <div>工号</div>
             <div>部门</div>
@@ -308,40 +317,69 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
           <div style={{ flex: 1, overflow: 'auto' }}>
             {paginatedRecipients.length > 0 ? (
               paginatedRecipients.map((recipient, index) => {
-                const actualIndex = (currentPage - 1) * pageSize + index + 1;
                 const crossDept = isCrossDepartment(recipient.department);
+                const isSelected = recipient.isSelected;
 
                 return (
                   <div
                     key={`${recipient.employeeId}-${index}`}
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: '60px 1.5fr 1fr 2fr 80px',
+                      gridTemplateColumns: '50px 1.5fr 1fr 2fr 80px',
                       padding: '12px 24px',
                       borderBottom: '1px solid #f0f0f0',
                       fontSize: '14px',
                       color: '#333',
-                      backgroundColor: index % 2 === 0 ? '#fff' : '#fafafa',
+                      backgroundColor: isSelected ? '#e6f7ff' : index % 2 === 0 ? '#fff' : '#fafafa',
                       alignItems: 'center',
                       transition: 'background-color 0.2s',
+                      cursor: onSelectRecipient ? 'pointer' : 'default',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = '#e6f7ff';
+                      if (!isSelected) {
+                        e.currentTarget.style.backgroundColor = '#f0f9ff';
+                      }
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor =
-                        index % 2 === 0 ? '#fff' : '#fafafa';
+                      e.currentTarget.style.backgroundColor = isSelected
+                        ? '#e6f7ff'
+                        : index % 2 === 0
+                        ? '#fff'
+                        : '#fafafa';
                     }}
+                    onClick={() => handleRowClick(recipient)}
                   >
-                    {/* 序号 */}
-                    <div
-                      style={{
-                        textAlign: 'center',
-                        color: '#999',
-                        fontSize: '13px',
-                      }}
-                    >
-                      {actualIndex}
+                    {/* 选中复选框 */}
+                    <div style={{ textAlign: 'center' }}>
+                      <div
+                        style={{
+                          width: '18px',
+                          height: '18px',
+                          border: `2px solid ${isSelected ? '#1890ff' : '#d9d9d9'}`,
+                          borderRadius: '3px',
+                          backgroundColor: isSelected ? '#1890ff' : '#fff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          margin: '0 auto',
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        {isSelected && (
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#fff"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </div>
                     </div>
 
                     {/* 姓名 */}

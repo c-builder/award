@@ -1,17 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Pagination } from './Pagination';
-
-/**
- * 团队信息
- */
-export interface Team {
-  id: string;
-  name: string;
-  leaderName: string;
-  leaderId: string;
-  memberCount: number;
-  members?: TeamMember[];
-}
+import type { Team } from './types';
 
 /**
  * 员工信息
@@ -20,16 +9,6 @@ export interface Employee {
   name: string;
   employeeId: string;
   department: string;
-}
-
-/**
- * 团队成员信息
- */
-export interface TeamMember {
-  name: string;
-  employeeId: string;
-  department: string;
-  role: string;
 }
 
 /**
@@ -42,6 +21,7 @@ export interface QueryResult {
 
 export interface TeamSearchModalProps {
   visible: boolean;
+  existingTeams?: Team[];
   onCancel: () => void;
   onConfirm: (selectedTeams: Team[]) => void;
 }
@@ -71,7 +51,7 @@ const mockEmployeeData: Record<string, Employee> = {
 };
 
 // 生成模拟团队成员
-const generateMockMembers = (count: number, prefix: string): TeamMember[] => {
+const generateMockMembers = (count: number, prefix: string): import('./types').TeamMember[] => {
   const departments = [
     'IT平台服务部/平台开发部',
     'IT平台服务部/平台运维部',
@@ -200,11 +180,45 @@ const queryEmployeeById = async (employeeId: string): Promise<QueryResult | null
 };
 
 /**
+ * 根据团队名称搜索团队
+ */
+const queryTeamsByName = async (searchTerm: string): Promise<QueryResult | null> => {
+  // 模拟API延迟
+  await new Promise(resolve => setTimeout(resolve, 500));
+
+  // 收集所有团队
+  const allTeams: Team[] = [];
+  Object.values(mockTeamsData).forEach(teams => {
+    allTeams.push(...teams);
+  });
+
+  // 根据名称模糊匹配
+  const matchedTeams = allTeams.filter(team =>
+    team.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (matchedTeams.length === 0) {
+    return null;
+  }
+
+  // 返回虚拟员工信息和匹配的团队
+  return {
+    employee: {
+      name: '搜索结果',
+      employeeId: 'SEARCH',
+      department: '搜索模式',
+    },
+    teams: matchedTeams,
+  };
+};
+
+/**
  * 团队奖工号查询弹窗组件
  * 支持通过工号查询员工及其所属团队，选择团队后确认添加
  */
 export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
   visible,
+  existingTeams = [],
   onCancel,
   onConfirm,
 }) => {
@@ -232,6 +246,11 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
     }
   }, [visible]);
 
+  // 检查团队是否已存在于当前奖项中
+  const isExistingTeam = (teamId: string) => {
+    return existingTeams.some(t => t.id === teamId);
+  };
+
   // 查询结果改变时重置页码
   useEffect(() => {
     setCurrentPage(1);
@@ -240,7 +259,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
   // 执行查询
   const handleQuery = async () => {
     if (!employeeId.trim()) {
-      setError('请输入工号');
+      setError('请输入工号或团队奖名称');
       return;
     }
 
@@ -250,11 +269,25 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
     setSelectedTeams(new Set());
 
     try {
-      const result = await queryEmployeeById(employeeId.trim());
+      const searchTerm = employeeId.trim();
+      // 判断是否为工号（纯数字）
+      const isEmployeeId = /^\d+$/.test(searchTerm);
+
+      let result: QueryResult | null = null;
+      if (isEmployeeId) {
+        result = await queryEmployeeById(searchTerm);
+        if (!result) {
+          setError('未找到该工号对应的员工信息');
+        }
+      } else {
+        result = await queryTeamsByName(searchTerm);
+        if (!result) {
+          setError('未找到匹配的团队奖');
+        }
+      }
+
       if (result) {
         setQueryResult(result);
-      } else {
-        setError('未找到该工号对应的员工信息');
       }
     } catch (err) {
       setError('查询失败，请稍后重试');
@@ -359,7 +392,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
               color: '#333',
             }}
           >
-            通过工号查询团队奖
+            添加团队奖
           </h3>
           <button
             onClick={onCancel}
@@ -386,22 +419,19 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '14px', color: '#333', whiteSpace: 'nowrap' }}>
-              请输入工号:
-            </span>
             <input
               type="text"
-              placeholder="请输入工号"
+              placeholder="请输入工号/团队奖名称"
               value={employeeId}
               onChange={(e) => setEmployeeId(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={loading}
               style={{
+                flex: 1,
                 padding: '8px 12px',
                 border: '1px solid #d9d9d9',
                 borderRadius: '4px',
                 fontSize: '14px',
-                width: '200px',
                 outline: 'none',
                 transition: 'border-color 0.3s',
               }}
@@ -461,49 +491,51 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
         >
           {queryResult ? (
             <>
-              {/* 员工信息 */}
-              <div style={{ marginBottom: '20px', flexShrink: 0 }}>
-                <h4
-                  style={{
-                    margin: '0 0 12px 0',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    color: '#333',
-                  }}
-                >
-                  查询结果:
-                </h4>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '12px 16px',
-                    backgroundColor: '#f6ffed',
-                    border: '1px solid #b7eb8f',
-                    borderRadius: '4px',
-                  }}
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    style={{ color: '#52c41a', flexShrink: 0 }}
+              {/* 员工信息 - 仅在工号查询模式下显示 */}
+              {queryResult.employee.employeeId !== 'SEARCH' && (
+                <div style={{ marginBottom: '20px', flexShrink: 0 }}>
+                  <h4
+                    style={{
+                      margin: '0 0 12px 0',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      color: '#333',
+                    }}
                   >
-                    <path
-                      d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
-                      fill="currentColor"
-                    />
-                  </svg>
-                  <span style={{ fontSize: '14px', color: '#333' }}>
-                    员工: {queryResult.employee.name} ({queryResult.employee.employeeId}) - {queryResult.employee.department}
-                  </span>
+                    查询结果:
+                  </h4>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '12px 16px',
+                      backgroundColor: '#f6ffed',
+                      border: '1px solid #b7eb8f',
+                      borderRadius: '4px',
+                    }}
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      style={{ color: '#52c41a', flexShrink: 0 }}
+                    >
+                      <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                    <span style={{ fontSize: '14px', color: '#333' }}>
+                      员工: {queryResult.employee.name} ({queryResult.employee.employeeId}) - {queryResult.employee.department}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* 所属团队列表 */}
-              <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column' }}>
+              {/* 团队列表 */}
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                 <h4
                   style={{
                     margin: '0 0 12px 0',
@@ -513,31 +545,33 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                     flexShrink: 0,
                   }}
                 >
-                  所属团队奖:
+                  {queryResult.employee.employeeId === 'SEARCH' ? '搜索结果:' : '所属团队奖:'}
                 </h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1, overflow: 'auto' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1, overflow: 'auto', minHeight: 0, flexShrink: 0 }}>
                   {paginatedTeams.map((team) => {
                     const isSelected = selectedTeams.has(team.id);
                     const isExpanded = expandedTeams.has(team.id);
+                    const existing = isExistingTeam(team.id);
                     return (
                       <div
                         key={team.id}
                         style={{
-                          backgroundColor: isSelected ? '#e6f7ff' : '#f5f5f5',
-                          border: `1px solid ${isSelected ? '#1890ff' : '#d9d9d9'}`,
+                          backgroundColor: existing ? '#fff7e6' : (isSelected ? '#e6f7ff' : '#f5f5f5'),
+                          border: `1px solid ${existing ? '#ffd591' : (isSelected ? '#1890ff' : '#d9d9d9')}`,
                           borderRadius: '6px',
                           transition: 'all 0.3s',
                           overflow: 'hidden',
+                          opacity: existing ? 0.8 : 1,
                         }}
                       >
                         <div
-                          onClick={() => toggleTeamSelection(team.id)}
+                          onClick={() => !existing && toggleTeamSelection(team.id)}
                           style={{
                             display: 'flex',
                             alignItems: 'flex-start',
                             gap: '12px',
                             padding: '16px',
-                            cursor: 'pointer',
+                            cursor: existing ? 'not-allowed' : 'pointer',
                           }}
                         >
                           {/* 复选框 */}
@@ -546,8 +580,8 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                               width: '18px',
                               height: '18px',
                               borderRadius: '50%',
-                              border: `2px solid ${isSelected ? '#1890ff' : '#d9d9d9'}`,
-                              backgroundColor: isSelected ? '#1890ff' : '#fff',
+                              border: `2px solid ${existing ? '#d9d9d9' : (isSelected ? '#1890ff' : '#d9d9d9')}`,
+                              backgroundColor: existing ? '#f5f5f5' : (isSelected ? '#1890ff' : '#fff'),
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
@@ -555,7 +589,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                               marginTop: '2px',
                             }}
                           >
-                            {isSelected && (
+                            {!existing && isSelected && (
                               <svg
                                 width="12"
                                 height="12"
@@ -578,9 +612,25 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                                 fontWeight: 500,
                                 color: '#333',
                                 marginBottom: '6px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
                               }}
                             >
                               {team.name}
+                              {existing && (
+                                <span
+                                  style={{
+                                    padding: '2px 6px',
+                                    backgroundColor: '#fa8c16',
+                                    color: '#fff',
+                                    fontSize: '11px',
+                                    borderRadius: '3px',
+                                  }}
+                                >
+                                  已存在
+                                </span>
+                              )}
                             </div>
                             <div
                               style={{
@@ -589,7 +639,6 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                                 lineHeight: '1.6',
                               }}
                             >
-                              <div>团队负责人: {team.leaderName} ({team.leaderId})</div>
                               <div>团队成员: {team.memberCount}人</div>
                             </div>
                           </div>
@@ -658,18 +707,6 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                                 border: `1px solid ${isSelected ? '#91d5ff' : '#e8e8e8'}`,
                               }}
                             >
-                              <div
-                                style={{
-                                  fontSize: '13px',
-                                  fontWeight: 500,
-                                  color: '#333',
-                                  marginBottom: '10px',
-                                  paddingBottom: '8px',
-                                  borderBottom: '1px solid #e8e8e8',
-                                }}
-                              >
-                                团队成员 ({team.members.length}人)
-                              </div>
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                 {team.members.map((member, index) => (
                                   <div
@@ -759,7 +796,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                 fontSize: '14px',
               }}
             >
-              请输入工号进行查询
+              请输入工号/团队奖名称进行查询
             </div>
           )}
         </div>
