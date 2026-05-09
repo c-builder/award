@@ -428,7 +428,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
 
   // 分页状态
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const pageSize = 5;
 
   // 获取已存在的默认奖项名称集合（deletable=false 的默认数据）
   const existingDefaultAwardNames = useMemo(() => {
