@@ -443,20 +443,46 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
   // 筛选后的奖项列表（只显示当前筛选条件下的奖项）
   const filteredAwards = useMemo(() => {
     return MOCK_AWARDS.filter((award) => {
-      // 部门筛选 - 检查奖项部门路径是否以选中的部门路径开头
       if (selectedDeptPath.length > 0) {
         const match = selectedDeptPath.every((dept, index) => 
           award.issuingDepartmentPath[index] === dept
         );
         if (!match) return false;
       }
-      // 搜索关键词筛选
       if (searchKeyword && !award.name.toLowerCase().includes(searchKeyword.toLowerCase())) {
         return false;
       }
       return true;
     });
   }, [selectedDeptPath, searchKeyword]);
+
+  // 全选/取消全选逻辑
+  const selectableAwards = useMemo(() => {
+    return filteredAwards.filter(award => !existingDefaultAwardNames.has(award.name));
+  }, [filteredAwards, existingDefaultAwardNames]);
+
+  const selectableSelectedCount = useMemo(() => {
+    return selectableAwards.filter(award => selectedAwardIds.has(award.id)).length;
+  }, [selectableAwards, selectedAwardIds]);
+
+  const isAllSelected = selectableAwards.length > 0 && selectableSelectedCount === selectableAwards.length;
+  const isIndeterminate = selectableSelectedCount > 0 && selectableSelectedCount < selectableAwards.length;
+
+  const toggleAll = () => {
+    if (isAllSelected) {
+      setSelectedAwardIds(prev => {
+        const next = new Set(prev);
+        selectableAwards.forEach(a => next.delete(a.id));
+        return next;
+      });
+    } else {
+      setSelectedAwardIds(prev => {
+        const next = new Set(prev);
+        selectableAwards.forEach(a => next.add(a.id));
+        return next;
+      });
+    }
+  };
 
   // 分页后的奖项列表
   const paginatedAwards = useMemo(() => {
@@ -551,6 +577,8 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1000,
+        overflow: 'hidden',
+        overscrollBehavior: 'contain',
       }}
       onClick={onCancel}
     >
@@ -769,6 +797,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
             padding: '0',
             display: 'flex',
             flexDirection: 'column',
+            overscrollBehavior: 'contain',
           }}
         >
           {/* 表格头部 */}
@@ -785,7 +814,48 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
               flexShrink: 0,
             }}
           >
-            <div></div>
+            <div style={{ display: 'flex' }}>
+              <div
+                onClick={toggleAll}
+                style={{
+                  width: '18px',
+                  height: '18px',
+                  border: `2px solid ${isAllSelected || isIndeterminate ? '#1890ff' : '#d9d9d9'}`,
+                  borderRadius: '3px',
+                  backgroundColor: isAllSelected || isIndeterminate ? '#1890ff' : '#fff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: selectableAwards.length > 0 ? 'pointer' : 'default',
+                  transition: 'all 0.2s',
+                  opacity: selectableAwards.length === 0 ? 0.5 : 1,
+                }}
+              >
+                {isAllSelected ? (
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#fff"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                ) : isIndeterminate ? (
+                  <div
+                    style={{
+                      width: '10px',
+                      height: '2px',
+                      backgroundColor: '#fff',
+                      borderRadius: '1px',
+                    }}
+                  />
+                ) : null}
+              </div>
+            </div>
             <div>奖项名称</div>
             <div>奖项类别</div>
             <div>获奖人数</div>
