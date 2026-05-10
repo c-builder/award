@@ -55,7 +55,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
         transition: 'all 0.2s',
         display: 'flex',
         flexDirection: 'column',
-        minHeight: '80px',
+        minHeight: '92px',
       }}
       onMouseEnter={() => setIsTeamHovered(true)}
       onMouseLeave={() => setIsTeamHovered(false)}
@@ -127,7 +127,6 @@ const TeamCard: React.FC<TeamCardProps> = ({
           fontSize: '14px',
           fontWeight: 500,
           color: team.isSelected ? '#1890ff' : '#1a1a2e',
-          marginBottom: '4px',
           flex: 1,
           display: '-webkit-box',
           WebkitLineClamp: 2,
