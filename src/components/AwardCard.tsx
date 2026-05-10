@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { Award, Recipient, Team } from './types';
 import { RecipientCard } from './RecipientCard';
 import { TeamMembersModal } from './TeamMembersModal';
@@ -386,15 +386,58 @@ export const AwardCard: React.FC<AwardCardProps> = ({
             </p>
           </div>
         </div>
-        <span
-          style={{
-            fontSize: '12px',
-            color: '#9ca3af',
-            flexShrink: 0,
-          }}
-        >
-          已选({selectedCount})
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+          <span
+            style={{
+              fontSize: '12px',
+              color: '#9ca3af',
+            }}
+          >
+            已选({selectedCount})
+          </span>
+          <span
+            style={{
+              fontSize: '14px',
+              color: '#c8c8c8ff',
+            }}
+          >·</span>
+          {isTeamAward
+            ? onSelectAllTeams && award.teams && award.teams.length > 0 && (
+                <button
+                  onClick={() => onSelectAllTeams(!isAllSelected)}
+                  style={{
+                    padding: '4px 0px',
+                    backgroundColor: 'transparent',
+                    color: isAllSelected ? '#ff4d4f' : '#1890ff',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <span>{isAllSelected ? '取消全选' : '全选'}</span>
+                </button>
+              )
+            : onSelectAllRecipients && award.recipients.length > 0 && (
+                <button
+                  onClick={() => onSelectAllRecipients(!isAllSelected)}
+                  style={{
+                    padding: '4px 0px',
+                    backgroundColor: 'transparent',
+                    color: isAllSelected ? '#ff4d4f' : '#1890ff',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <span>{isAllSelected ? '取消全选' : '全选'}</span>
+                </button>
+              )
+          }
+        </div>
       </div>
 
       {isTeamAward ? (
@@ -417,24 +460,6 @@ export const AwardCard: React.FC<AwardCardProps> = ({
               >
                 <span>+</span>
                 <span>添加获奖团队</span>
-              </button>
-            )}
-            {onSelectAllTeams && award.teams && award.teams.length > 0 && (
-              <button
-                onClick={() => onSelectAllTeams(!isAllSelected)}
-                style={{
-                  padding: '4px 12px',
-                  backgroundColor: 'transparent',
-                  color: isAllSelected ? '#ff4d4f' : '#1890ff',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
-                <span>{isAllSelected ? '取消全选' : '全选'}</span>
               </button>
             )}
           </div>
@@ -513,24 +538,6 @@ export const AwardCard: React.FC<AwardCardProps> = ({
               >
                 <span>+</span>
                 <span>添加获奖人</span>
-              </button>
-            )}
-            {onSelectAllRecipients && award.recipients.length > 0 && (
-              <button
-                onClick={() => onSelectAllRecipients(!isAllSelected)}
-                style={{
-                  padding: '4px 12px',
-                  backgroundColor: 'transparent',
-                  color: isAllSelected ? '#ff4d4f' : '#1890ff',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
-                <span>{isAllSelected ? '取消全选' : '全选'}</span>
               </button>
             )}
           </div>
