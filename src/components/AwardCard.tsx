@@ -53,6 +53,9 @@ const TeamCard: React.FC<TeamCardProps> = ({
         position: 'relative',
         cursor: onSelectTeam ? 'pointer' : 'default',
         transition: 'all 0.2s',
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '80px',
       }}
       onMouseEnter={() => setIsTeamHovered(true)}
       onMouseLeave={() => setIsTeamHovered(false)}
@@ -125,6 +128,14 @@ const TeamCard: React.FC<TeamCardProps> = ({
           fontWeight: 500,
           color: team.isSelected ? '#1890ff' : '#1a1a2e',
           marginBottom: '4px',
+          flex: 1,
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          lineHeight: '1.4',
+          maxHeight: '2.8em',
         }}
       >
         {team.name}
@@ -135,7 +146,8 @@ const TeamCard: React.FC<TeamCardProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginTop: '4px',
+          marginTop: 'auto',
+          paddingTop: '4px',
         }}
       >
         <span

@@ -798,6 +798,7 @@ function App() {
               borderRadius: '4px',
               cursor: currentStep === 0 && !canProceedToNextStep ? 'not-allowed' : 'pointer',
               fontSize: '14px',
+              zIndex: 1000,
             }}
           >
             下一步
