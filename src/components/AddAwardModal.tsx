@@ -987,17 +987,8 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                           </svg>
                         </button>
 
-                        {/* 添加/移除按钮 */}
-                        {isDefaultExisting ? (
-                          <span
-                            style={{
-                              color: '#999',
-                              fontSize: '14px',
-                              cursor: 'not-allowed',
-                            }}
-                          >
-                          </span>
-                        ) : isCustomExisting ? (
+                        {/* 移除按钮 - 仅对已选中的自定义奖项显示 */}
+                        {(isCustomExisting || isSelected) && !isDefaultExisting && (
                           <span
                             onClick={() => toggleAwardSelection(award.id)}
                             style={{
@@ -1013,40 +1004,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                             }}
                           >
                             移除
-                          </span>
-                        ) : isSelected ? (
-                          <span
-                            onClick={() => toggleAwardSelection(award.id)}
-                            style={{
-                              color: '#ff4d4f',
-                              cursor: 'pointer',
-                              fontSize: '14px',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.color = '#ff7875';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.color = '#ff4d4f';
-                            }}
-                          >
-                            移除
-                          </span>
-                        ) : (
-                          <span
-                            onClick={() => toggleAwardSelection(award.id)}
-                            style={{
-                              color: '#1890ff',
-                              cursor: 'pointer',
-                              fontSize: '14px',
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.color = '#40a9ff';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.color = '#1890ff';
-                            }}
-                          >
-                            添加
                           </span>
                         )}
                       </div>
