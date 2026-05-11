@@ -382,36 +382,20 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
       // 同步外部部门筛选状态
       setSelectedDeptPath(externalDeptPath);
 
-      // 获取当前筛选条件下可见的奖项（使用外部部门筛选状态）
-      const visibleAwards = MOCK_AWARDS.filter((award) => {
-        // 部门筛选（使用外部部门筛选状态）
-        if (externalDeptPath.length > 0) {
-          const match = externalDeptPath.every((dept, index) => 
-            award.issuingDepartmentPath[index] === dept
-          );
-          if (!match) return false;
-        }
-        // 搜索关键词筛选
-        if (searchKeyword && !award.name.toLowerCase().includes(searchKeyword.toLowerCase())) {
-          return false;
-        }
-        return true;
-      });
-
-      // 获取已存在的自定义奖项的ID集合（只包含当前可见的）
+      // 获取所有已存在的自定义奖项的ID集合（不受当前筛选条件限制）
       const customAwardIds = new Set<string>();
       existingAwards.forEach(existingAward => {
         if (!existingAward.isDefault) {
-          // 在可见的奖项中查找对应的奖项ID
-          const visibleAward = visibleAwards.find(mock => mock.name === existingAward.title);
-          if (visibleAward) {
-            customAwardIds.add(visibleAward.id);
+          // 在所有模拟奖项中查找对应的奖项ID
+          const mockAward = MOCK_AWARDS.find(mock => mock.name === existingAward.title);
+          if (mockAward) {
+            customAwardIds.add(mockAward.id);
           }
         }
       });
       setSelectedAwardIds(customAwardIds);
     }
-  }, [visible, existingAwards, externalDeptPath, searchKeyword]);
+  }, [visible, existingAwards, externalDeptPath]);
 
   // 弹窗关闭时重置状态
   useEffect(() => {

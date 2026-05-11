@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   AwardCard,
   DataRangeFilter,
@@ -266,23 +266,32 @@ function App() {
   const [selectedDepartment, setSelectedDepartment] = useState<string>(currentUserDepartment);
 
   const filteredAwards = useMemo(() => {
-    if (selectedDepartment === '全部部门') return awards;
+    // 分离默认奖项和自定义奖项
+    const defaultAwards = awards.filter(award => award.isDefault);
+    const customAwards = awards.filter(award => !award.isDefault);
 
-    return awards.filter(award => {
-      if (award.awardType === 'individual') {
-        return award.recipients.some(r => {
-          const dept = r.department.split('/')[0];
-          return dept === selectedDepartment;
+    // 筛选默认奖项（根据部门筛选）
+    const filteredDefaultAwards = selectedDepartment === '全部部门'
+      ? defaultAwards
+      : defaultAwards.filter(award => {
+          if (award.awardType === 'individual') {
+            return award.recipients.some(r => {
+              const dept = r.department.split('/')[0];
+              return dept === selectedDepartment;
+            });
+          } else {
+            return award.teams?.some(t =>
+              t.members?.some(m => {
+                const dept = m.department.split('/')[0];
+                return dept === selectedDepartment;
+              })
+            ) ?? false;
+          }
         });
-      } else {
-        return award.teams?.some(t =>
-          t.members?.some(m => {
-            const dept = m.department.split('/')[0];
-            return dept === selectedDepartment;
-          })
-        ) ?? false;
-      }
-    });
+
+    // 自定义奖项作为共享数据，在所有部门都显示
+    // 按新增顺序（即数组中的顺序）追加到默认奖项后面
+    return [...filteredDefaultAwards, ...customAwards];
   }, [awards, selectedDepartment]);
 
   const handleDepartmentChange = (dept: string) => {
