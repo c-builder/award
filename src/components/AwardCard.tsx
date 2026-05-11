@@ -234,21 +234,34 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                 onToggleSelection();
               }}
               style={{
-                width: '18px',
-                height: '18px',
-                borderRadius: '4px',
-                border: `2px solid ${selected ? '#1890ff' : '#d9d9d9'}`,
+                width: '20px',
+                height: '20px',
+                borderRadius: '6px',
+                border: selected ? 'none' : '1.5px solid #d1d5db',
                 backgroundColor: selected ? '#1890ff' : '#fff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
                 flexShrink: 0,
-                transition: 'all 0.2s',
+                transition: 'all 0.2s ease',
+                boxShadow: selected ? '0 2px 4px rgba(24, 144, 255, 0.3)' : '0 1px 2px rgba(0, 0, 0, 0.05)',
+              }}
+              onMouseEnter={(e) => {
+                if (!selected) {
+                  e.currentTarget.style.borderColor = '#1890ff';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(24, 144, 255, 0.1)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!selected) {
+                  e.currentTarget.style.borderColor = '#d1d5db';
+                  e.currentTarget.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
+                }
               }}
             >
               {selected && (
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               )}
