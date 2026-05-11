@@ -303,21 +303,6 @@ function App() {
     setAddRecipientModalVisible(true);
   };
 
-  const handleRemoveRecipient = (awardId: string, recipientToRemove: any) => {
-    setAwards((prev) =>
-      prev.map((award) =>
-        award.id === awardId
-          ? {
-              ...award,
-              recipients: award.recipients.filter(
-                (r) => r.employeeId !== recipientToRemove.employeeId
-              ),
-            }
-          : award
-      )
-    );
-  };
-
   const handleSelectRecipient = (awardId: string, recipient: any) => {
     setAwards((prev) =>
       prev.map((award) =>
@@ -338,19 +323,6 @@ function App() {
   const handleAddTeam = (awardId: string) => {
     setCurrentAwardId(awardId);
     setTeamSearchModalVisible(true);
-  };
-
-  const handleRemoveTeam = (awardId: string, teamToRemove: any) => {
-    setAwards((prev) =>
-      prev.map((award) =>
-        award.id === awardId
-          ? {
-              ...award,
-              teams: award.teams?.filter((t) => t.id !== teamToRemove.id) || [],
-            }
-          : award
-      )
-    );
   };
 
   const handleSelectTeam = (awardId: string, team: any) => {
@@ -413,10 +385,6 @@ function App() {
           : award
       )
     );
-  };
-
-  const handleRemoveAward = (awardId: string) => {
-    setAwards((prev) => prev.filter((award) => award.id !== awardId));
   };
 
   const handleAddAward = (selectedAwards: any[]) => {
@@ -694,11 +662,6 @@ function App() {
                         ? () => handleAddRecipient(award.id)
                         : undefined
                     }
-                    onRemoveRecipient={
-                      award.awardType === 'individual'
-                        ? (recipient) => handleRemoveRecipient(award.id, recipient)
-                        : undefined
-                    }
                     onSelectRecipient={
                       award.awardType === 'individual'
                         ? (recipient) => handleSelectRecipient(award.id, recipient)
@@ -707,11 +670,6 @@ function App() {
                     onAddTeam={
                       award.awardType === 'team'
                         ? () => handleAddTeam(award.id)
-                        : undefined
-                    }
-                    onRemoveTeam={
-                      award.awardType === 'team'
-                        ? (team) => handleRemoveTeam(award.id, team)
                         : undefined
                     }
                     onSelectTeam={
@@ -734,7 +692,6 @@ function App() {
                         ? (team) => handleUpdateTeam(award.id, team)
                         : undefined
                     }
-                    onRemoveAward={award.isDefault ? undefined : () => handleRemoveAward(award.id)}
                   />
                 ))}
               </div>
