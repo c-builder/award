@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React from 'react';
 import { Recipient } from './types';
 
 export interface RecipientCardProps {
@@ -7,7 +7,6 @@ export interface RecipientCardProps {
   currentDepartment?: string;
   isSelected?: boolean;
   onSelect?: () => void;
-  onRemove?: () => void;
 }
 
 /**
@@ -23,16 +22,12 @@ export const RecipientCard: React.FC<RecipientCardProps> = ({
   currentDepartment = '',
   isSelected = false,
   onSelect,
-  onRemove,
 }) => {
   // 判断是否为跨部门人员：获奖人的一级部门 ≠ 当前选择的部门
   // 如果没有指定当前部门，则与颁发部门的一级部门比较
   const isCrossDepartment = currentDepartment
     ? recipient.department.split('/')[0] !== currentDepartment
     : recipient.department.split('/')[0] !== issuingDepartment.split('/')[0];
-
-  // 鼠标悬停状态
-  const [isHovered, setIsHovered] = useState(false);
 
   return (
     <div
@@ -50,8 +45,6 @@ export const RecipientCard: React.FC<RecipientCardProps> = ({
         cursor: onSelect ? 'pointer' : 'default',
         transition: 'all 0.2s',
       }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       onClick={onSelect}
     >
       {/* 选中标记 - 左上角 */}
@@ -77,46 +70,6 @@ export const RecipientCard: React.FC<RecipientCardProps> = ({
         >
           ✓
         </span>
-      )}
-
-      {/* 删除按钮 - 鼠标悬停时显示（右上角） */}
-      {onRemove && isHovered && (
-        <button
-          className="recipient-remove-btn"
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemove();
-          }}
-          title="删除"
-          style={{
-            position: 'absolute',
-            top: '-6px',
-            right: '-6px',
-            width: '16px',
-            height: '16px',
-            borderRadius: '50%',
-            backgroundColor: '#ef4444',
-            color: '#fff',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '10px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.2s',
-            boxShadow: '0 2px 4px rgba(239, 68, 68, 0.3)',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#ff7875';
-            e.currentTarget.style.transform = 'scale(1.1)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#ef4444';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
-        >
-          ×
-        </button>
       )}
 
       {/* 跨部门标记 - 右下角 */}

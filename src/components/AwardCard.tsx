@@ -13,32 +13,25 @@ export interface AwardCardProps {
   currentDepartment?: string;
   onToggleSelection?: () => void;
   onAddRecipient?: () => void;
-  onRemoveRecipient?: (recipient: Recipient) => void;
   onSelectRecipient?: (recipient: Recipient) => void;
   onSelectAllRecipients?: (selectAll: boolean) => void;
   onAddTeam?: () => void;
-  onRemoveTeam?: (team: Team) => void;
   onSelectTeam?: (team: Team) => void;
   onSelectAllTeams?: (selectAll: boolean) => void;
   onUpdateTeam?: (team: Team) => void;
-  onRemoveAward?: () => void;
 }
 
 interface TeamCardProps {
   team: Team;
   onSelectTeam?: (team: Team) => void;
-  onRemoveTeam?: (team: Team) => void;
   onShowMembers: (team: Team) => void;
 }
 
 const TeamCard: React.FC<TeamCardProps> = ({
   team,
   onSelectTeam,
-  onRemoveTeam,
   onShowMembers,
 }) => {
-  const [isTeamHovered, setIsTeamHovered] = useState(false);
-
   return (
     <div
       style={{
@@ -57,8 +50,6 @@ const TeamCard: React.FC<TeamCardProps> = ({
         flexDirection: 'column',
         minHeight: '92px',
       }}
-      onMouseEnter={() => setIsTeamHovered(true)}
-      onMouseLeave={() => setIsTeamHovered(false)}
       onClick={() => onSelectTeam && onSelectTeam(team)}
     >
       {team.isSelected && (
@@ -83,43 +74,6 @@ const TeamCard: React.FC<TeamCardProps> = ({
         >
           ✓
         </span>
-      )}
-
-      {onRemoveTeam && isTeamHovered && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onRemoveTeam(team);
-          }}
-          style={{
-            position: 'absolute',
-            top: '-6px',
-            right: '-6px',
-            width: '16px',
-            height: '16px',
-            borderRadius: '50%',
-            backgroundColor: '#ef4444',
-            color: '#fff',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '10px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.2s',
-            boxShadow: '0 2px 4px rgba(239, 68, 68, 0.3)',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#ff7875';
-            e.currentTarget.style.transform = 'scale(1.1)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#ef4444';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
-        >
-          ×
-        </button>
       )}
 
       <div
@@ -191,18 +145,13 @@ export const AwardCard: React.FC<AwardCardProps> = ({
   currentDepartment = '',
   onToggleSelection,
   onAddRecipient,
-  onRemoveRecipient,
   onSelectRecipient,
   onSelectAllRecipients,
   onAddTeam,
-  onRemoveTeam,
   onSelectTeam,
   onSelectAllTeams,
   onUpdateTeam,
-  onRemoveAward,
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
-
   const isTeamAward = award.awardType === 'team';
 
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
@@ -268,45 +217,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
         transition: 'all 0.2s',
         position: 'relative',
       }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
-      {onRemoveAward && !award.isDefault && isHovered && (
-        <button
-          onClick={onRemoveAward}
-          style={{
-            position: 'absolute',
-            top: '8px',
-            right: '8px',
-            width: '24px',
-            height: '24px',
-            borderRadius: '50%',
-            backgroundColor: '#ff4d4f',
-            color: '#fff',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '14px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 10,
-            transition: 'all 0.2s',
-            boxShadow: '0 2px 4px rgba(255, 77, 79, 0.3)',
-          }}
-          title="删除奖项"
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#ff7875';
-            e.currentTarget.style.transform = 'scale(1.1)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#ff4d4f';
-            e.currentTarget.style.transform = 'scale(1)';
-          }}
-        >
-          ×
-        </button>
-      )}
-
       <div
         style={{
           display: 'flex',
@@ -476,7 +387,6 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                   key={team.id}
                   team={team}
                   onSelectTeam={onSelectTeam}
-                  onRemoveTeam={onRemoveTeam}
                   onShowMembers={handleShowMembers}
                 />
               ))}
@@ -558,9 +468,6 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                   isSelected={recipient.isSelected}
                   onSelect={
                     onSelectRecipient ? () => onSelectRecipient(recipient) : undefined
-                  }
-                  onRemove={
-                    onRemoveRecipient ? () => onRemoveRecipient(recipient) : undefined
                   }
                 />
               ))}
