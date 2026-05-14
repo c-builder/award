@@ -53,6 +53,11 @@ export interface Award {
   awardType: AwardType;
   recipients: Recipient[];
   teams?: Team[];
+  /** 
+   * 所有可选的团队列表（用于编辑弹框显示）
+   * 保存时只更新 teams，allTeams 保持不变
+   */
+  allTeams?: Team[];
   /** 是否被选中用于展播 */
   selected?: boolean;
   /** 

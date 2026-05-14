@@ -11,6 +11,7 @@ export interface AddRecipientModalProps {
   selectedRecipients?: Recipient[];
   onCancel: () => void;
   onConfirm: (selectedRecipients: Recipient[]) => void;
+  readonly?: boolean; // 只读模式（查看全部时使用）
 }
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -21,6 +22,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
   allRecipients = [],
   onCancel,
   onConfirm,
+  readonly = false,
 }) => {
   const [searchText, setSearchText] = useState('');
   const [selectedDeptPath, setSelectedDeptPath] = useState<string[]>([]);
@@ -165,7 +167,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
           }}
         >
           <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 500, color: '#333' }}>
-            编辑获奖人{currentAward ? ` - ${currentAward.title}` : ''}
+            {readonly ? '获奖人列表' : '编辑获奖人'}{currentAward ? ` - ${currentAward.title}` : ''}
           </h3>
           <button
             onClick={onCancel}
@@ -247,62 +249,64 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
           {/* 表格 */}
           <div style={{ flex: 1, overflow: 'auto', padding: '16px 0' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
+              <thead>
                 <tr style={{ backgroundColor: '#fafafa' }}>
-                  <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0', width: '60px' }}>
-                    <div
-                      onClick={() => {
-                        if (isHeaderDisabled) return;
-                        if (isAllSelected) {
-                          setSelectedRecipients(prev => prev.filter(r => !selectableEmployees.some(e => e.employeeId === r.employeeId)));
-                        } else {
-                          setSelectedRecipients(prev => {
-                            const existingIds = new Set(prev.map(r => r.employeeId));
-                            const toAdd = selectableEmployees.filter(e => !existingIds.has(e.employeeId)).map(e => ({ ...e, isSelected: true }));
-                            return [...prev, ...toAdd];
-                          });
-                        }
-                      }}
-                      style={{
-                        width: '18px',
-                        height: '18px',
-                        border: `2px solid ${isHeaderDisabled ? '#d9d9d9' : isAllSelected || isIndeterminate ? '#1890ff' : '#d9d9d9'}`,
-                        borderRadius: '3px',
-                        backgroundColor: isAllSelected || isIndeterminate ? '#1890ff' : '#fff',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        margin: '0 auto',
-                        cursor: isHeaderDisabled ? 'not-allowed' : 'pointer',
-                        transition: 'all 0.2s',
-                        opacity: isHeaderDisabled ? 0.5 : 1,
-                      }}
-                    >
-                      {isAllSelected ? (
-                        <svg
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="#fff"
-                          strokeWidth="3"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      ) : isIndeterminate ? (
-                        <div
-                          style={{
-                            width: '10px',
-                            height: '2px',
-                            backgroundColor: '#fff',
-                            borderRadius: '1px',
-                          }}
-                        />
-                      ) : null}
-                    </div>
-                  </th>
+                  {!readonly && (
+                    <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0', width: '60px' }}>
+                      <div
+                        onClick={() => {
+                          if (isHeaderDisabled) return;
+                          if (isAllSelected) {
+                            setSelectedRecipients(prev => prev.filter(r => !selectableEmployees.some(e => e.employeeId === r.employeeId)));
+                          } else {
+                            setSelectedRecipients(prev => {
+                              const existingIds = new Set(prev.map(r => r.employeeId));
+                              const toAdd = selectableEmployees.filter(e => !existingIds.has(e.employeeId)).map(e => ({ ...e, isSelected: true }));
+                              return [...prev, ...toAdd];
+                            });
+                          }
+                        }}
+                        style={{
+                          width: '18px',
+                          height: '18px',
+                          border: `2px solid ${isHeaderDisabled ? '#d9d9d9' : isAllSelected || isIndeterminate ? '#1890ff' : '#d9d9d9'}`,
+                          borderRadius: '3px',
+                          backgroundColor: isAllSelected || isIndeterminate ? '#1890ff' : '#fff',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          margin: '0 auto',
+                          cursor: isHeaderDisabled ? 'not-allowed' : 'pointer',
+                          transition: 'all 0.2s',
+                          opacity: isHeaderDisabled ? 0.5 : 1,
+                        }}
+                      >
+                        {isAllSelected ? (
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="#fff"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        ) : isIndeterminate ? (
+                          <div
+                            style={{
+                              width: '10px',
+                              height: '2px',
+                              backgroundColor: '#fff',
+                              borderRadius: '1px',
+                            }}
+                          />
+                        ) : null}
+                      </div>
+                    </th>
+                  )}
                   <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0', width: '80px' }}>序号</th>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>姓名</th>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>工号</th>
@@ -317,42 +321,44 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
                     <tr
                       key={emp.employeeId}
                       style={{
-                        backgroundColor: selected ? '#e6f7ff' : 'transparent',
-                        cursor: 'pointer',
+                        backgroundColor: !readonly && selected ? '#e6f7ff' : 'transparent',
+                        cursor: readonly ? 'default' : 'pointer',
                       }}
-                      onClick={() => toggleSelection(emp)}
+                      onClick={() => !readonly && toggleSelection(emp)}
                     >
-                      <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', textAlign: 'center' }}>
-                        <div
-                          style={{
-                            width: '18px',
-                            height: '18px',
-                            border: `2px solid ${selected ? '#1890ff' : '#d9d9d9'}`,
-                            borderRadius: '3px',
-                            backgroundColor: selected ? '#1890ff' : '#fff',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            margin: '0 auto',
-                            transition: 'all 0.2s',
-                          }}
-                        >
-                          {selected && (
-                            <svg
-                              width="12"
-                              height="12"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="#fff"
-                              strokeWidth="3"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                          )}
-                        </div>
-                      </td>
+                      {!readonly && (
+                        <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', textAlign: 'center' }}>
+                          <div
+                            style={{
+                              width: '18px',
+                              height: '18px',
+                              border: `2px solid ${selected ? '#1890ff' : '#d9d9d9'}`,
+                              borderRadius: '3px',
+                              backgroundColor: selected ? '#1890ff' : '#fff',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              margin: '0 auto',
+                              transition: 'all 0.2s',
+                            }}
+                          >
+                            {selected && (
+                              <svg
+                                width="12"
+                                height="12"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="#fff"
+                                strokeWidth="3"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            )}
+                          </div>
+                        </td>
+                      )}
                       <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', textAlign: 'center', color: '#666' }}>
                         {seq}
                       </td>
@@ -393,34 +399,53 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
             gap: '12px',
           }}
         >
-          <button
-            onClick={onCancel}
-            style={{
-              padding: '8px 24px',
-              backgroundColor: '#fff',
-              color: '#666',
-              border: '1px solid #d9d9d9',
-              borderRadius: '4px',
-              fontSize: '14px',
-              cursor: 'pointer',
-            }}
-          >
-            取消
-          </button>
-          <button
-            onClick={handleConfirm}
-            style={{
-              padding: '8px 24px',
-              backgroundColor: '#1890ff',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '4px',
-              fontSize: '14px',
-              cursor: 'pointer',
-            }}
-          >
-            保存
-          </button>
+          {readonly ? (
+            <button
+              onClick={onCancel}
+              style={{
+                padding: '8px 24px',
+                backgroundColor: '#1890ff',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '14px',
+                cursor: 'pointer',
+              }}
+            >
+              关闭
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={onCancel}
+                style={{
+                  padding: '8px 24px',
+                  backgroundColor: '#fff',
+                  color: '#666',
+                  border: '1px solid #d9d9d9',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                取消
+              </button>
+              <button
+                onClick={handleConfirm}
+                style={{
+                  padding: '8px 24px',
+                  backgroundColor: '#1890ff',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                保存
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

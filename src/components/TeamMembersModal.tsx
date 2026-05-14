@@ -171,7 +171,7 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 2000,
+        zIndex: 2100,
         overflow: 'hidden',
         overscrollBehavior: 'contain',
       }}
@@ -293,7 +293,7 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
         {/* 表格 */}
         <div style={{ flex: 1, overflow: 'auto', overscrollBehavior: 'contain' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
+            <thead>
               <tr style={{ backgroundColor: '#fafafa' }}>
                 <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0', width: '60px' }}>
                   <div

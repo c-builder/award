@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Award, Recipient, Team } from './types';
 import { RecipientCard } from './RecipientCard';
 import { TeamMembersModal } from './TeamMembersModal';
-import { RecipientListModal } from './RecipientListModal';
+import { AddRecipientModal } from './AddRecipientModal';
 
 const MAX_DISPLAY_RECIPIENTS = 10;
 
@@ -16,6 +16,7 @@ export interface AwardCardProps {
   onRemoveTeam?: (team: Team) => void;
   onUpdateTeam?: (team: Team) => void;
   onRemoveAward?: () => void;
+  onViewAllTeams?: () => void;
 }
 
 interface TeamCardProps {
@@ -161,6 +162,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
   onRemoveTeam,
   onUpdateTeam,
   onRemoveAward,
+  onViewAllTeams,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -168,7 +170,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
 
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [membersModalVisible, setMembersModalVisible] = useState(false);
-  const [recipientListModalVisible, setRecipientListModalVisible] = useState(false);
+  const [viewAllModalVisible, setViewAllModalVisible] = useState(false);
 
   const handleShowMembers = (team: Team) => {
     setSelectedTeam(team);
@@ -180,12 +182,12 @@ export const AwardCard: React.FC<AwardCardProps> = ({
     setSelectedTeam(null);
   };
 
-  const handleShowRecipientList = () => {
-    setRecipientListModalVisible(true);
+  const handleShowViewAll = () => {
+    setViewAllModalVisible(true);
   };
 
-  const handleCloseRecipientList = () => {
-    setRecipientListModalVisible(false);
+  const handleCloseViewAll = () => {
+    setViewAllModalVisible(false);
   };
 
   const filteredRecipients = award.recipients.filter(r => {
@@ -197,19 +199,45 @@ export const AwardCard: React.FC<AwardCardProps> = ({
     return recipientDept === currentDepartment || r.isManuallyAdded;
   });
 
-  const filteredTeams = award.teams ? award.teams.filter(t => {
-    if (!currentDepartment) return true;
-    // 显示有当前部门成员的团队，或手动添加的跨部门团队
-    return t.members?.some(m => {
-      const memberDept = m.department.split('/')[0];
-      return memberDept === currentDepartment;
-    }) || t.isManuallyAdded;
-  }) : undefined;
+  const filteredTeams = award.teams ? (() => {
+    if (!currentDepartment) return award.teams;
+    // 分离当前部门团队和跨部门团队
+    const currentDeptTeams = award.teams.filter(t =>
+      t.members?.some(m => {
+        const memberDept = m.department.split('/')[0];
+        return memberDept === currentDepartment;
+      })
+    );
+    const crossDeptTeams = award.teams.filter(t =>
+      t.isManuallyAdded && !t.members?.some(m => {
+        const memberDept = m.department.split('/')[0];
+        return memberDept === currentDepartment;
+      })
+    );
+    // 当前部门团队排在前面，跨部门团队排在后面
+    return [...currentDeptTeams, ...crossDeptTeams];
+  })() : undefined;
 
-  // 已选数量改为当前记录数量
+  // 已选数量 - 只统计当前部门中已选中的团队/人员
+  // 对于团队奖，如果当前部门的所有团队都是 isSelected: false（未编辑过），则默认视为全部选中
+  const teamSelectedCount = isTeamAward
+    ? (() => {
+        const currentDeptTeams = filteredTeams || [];
+        if (currentDeptTeams.length === 0) return 0;
+        // 检查是否所有团队都是 isSelected: false（未编辑状态）
+        const allUnselected = currentDeptTeams.every(t => t.isSelected === false);
+        if (allUnselected) {
+          // 未编辑过，默认全部选中
+          return currentDeptTeams.length;
+        }
+        // 已编辑过，统计实际选中的
+        return currentDeptTeams.filter(t => t.isSelected !== false).length;
+      })()
+    : 0;
+  
   const selectedCount = isTeamAward
-    ? (filteredTeams?.length || 0)
-    : filteredRecipients.length;
+    ? teamSelectedCount
+    : filteredRecipients.filter(r => r.isSelected !== false).length;
 
   const displayRecipients = filteredRecipients.slice(0, MAX_DISPLAY_RECIPIENTS);
   const hasMoreRecipients = filteredRecipients.length > MAX_DISPLAY_RECIPIENTS;
@@ -327,7 +355,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
               color: '#9ca3af',
             }}
           >
-            已选({selectedCount})
+            {isTeamAward ? `已选(${selectedCount})` : `已选(${selectedCount})`}
           </span>
         </div>
       </div>
@@ -374,7 +402,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
               ))}
               {hasMoreTeams && (
                 <button
-                  onClick={() => {}}
+                  onClick={onViewAllTeams}
                   style={{
                     padding: '12px 16px',
                     backgroundColor: '#f0f9ff',
@@ -402,7 +430,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                     e.currentTarget.style.borderStyle = 'dashed';
                   }}
                 >
-                  <span>等共{filteredTeams?.length}个团队</span>
+                  <span>等共{filteredTeams?.length}个团队（已选{selectedCount}）</span>
                   <span style={{ fontWeight: 600 }}>查看全部 →</span>
                 </button>
               )}
@@ -455,7 +483,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
 
               {hasMoreRecipients && (
                 <button
-                  onClick={handleShowRecipientList}
+                  onClick={handleShowViewAll}
                   style={{
                     padding: '12px 16px',
                     backgroundColor: '#f0f9ff',
@@ -503,13 +531,14 @@ export const AwardCard: React.FC<AwardCardProps> = ({
         }}
       />
 
-      <RecipientListModal
-        visible={recipientListModalVisible}
-        awardName={award.title}
-        recipients={filteredRecipients}
-        issuingDepartment={award.issuingDepartment}
-        currentDepartment={currentDepartment}
-        onClose={handleCloseRecipientList}
+      <AddRecipientModal
+        visible={viewAllModalVisible}
+        currentAward={award}
+        allRecipients={filteredRecipients}
+        selectedRecipients={selectedRecipients}
+        onCancel={handleCloseViewAll}
+        onConfirm={() => {}}
+        readonly={true}
       />
     </div>
   );
