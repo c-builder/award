@@ -7,18 +7,18 @@ export interface AddRecipientModalProps {
   visible: boolean;
   currentDepartment?: string;
   currentAward?: Award;
-  existingRecipients?: Recipient[];
+  allRecipients?: Recipient[];
+  selectedRecipients?: Recipient[];
   onCancel: () => void;
   onConfirm: (selectedRecipients: Recipient[]) => void;
 }
 
-const PAGE_SIZE = 10;
+const DEFAULT_PAGE_SIZE = 10;
 
 export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
   visible,
-  currentDepartment = '',
   currentAward,
-  existingRecipients = [],
+  allRecipients = [],
   onCancel,
   onConfirm,
 }) => {
@@ -26,37 +26,32 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
   const [selectedDeptPath, setSelectedDeptPath] = useState<string[]>([]);
   const [selectedRecipients, setSelectedRecipients] = useState<Recipient[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const headerCheckboxRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (visible) {
       setSearchText('');
       setSelectedDeptPath([]);
-      setSelectedRecipients([]);
+      // 初始化时，根据 allRecipients 中的 isSelected 状态设置选中
+      const initiallySelected = allRecipients.filter(r => r.isSelected).map(r => ({ ...r }));
+      setSelectedRecipients(initiallySelected);
       setCurrentPage(1);
+      setPageSize(DEFAULT_PAGE_SIZE);
     }
-  }, [visible]);
+  }, [visible, allRecipients]);
 
   const employeePool = useMemo(() => {
-    if (!currentAward) return [];
-    return currentAward.recipients.map(r => ({
+    return allRecipients.map(r => ({
       name: r.name,
       employeeId: r.employeeId,
       department: r.department,
+      isSelected: r.isSelected,
     }));
-  }, [currentAward]);
+  }, [allRecipients]);
 
   const isSelected = (employeeId: string) => {
     return selectedRecipients.some(r => r.employeeId === employeeId);
-  };
-
-  const isExisting = (employeeId: string) => {
-    return existingRecipients.some(r => {
-      if (r.employeeId !== employeeId) return false;
-      if (!currentDepartment) return true;
-      const dept = r.department.split('/')[0];
-      return dept === currentDepartment || r.isManuallyAdded;
-    });
   };
 
   const filteredEmployees = useMemo(() => {
@@ -75,9 +70,10 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
     });
   }, [employeePool, searchText, selectedDeptPath]);
 
+  // 所有员工都可以选择
   const selectableEmployees = useMemo(() => {
-    return filteredEmployees.filter(e => !isExisting(e.employeeId));
-  }, [filteredEmployees, existingRecipients, currentDepartment]);
+    return filteredEmployees;
+  }, [filteredEmployees]);
 
   const selectedCount = useMemo(() => {
     return selectableEmployees.filter(e => isSelected(e.employeeId)).length;
@@ -94,21 +90,24 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
   }, [isIndeterminate]);
 
   const paginatedEmployees = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
-    return filteredEmployees.slice(start, start + PAGE_SIZE);
-  }, [filteredEmployees, currentPage]);
+    const start = (currentPage - 1) * pageSize;
+    return filteredEmployees.slice(start, start + pageSize);
+  }, [filteredEmployees, currentPage, pageSize]);
 
   const toggleSelection = (recipient: Recipient) => {
-    if (isExisting(recipient.employeeId)) return;
-    
-    if (isSelected(recipient.employeeId)) {
+    const selected = isSelected(recipient.employeeId);
+
+    if (selected) {
+      // 取消勾选
       setSelectedRecipients(prev => prev.filter(r => r.employeeId !== recipient.employeeId));
     } else {
-      setSelectedRecipients(prev => [...prev, { ...recipient, isSelected: true }]);
+      // 勾选
+      setSelectedRecipients(prev => [...prev, { ...recipient }]);
     }
   };
 
   const handleConfirm = () => {
+    // 保存时只返回当前选中的获奖人
     onConfirm(selectedRecipients);
   };
 
@@ -116,6 +115,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
     setSearchText('');
     setSelectedDeptPath([]);
     setCurrentPage(1);
+    setPageSize(DEFAULT_PAGE_SIZE);
   };
 
   const handlePageChange = (page: number) => {
@@ -165,7 +165,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
           }}
         >
           <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 500, color: '#333' }}>
-            添加获奖人{currentAward ? ` - ${currentAward.title}` : ''}
+            编辑获奖人{currentAward ? ` - ${currentAward.title}` : ''}
           </h3>
           <button
             onClick={onCancel}
@@ -243,11 +243,11 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
         </div>
 
         {/* 内容区域 */}
-        <div style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', overscrollBehavior: 'contain' }}>
+        <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', overscrollBehavior: 'contain' }}>
           {/* 表格 */}
           <div style={{ flex: 1, overflow: 'auto', padding: '16px 0' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
+              <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
                 <tr style={{ backgroundColor: '#fafafa' }}>
                   <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0', width: '60px' }}>
                     <div
@@ -303,23 +303,22 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
                       ) : null}
                     </div>
                   </th>
+                  <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0', width: '80px' }}>序号</th>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>姓名</th>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>工号</th>
                   <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>部门</th>
-                  <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>状态</th>
                 </tr>
               </thead>
               <tbody>
-                {paginatedEmployees.map((emp) => {
+                {paginatedEmployees.map((emp, index) => {
                   const selected = isSelected(emp.employeeId);
-                  const existing = isExisting(emp.employeeId);
+                  const seq = (currentPage - 1) * pageSize + index + 1;
                   return (
                     <tr
                       key={emp.employeeId}
                       style={{
                         backgroundColor: selected ? '#e6f7ff' : 'transparent',
-                        cursor: existing ? 'not-allowed' : 'pointer',
-                        opacity: existing ? 0.6 : 1,
+                        cursor: 'pointer',
                       }}
                       onClick={() => toggleSelection(emp)}
                     >
@@ -328,7 +327,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
                           style={{
                             width: '18px',
                             height: '18px',
-                            border: `2px solid ${existing ? '#d9d9d9' : selected ? '#1890ff' : '#d9d9d9'}`,
+                            border: `2px solid ${selected ? '#1890ff' : '#d9d9d9'}`,
                             borderRadius: '3px',
                             backgroundColor: selected ? '#1890ff' : '#fff',
                             display: 'flex',
@@ -336,7 +335,6 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
                             justifyContent: 'center',
                             margin: '0 auto',
                             transition: 'all 0.2s',
-                            opacity: existing ? 0.5 : 1,
                           }}
                         >
                           {selected && (
@@ -355,18 +353,14 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
                           )}
                         </div>
                       </td>
+                      <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', textAlign: 'center', color: '#666' }}>
+                        {seq}
+                      </td>
                       <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', color: '#333' }}>
                         {emp.name}
                       </td>
                       <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', color: '#666', fontFamily: 'monospace' }}>{emp.employeeId}</td>
                       <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', color: '#666' }}>{emp.department}</td>
-                      <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', color: '#666' }}>
-                        {existing ? (
-                          <span style={{ fontSize: '12px', color: '#999', backgroundColor: '#f5f5f5', padding: '2px 8px', borderRadius: '3px' }}>已添加</span>
-                        ) : selected ? (
-                          <span style={{ fontSize: '12px', color: '#1890ff', backgroundColor: '#e6f7ff', padding: '2px 8px', borderRadius: '3px' }}>已选中</span>
-                        ) : null}
-                      </td>
                     </tr>
                   );
                 })}
@@ -378,10 +372,12 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
           <div style={{ padding: '0 24px', borderTop: '1px solid #f0f0f0', flexShrink: 0 }}>
             <Pagination
               current={currentPage}
-              pageSize={PAGE_SIZE}
+              pageSize={pageSize}
               total={filteredEmployees.length}
               onChange={handlePageChange}
+              onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
               showTotal
+              showPageSize
             />
           </div>
 
@@ -413,18 +409,17 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
           </button>
           <button
             onClick={handleConfirm}
-            disabled={selectedRecipients.length === 0}
             style={{
               padding: '8px 24px',
-              backgroundColor: selectedRecipients.length === 0 ? '#d9d9d9' : '#1890ff',
+              backgroundColor: '#1890ff',
               color: '#fff',
               border: 'none',
               borderRadius: '4px',
               fontSize: '14px',
-              cursor: selectedRecipients.length === 0 ? 'not-allowed' : 'pointer',
+              cursor: 'pointer',
             }}
           >
-            确认
+            保存
           </button>
         </div>
       </div>

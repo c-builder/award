@@ -17,6 +17,8 @@ export interface PaginationProps {
   showQuickJumper?: boolean;
   /** 是否显示总条数 */
   showTotal?: boolean;
+  /** 是否显示每页条数选择器 */
+  showPageSize?: boolean;
   /** 自定义样式 */
   style?: React.CSSProperties;
 }
@@ -34,6 +36,7 @@ export const Pagination: React.FC<PaginationProps> = ({
   pageSizeOptions = [10, 20, 50, 100],
   showQuickJumper = false,
   showTotal = true,
+  showPageSize = false,
   style = {},
 }) => {
   const totalPages = Math.ceil(total / pageSize);
@@ -118,7 +121,7 @@ export const Pagination: React.FC<PaginationProps> = ({
       )}
 
       {/* 每页条数选择器 */}
-      {onPageSizeChange && (
+      {showPageSize && onPageSizeChange && (
         <select
           value={pageSize}
           onChange={(e) => onPageSizeChange(Number(e.target.value))}

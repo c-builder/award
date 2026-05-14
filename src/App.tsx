@@ -19,22 +19,22 @@ const mockAwards: Award[] = [
       { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/平台开发部', isSelected: true },
       { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台运维部', isSelected: true },
       { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/技术支持部', isSelected: true },
-      { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组', isSelected: true },
-      { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组', isSelected: true },
-      { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组', isSelected: true },
-      { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组', isSelected: true },
-      { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组', isSelected: true },
-      { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组', isSelected: true },
-      { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组', isSelected: true },
-      { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组', isSelected: true },
-      { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组', isSelected: true },
-      { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组', isSelected: true },
-      { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组', isSelected: true },
-      { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组', isSelected: true },
-      { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组', isSelected: true },
-      { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组', isSelected: true },
-      { name: '王五', employeeId: '00507890', department: '华为公司', isSelected: true },
-      { name: '赵六', employeeId: '00501111', department: '华为公司', isSelected: true },
+      { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组', isSelected: false },
+      { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组', isSelected: false },
+      { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组', isSelected: false },
+      { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组', isSelected: false },
+      { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组', isSelected: false },
+      { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组', isSelected: false },
+      { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组', isSelected: false },
+      { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组', isSelected: false },
+      { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组', isSelected: false },
+      { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组', isSelected: false },
+      { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组', isSelected: false },
+      { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组', isSelected: false },
+      { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组', isSelected: false },
+      { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组', isSelected: false },
+      { name: '王五', employeeId: '00507890', department: '华为公司', isSelected: false },
+      { name: '赵六', employeeId: '00501111', department: '华为公司', isSelected: false },
     ],
     isDefault: true,
     pushDate: '2025-04-01',
@@ -106,6 +106,752 @@ const mockAwards: Award[] = [
         memberCount: 6,
         isSelected: true,
         members: [
+          { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+          { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+          { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+          { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+          { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+        ],
+      },
+      {
+        id: 'team-005',
+        name: 'OCC应急响应优秀团队',
+        memberCount: 8,
+        isSelected: true,
+        members: [
+          { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/平台开发部', role: '应急组长' },
+          { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+          { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
+          { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+          { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+          { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+          { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+        ],
+      },
+      {
+        id: 'team-006',
+        name: 'OCC监控平台建设优秀团队',
+        memberCount: 10,
+        isSelected: true,
+        members: [
+          { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组', role: '技术负责人' },
+          { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+          { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
+          { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+          { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+          { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+          { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+          { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+        ],
+      },
+      {
+        id: 'team-007',
+        name: 'OCC流程优化优秀团队',
+        memberCount: 7,
+        isSelected: true,
+        members: [
+          { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组', role: '流程专家' },
+          { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
+          { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
+          { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+          { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+          { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+        ],
+      },
+      {
+        id: 'team-008',
+        name: 'OCC数据分析优秀团队',
+        memberCount: 9,
+        isSelected: true,
+        members: [
+          { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组', role: '数据分析师' },
+          { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
+          { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
+          { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+          { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
+          { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+          { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+        ],
+      },
+      {
+        id: 'team-009',
+        name: 'OCC安全运维优秀团队',
+        memberCount: 8,
+        isSelected: true,
+        members: [
+          { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组', role: '安全专家' },
+          { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+          { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+          { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+          { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
+          { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
+          { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+        ],
+      },
+      {
+        id: 'team-010',
+        name: 'OCC自动化运维优秀团队',
+        memberCount: 11,
+        isSelected: true,
+        members: [
+          { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组', role: '自动化工程师' },
+          { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+          { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+          { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+          { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
+          { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
+          { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+          { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
+          { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+        ],
+      },
+      {
+        id: 'team-011',
+        name: 'OCC容量规划优秀团队',
+        memberCount: 6,
+        isSelected: true,
+        members: [
+          { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组', role: '容量规划师' },
+          { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+          { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+          { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+          { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+        ],
+      },
+      {
+        id: 'team-012',
+        name: 'OCC故障演练优秀团队',
+        memberCount: 9,
+        isSelected: true,
+        members: [
+          { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组', role: '演练负责人' },
+          { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
+          { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+          { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+          { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+          { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+          { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
+        ],
+      },
+      {
+        id: 'team-013',
+        name: 'OCC变更管理优秀团队',
+        memberCount: 7,
+        isSelected: true,
+        members: [
+          { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部', role: '变更经理' },
+          { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+          { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
+          { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+          { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+          { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+        ],
+      },
+      {
+        id: 'team-014',
+        name: 'OCC事件管理优秀团队',
+        memberCount: 10,
+        isSelected: true,
+        members: [
+          { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组', role: '事件经理' },
+          { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+          { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+          { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
+          { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
+          { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+          { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+          { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+        ],
+      },
+      {
+        id: 'team-015',
+        name: 'OCC问题管理优秀团队',
+        memberCount: 8,
+        isSelected: true,
+        members: [
+          { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组', role: '问题经理' },
+          { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
+          { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
+          { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+          { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
+          { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+        ],
+      },
+      {
+        id: 'team-016',
+        name: 'OCC配置管理优秀团队',
+        memberCount: 6,
+        isSelected: true,
+        members: [
+          { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组', role: '配置管理员' },
+          { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+          { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+          { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+          { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+        ],
+      },
+      {
+        id: 'team-017',
+        name: 'OCC发布管理优秀团队',
+        memberCount: 9,
+        isSelected: true,
+        members: [
+          { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组', role: '发布经理' },
+          { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
+          { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+          { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+          { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+          { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+          { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
+        ],
+      },
+      {
+        id: 'team-018',
+        name: 'OCC服务台优秀团队',
+        memberCount: 12,
+        isSelected: true,
+        members: [
+          { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部', role: '服务台主管' },
+          { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+          { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
+          { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+          { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+          { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+          { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+          { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+          { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
+        ],
+      },
+      {
+        id: 'team-019',
+        name: 'OCC知识管理优秀团队',
+        memberCount: 7,
+        isSelected: true,
+        members: [
+          { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部', role: '知识管理员' },
+          { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+          { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+          { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+          { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+          { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+        ],
+      },
+      {
+        id: 'team-020',
+        name: 'OCC供应商管理优秀团队',
+        memberCount: 8,
+        isSelected: true,
+        members: [
+          { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组', role: '供应商经理' },
+          { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
+          { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+          { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
+          { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+          { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+          { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+        ],
+      },
+      {
+        id: 'team-021',
+        name: 'OCC资产管理优秀团队',
+        memberCount: 6,
+        isSelected: true,
+        members: [
+          { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组', role: '资产管理员' },
+          { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+          { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+          { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
+          { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
+        ],
+      },
+      {
+        id: 'team-022',
+        name: 'OCC可用性管理优秀团队',
+        memberCount: 10,
+        isSelected: true,
+        members: [
+          { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组', role: '可用性经理' },
+          { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+          { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+          { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+          { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
+          { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
+          { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+          { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+        ],
+      },
+      {
+        id: 'team-023',
+        name: 'OCC连续性管理优秀团队',
+        memberCount: 8,
+        isSelected: true,
+        members: [
+          { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组', role: '连续性经理' },
+          { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+          { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+          { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+          { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+          { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+          { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+        ],
+      },
+      {
+        id: 'team-024',
+        name: 'OCC容量优化优秀团队',
+        memberCount: 7,
+        isSelected: true,
+        members: [
+          { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组', role: '容量优化师' },
+          { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
+          { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+          { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+          { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+          { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+        ],
+      },
+      {
+        id: 'team-025',
+        name: 'OCC性能优化优秀团队',
+        memberCount: 9,
+        isSelected: true,
+        members: [
+          { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组', role: '性能工程师' },
+          { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
+          { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
+          { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+          { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
+          { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+          { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+          { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+        ],
+      },
+      {
+        id: 'team-026',
+        name: 'OCC监控告警优化优秀团队',
+        memberCount: 8,
+        isSelected: true,
+        members: [
+          { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组', role: '监控工程师' },
+          { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+          { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+          { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
+          { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
+          { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+          { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+        ],
+      },
+      {
+        id: 'team-027',
+        name: 'OCC日志分析优秀团队',
+        memberCount: 6,
+        isSelected: true,
+        members: [
+          { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组', role: '日志分析师' },
+          { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+          { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+          { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
+          { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
+        ],
+      },
+      {
+        id: 'team-028',
+        name: 'OCC报表开发优秀团队',
+        memberCount: 10,
+        isSelected: true,
+        members: [
+          { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组', role: '报表开发师' },
+          { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
+          { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+          { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+          { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+          { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+          { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+          { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+        ],
+      },
+      {
+        id: 'team-029',
+        name: 'OCC值班管理优秀团队',
+        memberCount: 7,
+        isSelected: true,
+        members: [
+          { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组', role: '值班主管' },
+          { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
+          { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+          { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+          { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+          { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+        ],
+      },
+      {
+        id: 'team-030',
+        name: 'OCC交接管理优秀团队',
+        memberCount: 8,
+        isSelected: true,
+        members: [
+          { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组', role: '交接负责人' },
+          { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
+          { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
+          { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+          { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
+          { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+          { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+        ],
+      },
+      {
+        id: 'team-031',
+        name: 'OCC文档管理优秀团队',
+        memberCount: 6,
+        isSelected: true,
+        members: [
+          { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组', role: '文档工程师' },
+          { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+          { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+          { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+          { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
+        ],
+      },
+      {
+        id: 'team-032',
+        name: 'OCC培训体系建设优秀团队',
+        memberCount: 9,
+        isSelected: true,
+        members: [
+          { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部', role: '培训主管' },
+          { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+          { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+          { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+          { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+          { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
+          { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
+        ],
+      },
+      {
+        id: 'team-033',
+        name: 'OCC考核评价优秀团队',
+        memberCount: 7,
+        isSelected: true,
+        members: [
+          { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组', role: '考核专员' },
+          { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
+          { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+          { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+          { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+        ],
+      },
+      {
+        id: 'team-034',
+        name: 'OCC激励机制建设优秀团队',
+        memberCount: 8,
+        isSelected: true,
+        members: [
+          { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部', role: '激励专员' },
+          { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+          { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
+          { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
+          { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+          { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+        ],
+      },
+      {
+        id: 'team-035',
+        name: 'OCC沟通协调优秀团队',
+        memberCount: 10,
+        isSelected: true,
+        members: [
+          { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部', role: '协调专员' },
+          { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+          { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
+          { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
+          { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+          { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
+          { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+          { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+        ],
+      },
+      {
+        id: 'team-036',
+        name: 'OCC会议组织优秀团队',
+        memberCount: 6,
+        isSelected: true,
+        members: [
+          { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组', role: '会议组织者' },
+          { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+          { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+          { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+          { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
+        ],
+      },
+      {
+        id: 'team-037',
+        name: 'OCC信息报送优秀团队',
+        memberCount: 8,
+        isSelected: true,
+        members: [
+          { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部', role: '信息专员' },
+          { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+          { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+          { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+          { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+          { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
+        ],
+      },
+      {
+        id: 'team-038',
+        name: 'OCC风险管控优秀团队',
+        memberCount: 9,
+        isSelected: true,
+        members: [
+          { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部', role: '风险管控师' },
+          { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+          { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
+          { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+          { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+          { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+          { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+        ],
+      },
+      {
+        id: 'team-039',
+        name: 'OCC合规管理优秀团队',
+        memberCount: 7,
+        isSelected: true,
+        members: [
+          { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组', role: '合规专员' },
+          { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
+          { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
+          { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+          { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+        ],
+      },
+      {
+        id: 'team-040',
+        name: 'OCC审计配合优秀团队',
+        memberCount: 8,
+        isSelected: true,
+        members: [
+          { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部', role: '审计配合员' },
+          { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+          { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
+          { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
+          { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+          { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
+        ],
+      },
+      {
+        id: 'team-041',
+        name: 'OCC成本控制优秀团队',
+        memberCount: 6,
+        isSelected: true,
+        members: [
+          { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部', role: '成本分析师' },
+          { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+          { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+          { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+          { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+        ],
+      },
+      {
+        id: 'team-042',
+        name: 'OCC预算管理优秀团队',
+        memberCount: 9,
+        isSelected: true,
+        members: [
+          { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组', role: '预算专员' },
+          { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
+          { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
+          { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+          { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+          { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+          { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+          { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+        ],
+      },
+      {
+        id: 'team-043',
+        name: 'OCC资源调度优秀团队',
+        memberCount: 10,
+        isSelected: true,
+        members: [
+          { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组', role: '调度专员' },
+          { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
+          { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+          { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
+          { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+          { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+          { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+          { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+        ],
+      },
+      {
+        id: 'team-044',
+        name: 'OCC项目支持优秀团队',
+        memberCount: 8,
+        isSelected: true,
+        members: [
+          { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组', role: '项目支持' },
+          { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
+          { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
+          { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+          { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+          { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+        ],
+      },
+      {
+        id: 'team-045',
+        name: 'OCC业务对接优秀团队',
+        memberCount: 7,
+        isSelected: true,
+        members: [
+          { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组', role: '业务对接人' },
+          { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
+          { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
+          { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+          { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
+        ],
+      },
+      {
+        id: 'team-046',
+        name: 'OCC技术攻关优秀团队',
+        memberCount: 11,
+        isSelected: true,
+        members: [
+          { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部', role: '技术专家' },
+          { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+          { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+          { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+          { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+          { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
+          { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
+          { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+          { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+        ],
+      },
+      {
+        id: 'team-047',
+        name: 'OCC创新实践优秀团队',
+        memberCount: 8,
+        isSelected: true,
+        members: [
+          { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组', role: '创新负责人' },
+          { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+          { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+          { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
+          { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
+          { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+          { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
+        ],
+      },
+      {
+        id: 'team-048',
+        name: 'OCC数字化转型优秀团队',
+        memberCount: 9,
+        isSelected: true,
+        members: [
+          { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组', role: '数字化转型师' },
+          { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
+          { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
+          { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
+          { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
+          { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
+          { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
+        ],
+      },
+      {
+        id: 'team-049',
+        name: 'OCC智能化运维优秀团队',
+        memberCount: 10,
+        isSelected: true,
+        members: [
+          { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部', role: '智能化工程师' },
+          { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
+          { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
+          { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
+          { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
+          { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
+          { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
+          { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
+          { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
+          { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
+        ],
+      },
+      {
+        id: 'team-050',
+        name: 'OCC生态建设优秀团队',
+        memberCount: 8,
+        isSelected: true,
+        members: [
+          { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组', role: '生态负责人' },
+          { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
           { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
           { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
           { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
@@ -224,13 +970,13 @@ const mockAwards: Award[] = [
       { name: '袁六三', employeeId: '00558888', department: 'IT平台服务部/平台开发部', isSelected: true },
       { name: '史六七', employeeId: '00562222', department: 'IT平台服务部/技术支持部', isSelected: true },
       { name: '岑七一', employeeId: '00566666', department: 'IT平台服务部/平台运维部', isSelected: true },
-      { name: '柳六四', employeeId: '00559999', department: '质量与流程IT部/IT部/开发组', isSelected: true },
-      { name: '唐六八', employeeId: '00563333', department: '质量与流程IT部/质量部/测试组', isSelected: true },
-      { name: '薛七二', employeeId: '00567777', department: '质量与流程IT部/流程部/优化组', isSelected: true },
-      { name: '酆六五', employeeId: '00560000', department: '智能汽车解决方案部/智能座舱组', isSelected: true },
-      { name: '费六九', employeeId: '00564444', department: '智能汽车解决方案部/智能驾驶组', isSelected: true },
-      { name: '鲍六六', employeeId: '00561111', department: '云与计算业务部/大数据组', isSelected: true },
-      { name: '廉七十', employeeId: '00565555', department: '云与计算业务部/云计算组', isSelected: true },
+      { name: '柳六四', employeeId: '00559999', department: '质量与流程IT部/IT部/开发组', isSelected: false },
+      { name: '唐六八', employeeId: '00563333', department: '质量与流程IT部/质量部/测试组', isSelected: false },
+      { name: '薛七二', employeeId: '00567777', department: '质量与流程IT部/流程部/优化组', isSelected: false },
+      { name: '酆六五', employeeId: '00560000', department: '智能汽车解决方案部/智能座舱组', isSelected: false },
+      { name: '费六九', employeeId: '00564444', department: '智能汽车解决方案部/智能驾驶组', isSelected: false },
+      { name: '鲍六六', employeeId: '00561111', department: '云与计算业务部/大数据组', isSelected: false },
+      { name: '廉七十', employeeId: '00565555', department: '云与计算业务部/云计算组', isSelected: false },
     ],
     isDefault: true,
     pushDate: '2025-03-01',
@@ -251,6 +997,8 @@ function App() {
   const [teamSearchModalVisible, setTeamSearchModalVisible] = useState(false);
   const [addAwardModalVisible, setAddAwardModalVisible] = useState(false);
   const [currentAwardId, setCurrentAwardId] = useState<string>('');
+  const [currentAllRecipients, setCurrentAllRecipients] = useState<any[]>([]);
+  const [currentSelectedRecipients, setCurrentSelectedRecipients] = useState<any[]>([]);
 
   const currentUserDepartment = 'IT平台服务部';
 
@@ -298,21 +1046,21 @@ function App() {
     setSelectedDepartment(dept);
   };
 
-  const handleAddRecipient = (awardId: string) => {
+  const handleAddRecipient = (awardId: string, allRecipients: any[], selectedRecipients: any[]) => {
     setCurrentAwardId(awardId);
+    setCurrentAllRecipients(allRecipients);
+    setCurrentSelectedRecipients(selectedRecipients);
     setAddRecipientModalVisible(true);
   };
 
-  const handleSelectRecipient = (awardId: string, recipient: any) => {
+  const handleRemoveRecipient = (awardId: string, recipientToRemove: any) => {
     setAwards((prev) =>
       prev.map((award) =>
         award.id === awardId
           ? {
               ...award,
-              recipients: award.recipients.map((r) =>
-                r.employeeId === recipient.employeeId
-                  ? { ...r, isSelected: !r.isSelected }
-                  : r
+              recipients: award.recipients.filter(
+                (r) => r.employeeId !== recipientToRemove.employeeId
               ),
             }
           : award
@@ -320,57 +1068,29 @@ function App() {
     );
   };
 
+
+
   const handleAddTeam = (awardId: string) => {
     setCurrentAwardId(awardId);
     setTeamSearchModalVisible(true);
   };
 
-  const handleSelectTeam = (awardId: string, team: any) => {
+  const handleRemoveTeam = (awardId: string, teamToRemove: any) => {
     setAwards((prev) =>
       prev.map((award) =>
         award.id === awardId
           ? {
               ...award,
-              teams: award.teams?.map((t) =>
-                t.id === team.id ? { ...t, isSelected: !t.isSelected } : t
-              ) || [],
+              teams: award.teams?.filter((t) => t.id !== teamToRemove.id) || [],
             }
           : award
       )
     );
   };
 
-  const handleSelectAllRecipients = (awardId: string, selectAll: boolean) => {
-    setAwards((prev) =>
-      prev.map((award) =>
-        award.id === awardId
-          ? {
-              ...award,
-              recipients: award.recipients.map((r) => ({
-                ...r,
-                isSelected: selectAll,
-              })),
-            }
-          : award
-      )
-    );
-  };
 
-  const handleSelectAllTeams = (awardId: string, selectAll: boolean) => {
-    setAwards((prev) =>
-      prev.map((award) =>
-        award.id === awardId
-          ? {
-              ...award,
-              teams: award.teams?.map((t) => ({
-                ...t,
-                isSelected: selectAll,
-              })) || [],
-            }
-          : award
-      )
-    );
-  };
+
+
 
   const handleUpdateTeam = (awardId: string, updatedTeam: any) => {
     setAwards((prev) =>
@@ -385,6 +1105,10 @@ function App() {
           : award
       )
     );
+  };
+
+  const handleRemoveAward = (awardId: string) => {
+    setAwards((prev) => prev.filter((award) => award.id !== awardId));
   };
 
   const handleAddAward = (selectedAwards: any[]) => {
@@ -409,22 +1133,20 @@ function App() {
   };
 
   const handleConfirmAddRecipient = (recipients: any[]) => {
-    const newEmployeeIds = new Set(recipients.map(r => r.employeeId));
+    // recipients 是编辑后选中的获奖人
+    // 需要保留完整的获奖人列表，但只标记选中的
+    const selectedIds = new Set(recipients.map(r => r.employeeId));
     setAwards((prev) =>
       prev.map((award) =>
         award.id === currentAwardId
           ? {
               ...award,
-              recipients: [
-                ...award.recipients.map(r => 
-                  newEmployeeIds.has(r.employeeId)
-                    ? { ...r, isSelected: true, isManuallyAdded: true }
-                    : r
-                ),
-                ...recipients
-                  .filter(r => !award.recipients.some(existing => existing.employeeId === r.employeeId))
-                  .map(r => ({ ...r, isSelected: true, isManuallyAdded: true })),
-              ],
+              // 保留完整的获奖人列表，但更新 isSelected 标记
+              recipients: award.recipients.map(r => ({
+                ...r,
+                isSelected: selectedIds.has(r.employeeId),
+                isManuallyAdded: selectedIds.has(r.employeeId) ? true : r.isManuallyAdded,
+              })),
             }
           : award
       )
@@ -433,18 +1155,13 @@ function App() {
   };
 
   const handleConfirmAddTeam = (teams: any[]) => {
-    const newTeamIds = new Set(teams.map(t => t.id));
     setAwards((prev) =>
       prev.map((award) =>
         award.id === currentAwardId
           ? {
               ...award,
               teams: [
-                ...(award.teams || []).map(t =>
-                  newTeamIds.has(t.id)
-                    ? { ...t, isSelected: true, isManuallyAdded: true }
-                    : t
-                ),
+                ...(award.teams || []),
                 ...teams
                   .filter(t => !(award.teams || []).some(existing => existing.id === t.id))
                   .map(t => ({ ...t, isManuallyAdded: true })),
@@ -456,27 +1173,13 @@ function App() {
     setTeamSearchModalVisible(false);
   };
 
-  const handleToggleAwardSelection = (awardId: string) => {
-    setAwards((prev) =>
-      prev.map((award) =>
-        award.id === awardId ? { ...award, selected: !award.selected } : award
-      )
-    );
-  };
-
-  const selectedAwardsCount = useMemo(() => {
-    return awards.filter((award) => award.selected).length;
-  }, [awards]);
-
   const canProceedToNextStep = useMemo(() => {
-    const selectedAwards = awards.filter((award) => award.selected);
-    if (selectedAwards.length === 0) return false;
-    
-    return selectedAwards.every((award) => {
+    // 只要有奖项且有记录就可以进入下一步
+    return awards.some((award) => {
       if (award.awardType === 'individual') {
-        return award.recipients.some((r) => r.isSelected);
+        return award.recipients.length > 0;
       } else {
-        return award.teams?.some((t) => t.isSelected) ?? false;
+        return (award.teams?.length || 0) > 0;
       }
     });
   }, [awards]);
@@ -654,17 +1357,15 @@ function App() {
                   <AwardCard
                     key={award.id}
                     award={award}
-                    selected={award.selected || false}
                     currentDepartment={selectedDepartment === '全部部门' ? '' : selectedDepartment}
-                    onToggleSelection={() => handleToggleAwardSelection(award.id)}
                     onAddRecipient={
                       award.awardType === 'individual'
-                        ? () => handleAddRecipient(award.id)
+                        ? (allRecipients, selectedRecipients) => handleAddRecipient(award.id, allRecipients, selectedRecipients)
                         : undefined
                     }
-                    onSelectRecipient={
+                    onRemoveRecipient={
                       award.awardType === 'individual'
-                        ? (recipient) => handleSelectRecipient(award.id, recipient)
+                        ? (recipient) => handleRemoveRecipient(award.id, recipient)
                         : undefined
                     }
                     onAddTeam={
@@ -672,19 +1373,9 @@ function App() {
                         ? () => handleAddTeam(award.id)
                         : undefined
                     }
-                    onSelectTeam={
+                    onRemoveTeam={
                       award.awardType === 'team'
-                        ? (team) => handleSelectTeam(award.id, team)
-                        : undefined
-                    }
-                    onSelectAllTeams={
-                      award.awardType === 'team'
-                        ? (selectAll) => handleSelectAllTeams(award.id, selectAll)
-                        : undefined
-                    }
-                    onSelectAllRecipients={
-                      award.awardType === 'individual'
-                        ? (selectAll) => handleSelectAllRecipients(award.id, selectAll)
+                        ? (team) => handleRemoveTeam(award.id, team)
                         : undefined
                     }
                     onUpdateTeam={
@@ -692,6 +1383,7 @@ function App() {
                         ? (team) => handleUpdateTeam(award.id, team)
                         : undefined
                     }
+                    onRemoveAward={award.isDefault ? undefined : () => handleRemoveAward(award.id)}
                   />
                 ))}
               </div>
@@ -731,11 +1423,7 @@ function App() {
           gap: '16px',
         }}
       >
-        {currentStep === 0 && (
-          <span style={{ fontSize: '14px', color: '#6b7280', marginRight: '16px' }}>
-            已选 {selectedAwardsCount} 个奖项
-          </span>
-        )}
+
         {currentStep > 0 && (
           <button
             onClick={() => setCurrentStep(currentStep - 1)}
@@ -791,7 +1479,8 @@ function App() {
         visible={addRecipientModalVisible}
         currentDepartment={selectedDepartment === '全部部门' ? '' : selectedDepartment}
         currentAward={awards.find(a => a.id === currentAwardId)}
-        existingRecipients={awards.find(a => a.id === currentAwardId)?.recipients || []}
+        allRecipients={currentAllRecipients}
+        selectedRecipients={currentSelectedRecipients}
         onCancel={() => setAddRecipientModalVisible(false)}
         onConfirm={handleConfirmAddRecipient}
       />

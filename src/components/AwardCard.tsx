@@ -9,78 +9,91 @@ const MAX_DISPLAY_RECIPIENTS = 10;
 export interface AwardCardProps {
   award: Award;
   index?: number;
-  selected?: boolean;
   currentDepartment?: string;
-  onToggleSelection?: () => void;
-  onAddRecipient?: () => void;
-  onSelectRecipient?: (recipient: Recipient) => void;
-  onSelectAllRecipients?: (selectAll: boolean) => void;
+  onAddRecipient?: (allRecipients: Recipient[], selectedRecipients: Recipient[]) => void;
+  onRemoveRecipient?: (recipient: Recipient) => void;
   onAddTeam?: () => void;
-  onSelectTeam?: (team: Team) => void;
-  onSelectAllTeams?: (selectAll: boolean) => void;
+  onRemoveTeam?: (team: Team) => void;
   onUpdateTeam?: (team: Team) => void;
+  onRemoveAward?: () => void;
 }
 
 interface TeamCardProps {
   team: Team;
-  onSelectTeam?: (team: Team) => void;
+  onRemoveTeam?: (team: Team) => void;
   onShowMembers: (team: Team) => void;
 }
 
 const TeamCard: React.FC<TeamCardProps> = ({
   team,
-  onSelectTeam,
+  onRemoveTeam,
   onShowMembers,
 }) => {
+  const [isTeamHovered, setIsTeamHovered] = useState(false);
+
   return (
     <div
       style={{
         padding: '12px 16px',
-        backgroundColor: team.isSelected ? '#e6f7ff' : '#f8fafc',
-        border: team.isSelected ? '1px solid #1890ff' : '1px solid #e2e8f0',
+        backgroundColor: '#f8fafc',
+        border: '1px solid #e2e8f0',
         borderRadius: '6px',
         width: 'calc((100% - 48px) / 5)',
         minWidth: 'calc((100% - 48px) / 5)',
         maxWidth: 'calc((100% - 48px) / 5)',
         boxSizing: 'border-box',
         position: 'relative',
-        cursor: onSelectTeam ? 'pointer' : 'default',
+        cursor: 'default',
         transition: 'all 0.2s',
         display: 'flex',
         flexDirection: 'column',
         minHeight: '92px',
       }}
-      onClick={() => onSelectTeam && onSelectTeam(team)}
+      onMouseEnter={() => setIsTeamHovered(true)}
+      onMouseLeave={() => setIsTeamHovered(false)}
     >
-      {team.isSelected && (
-        <span
+      {onRemoveTeam && isTeamHovered && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemoveTeam(team);
+          }}
           style={{
             position: 'absolute',
-            top: '-4px',
-            left: '-4px',
+            top: '-6px',
+            right: '-6px',
             width: '16px',
             height: '16px',
             borderRadius: '50%',
-            backgroundColor: '#1890ff',
+            backgroundColor: '#ef4444',
             color: '#fff',
+            border: 'none',
+            cursor: 'pointer',
             fontSize: '10px',
-            fontWeight: 600,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 5,
-            boxShadow: '0 1px 3px rgba(24, 144, 255, 0.3)',
+            transition: 'all 0.2s',
+            boxShadow: '0 2px 4px rgba(239, 68, 68, 0.3)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#ff7875';
+            e.currentTarget.style.transform = 'scale(1.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#ef4444';
+            e.currentTarget.style.transform = 'scale(1)';
           }}
         >
-          ✓
-        </span>
+          ×
+        </button>
       )}
 
       <div
         style={{
           fontSize: '14px',
           fontWeight: 500,
-          color: team.isSelected ? '#1890ff' : '#1a1a2e',
+          color: '#1a1a2e',
           flex: 1,
           display: '-webkit-box',
           WebkitLineClamp: 2,
@@ -106,7 +119,7 @@ const TeamCard: React.FC<TeamCardProps> = ({
         <span
           style={{
             fontSize: '12px',
-            color: team.isSelected ? '#1890ff' : '#6b7280',
+            color: '#6b7280',
           }}
         >
           成员: {team.memberCount}人
@@ -141,17 +154,16 @@ const TeamCard: React.FC<TeamCardProps> = ({
 
 export const AwardCard: React.FC<AwardCardProps> = ({
   award,
-  selected = false,
   currentDepartment = '',
-  onToggleSelection,
   onAddRecipient,
-  onSelectRecipient,
-  onSelectAllRecipients,
+  onRemoveRecipient,
   onAddTeam,
-  onSelectTeam,
-  onSelectAllTeams,
+  onRemoveTeam,
   onUpdateTeam,
+  onRemoveAward,
 }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
   const isTeamAward = award.awardType === 'team';
 
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
@@ -177,6 +189,8 @@ export const AwardCard: React.FC<AwardCardProps> = ({
   };
 
   const filteredRecipients = award.recipients.filter(r => {
+    // 只显示选中的获奖人
+    if (!r.isSelected) return false;
     if (!currentDepartment) return true;
     const recipientDept = r.department.split('/')[0];
     // 显示当前部门的人员，或手动添加的跨部门人员
@@ -192,13 +206,10 @@ export const AwardCard: React.FC<AwardCardProps> = ({
     }) || t.isManuallyAdded;
   }) : undefined;
 
-  const selectedCount = isTeamAward 
-    ? (filteredTeams?.filter(t => t.isSelected).length || 0) 
-    : filteredRecipients.filter(r => r.isSelected).length;
-
-  const isAllSelected = isTeamAward
-    ? (filteredTeams?.length || 0) > 0 && (filteredTeams?.every(t => t.isSelected) ?? false)
-    : filteredRecipients.length > 0 && filteredRecipients.every(r => r.isSelected);
+  // 已选数量改为当前记录数量
+  const selectedCount = isTeamAward
+    ? (filteredTeams?.length || 0)
+    : filteredRecipients.length;
 
   const displayRecipients = filteredRecipients.slice(0, MAX_DISPLAY_RECIPIENTS);
   const hasMoreRecipients = filteredRecipients.length > MAX_DISPLAY_RECIPIENTS;
@@ -206,18 +217,59 @@ export const AwardCard: React.FC<AwardCardProps> = ({
   const displayTeams = filteredTeams?.slice(0, MAX_DISPLAY_RECIPIENTS);
   const hasMoreTeams = (filteredTeams?.length || 0) > MAX_DISPLAY_RECIPIENTS;
 
+  // 所有选中的获奖人（用于编辑弹框）
+  const selectedRecipients = award.recipients.filter(r => r.isSelected);
+
   return (
     <div
       style={{
-        backgroundColor: selected ? '#f0f7ff' : '#fff',
+        backgroundColor: '#fff',
         borderRadius: '8px',
         padding: '16px',
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-        border: selected ? '2px solid #1890ff' : '1px solid #e8e8e8',
+        border: '1px solid #e8e8e8',
         transition: 'all 0.2s',
         position: 'relative',
       }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
+      {onRemoveAward && !award.isDefault && isHovered && (
+        <button
+          onClick={onRemoveAward}
+          style={{
+            position: 'absolute',
+            top: '8px',
+            right: '8px',
+            width: '24px',
+            height: '24px',
+            borderRadius: '50%',
+            backgroundColor: '#ff4d4f',
+            color: '#fff',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10,
+            transition: 'all 0.2s',
+            boxShadow: '0 2px 4px rgba(255, 77, 79, 0.3)',
+          }}
+          title="删除奖项"
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#ff7875';
+            e.currentTarget.style.transform = 'scale(1.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#ff4d4f';
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+        >
+          ×
+        </button>
+      )}
+
       <div
         style={{
           display: 'flex',
@@ -227,47 +279,6 @@ export const AwardCard: React.FC<AwardCardProps> = ({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
-          {onToggleSelection && (
-            <div
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleSelection();
-              }}
-              style={{
-                width: '20px',
-                height: '20px',
-                borderRadius: '6px',
-                border: selected ? 'none' : '1.5px solid #d1d5db',
-                backgroundColor: selected ? '#1890ff' : '#fff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                flexShrink: 0,
-                transition: 'all 0.2s ease',
-                boxShadow: selected ? '0 2px 4px rgba(24, 144, 255, 0.3)' : '0 1px 2px rgba(0, 0, 0, 0.05)',
-              }}
-              onMouseEnter={(e) => {
-                if (!selected) {
-                  e.currentTarget.style.borderColor = '#1890ff';
-                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(24, 144, 255, 0.1)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!selected) {
-                  e.currentTarget.style.borderColor = '#d1d5db';
-                  e.currentTarget.style.boxShadow = '0 1px 2px rgba(0, 0, 0, 0.05)';
-                }
-              }}
-            >
-              {selected && (
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              )}
-            </div>
-          )}
-
           <div style={{ flex: 1 }}>
             <h3
               style={{
@@ -318,48 +329,6 @@ export const AwardCard: React.FC<AwardCardProps> = ({
           >
             已选({selectedCount})
           </span>
-          <span
-            style={{
-              fontSize: '14px',
-              color: '#c8c8c8ff',
-            }}
-          >·</span>
-          {isTeamAward
-            ? onSelectAllTeams && award.teams && award.teams.length > 0 && (
-                <button
-                  onClick={() => onSelectAllTeams(!isAllSelected)}
-                  style={{
-                    padding: '4px 0px',
-                    backgroundColor: 'transparent',
-                    color: isAllSelected ? '#ff4d4f' : '#1890ff',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  <span>{isAllSelected ? '取消全选' : '全选'}</span>
-                </button>
-              )
-            : onSelectAllRecipients && award.recipients.length > 0 && (
-                <button
-                  onClick={() => onSelectAllRecipients(!isAllSelected)}
-                  style={{
-                    padding: '4px 0px',
-                    backgroundColor: 'transparent',
-                    color: isAllSelected ? '#ff4d4f' : '#1890ff',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  <span>{isAllSelected ? '取消全选' : '全选'}</span>
-                </button>
-              )
-          }
         </div>
       </div>
 
@@ -382,7 +351,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                 }}
               >
                 <span>+</span>
-                <span>添加获奖团队</span>
+                <span>编辑获奖团队</span>
               </button>
             )}
           </div>
@@ -399,7 +368,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                 <TeamCard
                   key={team.id}
                   team={team}
-                  onSelectTeam={onSelectTeam}
+                  onRemoveTeam={onRemoveTeam}
                   onShowMembers={handleShowMembers}
                 />
               ))}
@@ -445,7 +414,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
           <div style={{ display: 'flex', alignItems: 'center', marginBottom: '12px' }}>
             {onAddRecipient && (
               <button
-                onClick={onAddRecipient}
+                onClick={() => onAddRecipient(award.recipients, selectedRecipients)}
                 style={{
                   padding: '4px 12px',
                   backgroundColor: 'transparent',
@@ -459,7 +428,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                 }}
               >
                 <span>+</span>
-                <span>添加获奖人</span>
+                <span>编辑获奖人</span>
               </button>
             )}
           </div>
@@ -478,9 +447,8 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                   recipient={recipient}
                   issuingDepartment={award.issuingDepartment}
                   currentDepartment={currentDepartment}
-                  isSelected={recipient.isSelected}
-                  onSelect={
-                    onSelectRecipient ? () => onSelectRecipient(recipient) : undefined
+                  onRemove={
+                    onRemoveRecipient ? () => onRemoveRecipient(recipient) : undefined
                   }
                 />
               ))}
@@ -542,7 +510,6 @@ export const AwardCard: React.FC<AwardCardProps> = ({
         issuingDepartment={award.issuingDepartment}
         currentDepartment={currentDepartment}
         onClose={handleCloseRecipientList}
-        onSelectRecipient={onSelectRecipient}
       />
     </div>
   );

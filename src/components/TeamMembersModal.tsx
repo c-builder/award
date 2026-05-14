@@ -9,7 +9,7 @@ export interface TeamMembersModalProps {
   onConfirm: (updatedTeam: Team) => void;
 }
 
-const PAGE_SIZE = 10;
+const DEFAULT_PAGE_SIZE = 10;
 
 const mockAllEmployees: TeamMember[] = [
   { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
@@ -52,6 +52,7 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
 }) => {
   const [selectedMemberIds, setSelectedMemberIds] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [searchText, setSearchText] = useState('');
   const [searchResult, setSearchResult] = useState<TeamMember | null>(null);
   const [searchError, setSearchError] = useState('');
@@ -65,6 +66,7 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
         : new Set(members.map(m => m.employeeId));
       setSelectedMemberIds(selectedIds);
       setCurrentPage(1);
+      setPageSize(DEFAULT_PAGE_SIZE);
       setSearchText('');
       setSearchResult(null);
       setSearchError('');
@@ -137,9 +139,9 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
   };
 
   const paginatedMembers = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
-    return members.slice(start, start + PAGE_SIZE);
-  }, [members, currentPage]);
+    const start = (currentPage - 1) * pageSize;
+    return members.slice(start, start + pageSize);
+  }, [members, currentPage, pageSize]);
 
   const handleConfirm = () => {
     const selectedCount = selectedMemberIds.size;
@@ -291,7 +293,7 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
         {/* 表格 */}
         <div style={{ flex: 1, overflow: 'auto', overscrollBehavior: 'contain' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
+            <thead style={{ position: 'sticky', top: 0, zIndex: 10 }}>
               <tr style={{ backgroundColor: '#fafafa' }}>
                 <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0', width: '60px' }}>
                   <div
@@ -335,6 +337,7 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
                     ) : null}
                   </div>
                 </th>
+                <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0', width: '80px' }}>序号</th>
                 <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>姓名</th>
                 <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>工号</th>
                 <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>部门</th>
@@ -342,8 +345,9 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
               </tr>
             </thead>
             <tbody>
-              {paginatedMembers.map((member) => {
+              {paginatedMembers.map((member, index) => {
                 const checked = selectedMemberIds.has(member.employeeId);
+                const seq = (currentPage - 1) * pageSize + index + 1;
                 return (
                   <tr
                     key={member.employeeId}
@@ -384,6 +388,9 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
                         )}
                       </div>
                     </td>
+                    <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', textAlign: 'center', color: '#666' }}>
+                      {seq}
+                    </td>
                     <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', color: '#333' }}>
                       {member.name}
                     </td>
@@ -407,10 +414,12 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
         <div style={{ padding: '0 24px', borderTop: '1px solid #f0f0f0', flexShrink: 0 }}>
           <Pagination
             current={currentPage}
-            pageSize={PAGE_SIZE}
+            pageSize={pageSize}
             total={members.length}
             onChange={setCurrentPage}
+            onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
             showTotal
+            showPageSize
           />
         </div>
 

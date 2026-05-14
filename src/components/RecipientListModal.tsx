@@ -9,7 +9,6 @@ export interface RecipientListModalProps {
   issuingDepartment: string;
   currentDepartment?: string;
   onClose: () => void;
-  onSelectRecipient?: (recipient: Recipient) => void;
 }
 
 /**
@@ -24,11 +23,10 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
   issuingDepartment,
   currentDepartment = '',
   onClose,
-  onSelectRecipient,
 }) => {
   // 分页状态
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
 
   // 搜索关键词
   const [searchKeyword, setSearchKeyword] = useState('');
@@ -63,32 +61,17 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
   const handleReset = () => {
     setSearchKeyword('');
     setCurrentPage(1);
+    setPageSize(10);
   };
 
   const handleClose = () => {
     setSearchKeyword('');
     setCurrentPage(1);
+    setPageSize(10);
     onClose();
   };
 
-  // 处理点击选中/取消选中
-  const handleRowClick = (recipient: Recipient) => {
-    if (onSelectRecipient) {
-      onSelectRecipient(recipient);
-    }
-  };
 
-  // 全选/取消全选
-  const isAllSelected = filteredRecipients.length > 0 && filteredRecipients.every(r => r.isSelected);
-  const isIndeterminate = filteredRecipients.length > 0 && filteredRecipients.some(r => r.isSelected) && !isAllSelected;
-  const toggleAll = () => {
-    if (!onSelectRecipient) return;
-    filteredRecipients.forEach(recipient => {
-      if (recipient.isSelected !== !isAllSelected) {
-        onSelectRecipient(recipient);
-      }
-    });
-  };
 
   if (!visible) return null;
 
@@ -264,7 +247,7 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: '50px 1.5fr 1fr 2fr 80px',
+              gridTemplateColumns: '60px 80px 1.5fr 1fr 2fr 80px',
               padding: '12px 24px',
               backgroundColor: '#fafafa',
               borderBottom: '1px solid #e8e8e8',
@@ -274,47 +257,8 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
               flexShrink: 0,
             }}
           >
-            <div style={{ textAlign: 'center', display: 'flex', justifyContent: 'center' }}>
-              <div
-                onClick={toggleAll}
-                style={{
-                  width: '18px',
-                  height: '18px',
-                  border: `2px solid ${isAllSelected || isIndeterminate ? '#1890ff' : '#d9d9d9'}`,
-                  borderRadius: '3px',
-                  backgroundColor: isAllSelected || isIndeterminate ? '#1890ff' : '#fff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: onSelectRecipient ? 'pointer' : 'default',
-                  transition: 'all 0.2s',
-                }}
-              >
-                {isAllSelected ? (
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#fff"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                ) : isIndeterminate ? (
-                  <div
-                    style={{
-                      width: '10px',
-                      height: '2px',
-                      backgroundColor: '#fff',
-                      borderRadius: '1px',
-                    }}
-                  />
-                ) : null}
-              </div>
-            </div>
+            <div></div>
+            <div style={{ textAlign: 'center' }}>序号</div>
             <div>姓名</div>
             <div>工号</div>
             <div>部门</div>
@@ -326,68 +270,35 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
             {paginatedRecipients.length > 0 ? (
               paginatedRecipients.map((recipient, index) => {
                 const crossDept = isCrossDepartment(recipient.department);
-                const isSelected = recipient.isSelected;
+                const seq = (currentPage - 1) * pageSize + index + 1;
 
                 return (
                   <div
                     key={`${recipient.employeeId}-${index}`}
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: '50px 1.5fr 1fr 2fr 80px',
+                      gridTemplateColumns: '60px 50px 1.5fr 1fr 2fr 80px',
                       padding: '12px 24px',
                       borderBottom: '1px solid #f0f0f0',
                       fontSize: '14px',
                       color: '#333',
-                      backgroundColor: isSelected ? '#e6f7ff' : index % 2 === 0 ? '#fff' : '#fafafa',
+                      backgroundColor: index % 2 === 0 ? '#fff' : '#fafafa',
                       alignItems: 'center',
                       transition: 'background-color 0.2s',
-                      cursor: onSelectRecipient ? 'pointer' : 'default',
                     }}
                     onMouseEnter={(e) => {
-                      if (!isSelected) {
-                        e.currentTarget.style.backgroundColor = '#f0f9ff';
-                      }
+                      e.currentTarget.style.backgroundColor = '#f0f9ff';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = isSelected
-                        ? '#e6f7ff'
-                        : index % 2 === 0
-                        ? '#fff'
-                        : '#fafafa';
+                      e.currentTarget.style.backgroundColor = index % 2 === 0 ? '#fff' : '#fafafa';
                     }}
-                    onClick={() => handleRowClick(recipient)}
                   >
-                    {/* 选中复选框 */}
-                    <div style={{ textAlign: 'center' }}>
-                      <div
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          border: `2px solid ${isSelected ? '#1890ff' : '#d9d9d9'}`,
-                          borderRadius: '3px',
-                          backgroundColor: isSelected ? '#1890ff' : '#fff',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          margin: '0 auto',
-                          transition: 'all 0.2s',
-                        }}
-                      >
-                        {isSelected && (
-                          <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="#fff"
-                            strokeWidth="3"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        )}
-                      </div>
+                    {/* 空列占位 */}
+                    <div></div>
+
+                    {/* 序号 */}
+                    <div style={{ textAlign: 'center', color: '#666' }}>
+                      {seq}
                     </div>
 
                     {/* 姓名 */}
@@ -472,12 +383,14 @@ export const RecipientListModal: React.FC<RecipientListModalProps> = ({
               }}
             >
               <Pagination
-                current={currentPage}
-                pageSize={pageSize}
-                total={filteredRecipients.length}
-                onChange={setCurrentPage}
-                showTotal
-              />
+                  current={currentPage}
+                  pageSize={pageSize}
+                  total={filteredRecipients.length}
+                  onChange={setCurrentPage}
+                  onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
+                  showTotal
+                  showPageSize
+                />
             </div>
           )}
         </div>
