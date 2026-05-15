@@ -371,103 +371,99 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                         boxShadow: hoveredAwardId === award.id
                           ? '0 2px 8px rgba(0,0,0,0.1)'
                           : 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
                       }}
                       onMouseEnter={() => setHoveredAwardId(award.id)}
                       onMouseLeave={() => setHoveredAwardId(null)}
                     >
-                      {/* 奖项名称 */}
-                      <div
-                        style={{
-                          fontSize: '14px',
-                          fontWeight: 500,
-                          color: '#333',
-                          marginBottom: '8px',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}
-                        title={award.name}
-                      >
-                        {award.name}
-                      </div>
-                      {/* 信息行：类别 + 人数 + 日期 */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                        {/* 奖项类别标签 */}
-                        <span
+                      {/* 左侧内容 */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        {/* 奖项名称 */}
+                        <div
                           style={{
-                            padding: '2px 8px',
-                            backgroundColor: award.category === '团队奖' ? '#e6f7ff' : '#f0fdf4',
-                            color: award.category === '团队奖' ? '#1890ff' : '#16a34a',
-                            borderRadius: '4px',
-                            fontSize: '11px',
+                            fontSize: '14px',
                             fontWeight: 500,
+                            color: '#333',
+                            marginBottom: '8px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
                           }}
+                          title={award.name}
                         >
-                          {award.category}
-                        </span>
-                        {/* 获奖人数 */}
-                        <span style={{ fontSize: '12px', color: '#666', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="9" cy="7" r="4"></circle>
-                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                          </svg>
-                          {award.recipientCount}人
-                        </span>
-                        {/* 颁发日期 */}
-                        <span style={{ fontSize: '12px', color: '#999', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                            <line x1="16" y1="2" x2="16" y2="6"></line>
-                            <line x1="8" y1="2" x2="8" y2="6"></line>
-                            <line x1="3" y1="10" x2="21" y2="10"></line>
-                          </svg>
-                          {formatIssueDate(award.issueDate)}
-                        </span>
+                          {award.name}
+                        </div>
+                        {/* 信息行：类别 + 人数 + 查看详情 */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          {/* 奖项类别标签 */}
+                          <span
+                            style={{
+                              padding: '2px 8px',
+                              backgroundColor: award.category === '团队奖' ? '#e6f7ff' : '#f0fdf4',
+                              color: award.category === '团队奖' ? '#1890ff' : '#16a34a',
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                              fontWeight: 500,
+                            }}
+                          >
+                            {award.category}
+                          </span>
+                          {/* 获奖人数 */}
+                          <span style={{ fontSize: '12px', color: '#666', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                              <circle cx="9" cy="7" r="4"></circle>
+                              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            {award.recipientCount}人
+                          </span>
+                          {/* 查看详情 */}
+                          <button
+                            onClick={() => {
+                              setSelectedAwardForDetail(award);
+                              setDetailModalVisible(true);
+                            }}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              color: '#1890ff',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              padding: '0',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '2px',
+                            }}
+                          >
+                            <span>查看详情</span>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
-                      {/* 操作按钮行 */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <button
-                          onClick={() => {
-                            setSelectedAwardForDetail(award);
-                            setDetailModalVisible(true);
-                          }}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            color: '#1890ff',
-                            fontSize: '12px',
-                            cursor: 'pointer',
-                            padding: '0',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '2px',
-                          }}
-                        >
-                          <span>查看详情</span>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="9 18 15 12 9 6" />
-                          </svg>
-                        </button>
-                        <button
-                          onClick={() => toggleAwardSelection(award.id)}
-                          style={{
-                            padding: '4px 8px',
-                            backgroundColor: hoveredAwardId === award.id ? '#ff4d4f' : 'transparent',
-                            color: hoveredAwardId === award.id ? '#fff' : 'transparent',
-                            border: 'none',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            cursor: hoveredAwardId === award.id ? 'pointer' : 'default',
-                            flexShrink: 0,
-                            opacity: hoveredAwardId === award.id ? 1 : 0,
-                            transition: 'all 0.2s',
-                          }}
-                        >
-                          删除
-                        </button>
-                      </div>
+                      {/* 右侧删除按钮 */}
+                      <button
+                        onClick={() => toggleAwardSelection(award.id)}
+                        style={{
+                          padding: '4px 8px',
+                          backgroundColor: hoveredAwardId === award.id ? '#ff4d4f' : 'transparent',
+                          color: hoveredAwardId === award.id ? '#fff' : 'transparent',
+                          border: 'none',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          cursor: hoveredAwardId === award.id ? 'pointer' : 'default',
+                          flexShrink: 0,
+                          opacity: hoveredAwardId === award.id ? 1 : 0,
+                          transition: 'all 0.2s',
+                          alignSelf: 'center',
+                        }}
+                      >
+                        删除
+                      </button>
                     </div>
                   ))}
                 </div>
