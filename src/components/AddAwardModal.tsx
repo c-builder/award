@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { DeptCascader } from './DeptCascader';
 import { Pagination } from './Pagination';
 import { Award } from './types';
-import addAwardItemsData from '../mock/data/addAwardItems.json';
+import awardsData from '../mock/data/awards.json';
 
 export interface Recipient {
   name: string;
@@ -20,23 +20,65 @@ export interface AwardItem {
   issuingDepartment: string;
   issuingDepartmentPath: string[];
   recipients?: Recipient[];
+  issueDate?: string;
+  isSelected?: boolean;
 }
 
 export interface AddAwardModalProps {
   visible: boolean;
   onCancel: () => void;
-  onConfirm: (selectedAwards: AwardItem[]) => void;
+  onConfirm: (selectedAwards: Award[]) => void;
   existingAwards?: Award[];
   externalDeptPath?: string[];
 }
+
+// 将 awards.json 转换为 AwardItem 格式
+const MOCK_AWARDS: AwardItem[] = (awardsData as Award[]).map(award => {
+  // 对于团队奖，从teams.members中提取所有获奖人
+  const allRecipients = award.awardType === 'team' && award.teams
+    ? award.teams.flatMap(team => team.members || [])
+    : award.recipients;
+
+  return {
+    id: award.id,
+    name: award.title,
+    category: award.awardType === 'team' ? '团队奖' : '个人奖',
+    recipientCount: award.awardType === 'individual'
+      ? award.recipients.length
+      : (award.teams?.reduce((sum, t) => sum + (t.memberCount || 0), 0) || 0),
+    issuingDepartment: award.issuingDepartment,
+    issuingDepartmentPath: award.issuingDepartment.split('/'),
+    recipients: allRecipients.map(r => ({
+      name: r.name,
+      employeeId: r.employeeId,
+      department: r.department,
+    })),
+    issueDate: award.issueDate,
+  };
+});
+
+const RECENT_MONTHS = 3;
+const REFERENCE_DATE = new Date('2026-01-15');
+
+const isWithinRecentMonths = (dateStr?: string): boolean => {
+  if (!dateStr) return false;
+  const issueDate = new Date(dateStr);
+  const threeMonthsAgo = new Date(REFERENCE_DATE);
+  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - RECENT_MONTHS);
+  return issueDate >= threeMonthsAgo;
+};
+
+const formatIssueDate = (dateStr?: string): string => {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return `${date.getFullYear()}年${date.getMonth() + 1}月`;
+};
 
 const YEAR_OPTIONS = [
   { value: '2025', label: '2025年' },
   { value: '2024', label: '2024年' },
   { value: '2023', label: '2023年' },
 ];
-
-const MOCK_AWARDS = addAwardItemsData as AwardItem[];
 
 export const AddAwardModal: React.FC<AddAwardModalProps> = ({
   visible,
@@ -45,7 +87,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
   existingAwards = [],
   externalDeptPath = [],
 }) => {
-  const [year, setYear] = useState<string>('2025');
+  const [selectedYear, setSelectedYear] = useState<string>('2025');
   const [selectedDeptPath, setSelectedDeptPath] = useState<string[]>([]);
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [selectedAwardIds, setSelectedAwardIds] = useState<Set<string>>(new Set());
@@ -53,25 +95,20 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
   const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
   const [hoveredAwardId, setHoveredAwardId] = useState<string | null>(null);
   const [inputFocused, setInputFocused] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   useEffect(() => {
     if (visible) {
       setSelectedDeptPath(externalDeptPath);
-      // 初始化时，所有已存在的奖项（包括默认和自定义）都设为选中状态
-      const allExistingAwardIds = new Set<string>();
-      existingAwards.forEach(existingAward => {
-        const mockAward = MOCK_AWARDS.find(mock => mock.name === existingAward.title);
-        if (mockAward) {
-          allExistingAwardIds.add(mockAward.id);
-        }
-      });
-      setSelectedAwardIds(allExistingAwardIds);
+      setSearchKeyword('');
+      setExpandedAwardIds(new Set());
+      setCurrentPage(1);
     }
-  }, [visible, existingAwards, externalDeptPath]);
+  }, [visible, externalDeptPath]);
 
   useEffect(() => {
     if (!visible) {
-      setYear('2025');
       setSelectedDeptPath([]);
       setSearchKeyword('');
       setSelectedAwardIds(new Set());
@@ -80,57 +117,75 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
     }
   }, [visible]);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5;
+  // 左侧：当前已选中的奖项（根据selectedAwardIds实时更新）
+  const loadedAwards = useMemo(() => {
+    return MOCK_AWARDS.filter(award => selectedAwardIds.has(award.id));
+  }, [selectedAwardIds]);
 
-  const existingDefaultAwardNames = useMemo(() => {
-    return new Set(existingAwards.filter(award => award.isDefault).map(award => award.title));
-  }, [existingAwards]);
-
-  const filteredAwards = useMemo(() => {
+  // 右侧：当前部门所有奖项（根据年份和获奖人部门筛选）
+  const departmentAwards = useMemo(() => {
     return MOCK_AWARDS.filter((award) => {
+      // 年份筛选
+      if (!award.issueDate?.startsWith(selectedYear)) return false;
+      // 部门筛选 - 基于获奖人/团队成员的部门
       if (selectedDeptPath.length > 0) {
-        const match = selectedDeptPath.every((dept, index) =>
-          award.issuingDepartmentPath[index] === dept
+        const selectedDept = selectedDeptPath[0];
+        // 检查是否有获奖人来自该部门
+        const hasRecipientFromDept = award.recipients?.some(r =>
+          r.department.split('/')[0] === selectedDept
         );
-        if (!match) return false;
+        if (!hasRecipientFromDept) return false;
       }
+      return true;
+    });
+  }, [selectedDeptPath, selectedYear]);
+
+  // 右侧：搜索过滤后的奖项
+  const filteredAwards = useMemo(() => {
+    return departmentAwards.filter((award) => {
       if (searchKeyword && !award.name.toLowerCase().includes(searchKeyword.toLowerCase())) {
         return false;
       }
       return true;
     });
-  }, [selectedDeptPath, searchKeyword]);
+  }, [departmentAwards, searchKeyword]);
 
-  // 所有奖项都可以选择（包括默认奖项）
-  const selectableAwards = filteredAwards;
+  // 初始化选中状态：已加载的奖项设为选中
+  useEffect(() => {
+    if (visible) {
+      const initialSelected = new Set<string>();
+      // 已存在的奖项设为选中
+      existingAwards.forEach(existingAward => {
+        const mockAward = MOCK_AWARDS.find(mock => mock.name === existingAward.title);
+        if (mockAward) {
+          initialSelected.add(mockAward.id);
+        }
+      });
+      setSelectedAwardIds(initialSelected);
+    }
+  }, [visible, existingAwards]);
 
   const selectableSelectedCount = useMemo(() => {
-    return selectableAwards.filter(award => selectedAwardIds.has(award.id)).length;
-  }, [selectableAwards, selectedAwardIds]);
+    return filteredAwards.filter(award => selectedAwardIds.has(award.id)).length;
+  }, [filteredAwards, selectedAwardIds]);
 
-  const isAllSelected = selectableAwards.length > 0 && selectableSelectedCount === selectableAwards.length;
-  const isIndeterminate = selectableSelectedCount > 0 && selectableSelectedCount < selectableAwards.length;
+  const isAllSelected = filteredAwards.length > 0 && selectableSelectedCount === filteredAwards.length;
+  const isIndeterminate = selectableSelectedCount > 0 && selectableSelectedCount < filteredAwards.length;
 
   const toggleAll = () => {
     if (isAllSelected) {
       setSelectedAwardIds(prev => {
         const next = new Set(prev);
-        selectableAwards.forEach(a => next.delete(a.id));
+        filteredAwards.forEach(a => next.delete(a.id));
         return next;
       });
     } else {
       setSelectedAwardIds(prev => {
         const next = new Set(prev);
-        selectableAwards.forEach(a => next.add(a.id));
+        filteredAwards.forEach(a => next.add(a.id));
         return next;
       });
     }
-  };
-
-  // 判断奖项是否为系统推荐（默认奖项）
-  const isSystemRecommended = (awardName: string) => {
-    return existingDefaultAwardNames.has(awardName);
   };
 
   const paginatedAwards = useMemo(() => {
@@ -138,33 +193,17 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
     return filteredAwards.slice(startIndex, startIndex + pageSize);
   }, [filteredAwards, currentPage]);
 
-  // 获取已选奖项列表
-  const selectedAwardsList = useMemo(() => {
-    return MOCK_AWARDS.filter((award) => selectedAwardIds.has(award.id));
-  }, [selectedAwardIds]);
-
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedDeptPath, searchKeyword]);
 
   const toggleAwardSelection = (awardId: string) => {
-    const award = MOCK_AWARDS.find(a => a.id === awardId);
-    if (!award) return;
-
-    // 允许所有奖项自由选择和取消，包括默认奖项
     const newSelected = new Set(selectedAwardIds);
     if (newSelected.has(awardId)) {
       newSelected.delete(awardId);
     } else {
       newSelected.add(awardId);
     }
-    setSelectedAwardIds(newSelected);
-  };
-
-  // 从已选列表中移除
-  const removeFromSelected = (awardId: string) => {
-    const newSelected = new Set(selectedAwardIds);
-    newSelected.delete(awardId);
     setSelectedAwardIds(newSelected);
   };
 
@@ -179,19 +218,16 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
   };
 
   const handleReset = () => {
-    setYear('2025');
     setSelectedDeptPath([]);
     setSearchKeyword('');
   };
 
   const handleConfirm = () => {
-    const selectedList = MOCK_AWARDS.filter((award) => selectedAwardIds.has(award.id));
+    // 获取完整的原始奖项数据（包含 teams 和 recipients）
+    const selectedList = (awardsData as Award[]).filter((award) =>
+      selectedAwardIds.has(award.id)
+    );
     onConfirm(selectedList);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-    }
   };
 
   if (!visible) return null;
@@ -282,17 +318,16 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
 
         {/* 主内容区域 - 左右布局 */}
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex', overscrollBehavior: 'contain' }}>
-          {/* 左侧 - 已选奖项 */}
+          {/* 左侧 - 近3个月奖项（系统推荐） */}
           <div
             style={{
-              width: '280px',
+              width: '320px',
               borderRight: '1px solid #f0f0f0',
               display: 'flex',
               flexDirection: 'column',
               backgroundColor: '#fafafa',
             }}
           >
-            {/* 左侧标题 */}
             <div
               style={{
                 padding: '12px 16px',
@@ -300,26 +335,26 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                 backgroundColor: '#f5f5f5',
               }}
             >
-              <span style={{ fontSize: '14px', fontWeight: 500, color: '#333' }}>
-                已选奖项
-              </span>
-              <span
-                style={{
-                  marginLeft: '8px',
-                  padding: '2px 8px',
-                  backgroundColor: '#1890ff',
-                  color: '#fff',
-                  borderRadius: '10px',
-                  fontSize: '12px',
-                }}
-              >
-                {selectedAwardIds.size}个
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '14px', fontWeight: 500, color: '#333' }}>
+                  已选奖项
+                </span>
+                <span
+                  style={{
+                    padding: '2px 8px',
+                    backgroundColor: '#1890ff',
+                    color: '#fff',
+                    borderRadius: '10px',
+                    fontSize: '12px',
+                  }}
+                >
+                  {loadedAwards.length}个
+                </span>
+              </div>
             </div>
 
-            {/* 已选列表 */}
             <div style={{ flex: 1, overflow: 'auto', padding: '8px' }}>
-              {selectedAwardIds.size === 0 ? (
+              {loadedAwards.length === 0 ? (
                 <div
                   style={{
                     padding: '40px 16px',
@@ -332,7 +367,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {selectedAwardsList.map((award) => (
+                  {loadedAwards.map((award: AwardItem) => (
                     <div
                       key={award.id}
                       style={{
@@ -340,14 +375,13 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                         backgroundColor: '#fff',
                         borderRadius: '6px',
                         border: '1px solid #e8e8e8',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        cursor: 'default',
                         transition: 'all 0.2s',
                         boxShadow: hoveredAwardId === award.id
                           ? '0 2px 8px rgba(0,0,0,0.1)'
                           : 'none',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
                       }}
                       onMouseEnter={() => setHoveredAwardId(award.id)}
                       onMouseLeave={() => setHoveredAwardId(null)}
@@ -367,61 +401,36 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                         >
                           {award.name}
                         </div>
-                        <div
-                          style={{
-                            fontSize: '12px',
-                            color: '#666',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                          }}
-                        >
-                          <span>{award.category} · {award.recipientCount}人</span>
-                          {isSystemRecommended(award.name) ? (
-                            <span
-                              style={{
-                                padding: '1px 4px',
-                                backgroundColor: '#52c41a',
-                                color: '#fff',
-                                borderRadius: '3px',
-                                fontSize: '10px',
-                              }}
-                            >
-                              系统
-                            </span>
-                          ) : (
-                            <span
-                              style={{
-                                padding: '1px 4px',
-                                backgroundColor: '#1890ff',
-                                color: '#fff',
-                                borderRadius: '3px',
-                                fontSize: '10px',
-                              }}
-                            >
-                              用户
-                            </span>
-                          )}
+                        <div style={{ fontSize: '12px', color: '#666' }}>
+                          {award.category} · {award.recipientCount}人
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#8c8c8c', marginTop: '2px' }}>
+                          {formatIssueDate(award.issueDate)}
                         </div>
                       </div>
-                      {hoveredAwardId === award.id && (
-                        <button
-                          onClick={() => removeFromSelected(award.id)}
-                          style={{
-                            padding: '4px 8px',
-                            backgroundColor: '#ff4d4f',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            cursor: 'pointer',
-                            marginLeft: '8px',
-                            flexShrink: 0,
-                          }}
-                        >
-                          删除
-                        </button>
-                      )}
+                      <button
+                        onClick={() => toggleAwardSelection(award.id)}
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          border: 'none',
+                          backgroundColor: hoveredAwardId === award.id ? '#ff4d4f' : 'transparent',
+                          color: hoveredAwardId === award.id ? '#fff' : '#999',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.2s',
+                          flexShrink: 0,
+                        }}
+                        title="删除"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -429,7 +438,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
             </div>
           </div>
 
-          {/* 右侧 - 搜索和表格 */}
+          {/* 右侧 - 当前部门所有奖项 */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             {/* 搜索栏 */}
             <div
@@ -438,15 +447,15 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                 borderBottom: '1px solid #f0f0f0',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '16px',
+                gap: '12px',
                 backgroundColor: '#fafafa',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '14px', color: '#333', whiteSpace: 'nowrap' }}>年份:</span>
                 <select
-                  value={year}
-                  onChange={(e) => setYear(e.target.value)}
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
                   style={{
                     padding: '6px 12px',
                     border: '1px solid #d9d9d9',
@@ -455,7 +464,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                     backgroundColor: '#fff',
                     cursor: 'pointer',
                     outline: 'none',
-                    minWidth: '100px',
+                    minWidth: '90px',
                   }}
                 >
                   {YEAR_OPTIONS.map((option) => (
@@ -481,7 +490,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                   placeholder="请输入奖项名称"
                   value={searchKeyword}
                   onChange={(e) => setSearchKeyword(e.target.value)}
-                  onKeyDown={handleKeyDown}
                   onFocus={() => setInputFocused(true)}
                   onBlur={() => setInputFocused(false)}
                   style={{
@@ -490,7 +498,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                     borderRadius: '4px',
                     fontSize: '14px',
                     flex: 1,
-                    maxWidth: '200px',
+                    maxWidth: '160px',
                     outline: 'none',
                     transition: 'border-color 0.2s, box-shadow 0.2s',
                     boxShadow: inputFocused ? '0 0 0 2px rgba(24, 144, 255, 0.2)' : 'none',
@@ -573,9 +581,9 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                             alignItems: 'center',
                             justifyContent: 'center',
                             margin: '0 auto',
-                            cursor: selectableAwards.length > 0 ? 'pointer' : 'default',
+                            cursor: filteredAwards.length > 0 ? 'pointer' : 'default',
                             transition: 'all 0.2s',
-                            opacity: selectableAwards.length === 0 ? 0.5 : 1,
+                            opacity: filteredAwards.length === 0 ? 0.5 : 1,
                           }}
                         >
                           {isAllSelected ? (
@@ -599,7 +607,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                       const isSelected = selectedAwardIds.has(award.id);
                       const isExpanded = expandedAwardIds.has(award.id);
                       const recipients = award.recipients || [];
-                      const isSystemRec = isSystemRecommended(award.name);
+                      const isRecent = isWithinRecentMonths(award.issueDate);
                       const isLast = index === paginatedAwards.length - 1 && !isExpanded;
 
                       const rows = [
@@ -648,7 +656,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                           >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <span>{award.name}</span>
-                              {isSystemRec && (
+                              {isRecent ? (
                                 <span
                                   style={{
                                     padding: '2px 6px',
@@ -660,9 +668,26 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                                     flexShrink: 0,
                                   }}
                                 >
-                                  系统推荐
+                                  近期
+                                </span>
+                              ) : (
+                                <span
+                                  style={{
+                                    padding: '2px 6px',
+                                    backgroundColor: '#faad14',
+                                    color: '#fff',
+                                    borderRadius: '4px',
+                                    fontSize: '11px',
+                                    fontWeight: 400,
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  历史
                                 </span>
                               )}
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '2px' }}>
+                              {formatIssueDate(award.issueDate)}
                             </div>
                           </td>
                           <td style={{ ...tdStyle(false), color: '#595959' }}>
@@ -820,7 +845,13 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                 padding: '0 24px',
                 borderTop: '1px solid #f0f0f0',
                 flexShrink: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
               }}>
+                <div style={{ fontSize: '14px', color: '#595959' }}>
+                  已勾选 <span style={{ color: '#1890ff', fontWeight: 500 }}>{selectedAwardIds.size}</span> 个奖项
+                </div>
                 <Pagination
                   current={currentPage}
                   pageSize={pageSize}

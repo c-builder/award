@@ -19,11 +19,24 @@ const steps = [
 
 function App() {
   const [currentStep, setCurrentStep] = useState(0);
-  // 初始化时，为团队奖设置 allTeams（如果还没有的话）
-  const initialAwards = useMemo(() => mockAwards.map(award => ({
-    ...award,
-    allTeams: award.awardType === 'team' ? (award.allTeams || award.teams || []) : undefined,
-  })), []);
+
+  const RECENT_MONTHS = 3;
+  const REFERENCE_DATE = new Date('2026-01-15');
+
+  const isWithinRecentMonths = (dateStr?: string): boolean => {
+    if (!dateStr) return false;
+    const issueDate = new Date(dateStr);
+    const threeMonthsAgo = new Date(REFERENCE_DATE);
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - RECENT_MONTHS);
+    return issueDate >= threeMonthsAgo;
+  };
+
+  const initialAwards = useMemo(() => mockAwards
+    .filter(award => award.isDefault || isWithinRecentMonths(award.issueDate))
+    .map(award => ({
+      ...award,
+      allTeams: award.awardType === 'team' ? (award.allTeams || award.teams || []) : undefined,
+    })), []);
   const [awards, setAwards] = useState<Award[]>(initialAwards);
 
   const [addRecipientModalVisible, setAddRecipientModalVisible] = useState(false);
@@ -48,11 +61,9 @@ function App() {
   const [selectedDepartment, setSelectedDepartment] = useState<string>(currentUserDepartment);
 
   const filteredAwards = useMemo(() => {
-    // 分离默认奖项和自定义奖项
-    const defaultAwards = awards.filter(award => award.isDefault);
-    const customAwards = awards.filter(award => !award.isDefault);
+    const defaultAwards = awards.filter(award => award.isDefault || isWithinRecentMonths(award.issueDate));
+    const customAwards = awards.filter(award => !award.isDefault && !isWithinRecentMonths(award.issueDate));
 
-    // 筛选默认奖项（根据部门筛选）
     const filteredDefaultAwards = selectedDepartment === '全部部门'
       ? defaultAwards
       : defaultAwards.filter(award => {
@@ -71,9 +82,25 @@ function App() {
           }
         });
 
-    // 自定义奖项作为共享数据，在所有部门都显示
-    // 按新增顺序（即数组中的顺序）追加到默认奖项后面
-    return [...filteredDefaultAwards, ...customAwards];
+    const filteredCustomAwards = selectedDepartment === '全部部门'
+      ? customAwards
+      : customAwards.filter(award => {
+          if (award.awardType === 'individual') {
+            return award.recipients.some(r => {
+              const dept = r.department.split('/')[0];
+              return dept === selectedDepartment;
+            });
+          } else {
+            return award.teams?.some(t =>
+              t.members?.some(m => {
+                const dept = m.department.split('/')[0];
+                return dept === selectedDepartment;
+              })
+            ) ?? false;
+          }
+        });
+
+    return [...filteredDefaultAwards, ...filteredCustomAwards];
   }, [awards, selectedDepartment]);
 
   const handleDepartmentChange = (dept: string) => {
@@ -152,23 +179,30 @@ function App() {
     setAwards((prev) => prev.filter((award) => award.id !== awardId));
   };
 
-  const handleAddAward = (selectedAwards: any[]) => {
+  const handleAddAward = (selectedAwards: Award[]) => {
     setAwards((prev) => {
-      const defaultAwards = prev.filter((award) => award.isDefault);
+      // 新逻辑：首页列表完全替换为弹窗中选中的奖项
+      // 保留原有奖项的 recipients 和 teams 数据（如果存在）
+      const newAwards: Award[] = selectedAwards.map((item) => {
+        // 查找是否已存在该奖项（用于保留 recipients/teams 数据）
+        const existingAward = prev.find(a => a.title === item.title);
 
-      const newAwards: Award[] = selectedAwards.map((item) => ({
-        id: String(Date.now() + Math.random()),
-        title: item.name,
-        issuingDepartment: item.issuingDepartment,
-        awardType: item.category === '团队奖' ? 'team' : 'individual',
-        recipients: [],
-        teams: item.category === '团队奖' ? [] : undefined,
-        selected: false,
-        isDefault: false,
-        pushDate: new Date().toISOString().split('T')[0],
-      }));
+        return {
+          id: existingAward?.id || item.id,
+          title: item.title,
+          issuingDepartment: item.issuingDepartment,
+          awardType: item.awardType,
+          recipients: existingAward?.recipients || item.recipients || [],
+          teams: existingAward?.teams || item.teams || (item.awardType === 'team' ? [] : undefined),
+          allTeams: item.allTeams,
+          selected: false,
+          isDefault: existingAward?.isDefault || item.isDefault || false,
+          issueDate: item.issueDate,
+          pushDate: existingAward?.pushDate || item.pushDate || new Date().toISOString().split('T')[0],
+        };
+      });
 
-      return [...defaultAwards, ...newAwards];
+      return newAwards;
     });
     setAddAwardModalVisible(false);
   };
@@ -441,7 +475,7 @@ function App() {
                         ? () => handleViewAllTeams(award.id)
                         : undefined
                     }
-                    onRemoveAward={award.isDefault ? undefined : () => handleRemoveAward(award.id)}
+                    onRemoveAward={() => handleRemoveAward(award.id)}
                   />
                 ))}
               </div>

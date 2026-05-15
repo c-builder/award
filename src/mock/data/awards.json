@@ -1,6 +1,7 @@
 [
   {
     "id": "1",
+    "issueDate": "2025-12-15",
     "title": "2025年明日之星",
     "issuingDepartment": "华为公司",
     "awardType": "individual",
@@ -31,6 +32,7 @@
   },
   {
     "id": "2",
+    "issueDate": "2025-11-20",
     "title": "2025年OCC委员会2025年4月激励奖项",
     "issuingDepartment": "质量与流程IT质量与运营部",
     "awardType": "team",
@@ -839,6 +841,7 @@
   },
   {
     "id": "3",
+    "issueDate": "2025-03-20",
     "title": "2025年Q1优秀团队奖",
     "issuingDepartment": "IT平台服务部",
     "awardType": "team",
@@ -896,11 +899,12 @@
         ]
       }
     ],
-    "isDefault": true,
+    "isDefault": false,
     "pushDate": "2025-03-20"
   },
   {
     "id": "4",
+    "issueDate": "2025-10-10",
     "title": "2025年流程IT持续改进团队及时激励奖",
     "issuingDepartment": "质量与流程IT部",
     "awardType": "team",
@@ -936,6 +940,7 @@
   },
   {
     "id": "5",
+    "issueDate": "2025-06-29",
     "title": "2025年优秀员工奖",
     "issuingDepartment": "华为公司",
     "awardType": "individual",
@@ -951,7 +956,7 @@
       { "name": "鲍六六", "employeeId": "00561111", "department": "云与计算业务部/大数据组", "isSelected": false },
       { "name": "廉七十", "employeeId": "00565555", "department": "云与计算业务部/云计算组", "isSelected": false }
     ],
-    "isDefault": true,
+    "isDefault": false,
     "pushDate": "2025-03-01"
   }
 ]

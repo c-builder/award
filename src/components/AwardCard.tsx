@@ -262,13 +262,13 @@ export const AwardCard: React.FC<AwardCardProps> = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {onRemoveAward && !award.isDefault && isHovered && (
+      {onRemoveAward && isHovered && (
         <button
           onClick={onRemoveAward}
           style={{
             position: 'absolute',
-            top: '8px',
-            right: '8px',
+            top: '-2px',
+            right: '-2px',
             width: '24px',
             height: '24px',
             borderRadius: '50%',
@@ -332,6 +332,27 @@ export const AwardCard: React.FC<AwardCardProps> = ({
               >
                 {isTeamAward ? '团队奖' : '个人奖'}
               </span>
+              <button
+                style={{
+                  padding: '4px 12px',
+                  backgroundColor: '#1890ff',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  marginLeft: '8px',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = '#40a9ff';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#1890ff';
+                }}
+              >
+                加入展播池
+              </button>
             </h3>
             <p
               style={{

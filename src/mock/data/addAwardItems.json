@@ -1,6 +1,7 @@
 [
   {
     "id": "award-001",
+    "issueDate": "2025-06-15",
     "name": "2025年半年度优秀个人奖",
     "category": "个人奖",
     "recipientCount": 10,
@@ -21,6 +22,7 @@
   },
   {
     "id": "award-002",
+    "issueDate": "2025-12-01",
     "name": "2025年明日之星",
     "category": "个人奖",
     "recipientCount": 29,
@@ -60,6 +62,7 @@
   },
   {
     "id": "award-003",
+    "issueDate": "2025-11-15",
     "name": "2025年OCC委员会4月激励奖",
     "category": "团队奖",
     "recipientCount": 7,
@@ -77,6 +80,7 @@
   },
   {
     "id": "award-004",
+    "issueDate": "2025-04-20",
     "name": "2025年对首批落地短信费用治理优秀个人奖",
     "category": "个人奖",
     "recipientCount": 5,
@@ -92,6 +96,7 @@
   },
   {
     "id": "award-005",
+    "issueDate": "2025-10-25",
     "name": "2025年流程IT持续改进团队及时激励奖",
     "category": "团队奖",
     "recipientCount": 16,
@@ -118,6 +123,7 @@
   },
   {
     "id": "award-006",
+    "issueDate": "2025-03-10",
     "name": "2025年公有云业务部金戈奖(总裁奖)",
     "category": "团队奖",
     "recipientCount": 25,
@@ -153,6 +159,7 @@
   },
   {
     "id": "award-007",
+    "issueDate": "2025-12-20",
     "name": "2025年Q1优秀团队奖",
     "category": "团队奖",
     "recipientCount": 12,
@@ -175,6 +182,7 @@
   },
   {
     "id": "award-008",
+    "issueDate": "2025-07-15",
     "name": "2025年创新突破个人奖",
     "category": "个人奖",
     "recipientCount": 8,
@@ -193,6 +201,7 @@
   },
   {
     "id": "award-009",
+    "issueDate": "2025-05-01",
     "name": "2025年优秀项目经理奖",
     "category": "个人奖",
     "recipientCount": 10,
@@ -213,6 +222,7 @@
   },
   {
     "id": "award-010",
+    "issueDate": "2025-10-15",
     "name": "2025年技术创新团队奖",
     "category": "团队奖",
     "recipientCount": 12,
@@ -235,6 +245,7 @@
   },
   {
     "id": "award-011",
+    "issueDate": "2025-08-20",
     "name": "2025年质量之星奖",
     "category": "个人奖",
     "recipientCount": 5,
@@ -250,6 +261,7 @@
   },
   {
     "id": "award-012",
+    "issueDate": "2025-09-10",
     "name": "2025年数字化转型优秀团队奖",
     "category": "团队奖",
     "recipientCount": 14,

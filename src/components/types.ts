@@ -69,6 +69,12 @@ export interface Award {
   /** 
    * 推送日期，用于判断是否为近期数据
    * 格式: YYYY-MM-DD
+   * 由 issueDate 决定是否为默认推送数据
    */
   pushDate?: string;
+  /** 
+   * 奖项颁发日期
+   * 格式: YYYY-MM-DD
+   */
+  issueDate?: string;
 }
