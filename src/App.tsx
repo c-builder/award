@@ -586,6 +586,7 @@ function App() {
         }
         onCancel={() => setTeamSearchModalVisible(false)}
         onConfirm={handleConfirmAddTeam}
+        onUpdateTeam={(updatedTeam) => handleUpdateTeam(currentAwardId, updatedTeam)}
         currentDepartment={selectedDepartment === '全部部门' ? '' : selectedDepartment}
         viewOnly={teamSearchViewOnly}
       />

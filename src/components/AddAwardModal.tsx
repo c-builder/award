@@ -850,7 +850,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                 justifyContent: 'space-between',
               }}>
                 <div style={{ fontSize: '14px', color: '#595959' }}>
-                  已勾选 <span style={{ color: '#1890ff', fontWeight: 500 }}>{selectedAwardIds.size}</span> 个奖项
+                  已选 <span style={{ color: '#1890ff', fontWeight: 500 }}>{selectedAwardIds.size}</span> 个奖项
                 </div>
                 <Pagination
                   current={currentPage}

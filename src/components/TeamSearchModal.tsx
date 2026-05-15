@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Pagination } from './Pagination';
+import { TeamMembersModal } from './TeamMembersModal';
 import type { Team } from './types';
 
 export interface TeamSearchModalProps {
@@ -8,6 +9,7 @@ export interface TeamSearchModalProps {
   existingTeams?: Team[];
   onCancel: () => void;
   onConfirm: (selectedTeams: Team[]) => void;
+  onUpdateTeam?: (updatedTeam: Team) => void;
   viewOnly?: boolean;
   currentDepartment?: string;
 }
@@ -15,13 +17,24 @@ export interface TeamSearchModalProps {
 export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
   visible,
   awardTitle = '',
-  existingTeams = [],
+  existingTeams: propExistingTeams = [],
   onCancel,
   onConfirm,
+  onUpdateTeam,
   viewOnly = false,
   currentDepartment = '',
 }) => {
-  const [searchText, setSearchText] = useState('');
+  // 使用本地状态管理 teams，以便支持实时更新
+  const [existingTeams, setExistingTeams] = useState<Team[]>(propExistingTeams);
+
+  // 当 prop 变化时同步更新本地状态
+  useEffect(() => {
+    setExistingTeams(propExistingTeams);
+  }, [propExistingTeams]);
+
+  const [employeeSearch, setEmployeeSearch] = useState('');
+  const [departmentSearch, setDepartmentSearch] = useState('');
+  const [teamNameSearch, setTeamNameSearch] = useState('');
   const [selectedTeams, setSelectedTeams] = useState<Set<string>>(new Set());
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,7 +45,11 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
   const [resetBtnHovered, setResetBtnHovered] = useState(false);
   const [cancelBtnHovered, setCancelBtnHovered] = useState(false);
   const [confirmBtnHovered, setConfirmBtnHovered] = useState(false);
-  const [inputFocused, setInputFocused] = useState(false);
+  const [employeeInputFocused, setEmployeeInputFocused] = useState(false);
+  const [departmentInputFocused, setDepartmentInputFocused] = useState(false);
+  const [teamNameInputFocused, setTeamNameInputFocused] = useState(false);
+  const [selectedTeamForDetail, setSelectedTeamForDetail] = useState<Team | null>(null);
+  const [detailModalVisible, setDetailModalVisible] = useState(false);
 
   const departmentTeams = useMemo(() => {
     if (!currentDepartment) return existingTeams;
@@ -53,23 +70,45 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
         const initialSelected = new Set(departmentTeams.map(t => t.id));
         setSelectedTeams(initialSelected);
       }
-      setSearchText('');
+      setEmployeeSearch('');
+      setDepartmentSearch('');
+      setTeamNameSearch('');
       setExpandedTeams(new Set());
       setCurrentPage(1);
     }
   }, [visible, existingTeams, departmentTeams]);
 
   const filteredTeams = useMemo(() => {
-    if (!searchText.trim()) return existingTeams;
-    const query = searchText.trim().toLowerCase();
     return existingTeams.filter(team => {
-      const matchName = team.name.toLowerCase().includes(query);
-      const matchEmployeeId = team.members?.some(member =>
-        member.employeeId.toLowerCase().includes(query)
-      );
-      return matchName || matchEmployeeId;
+      // 工号/姓名搜索
+      if (employeeSearch.trim()) {
+        const query = employeeSearch.trim().toLowerCase();
+        const matchEmployee = team.members?.some(member =>
+          member.employeeId.toLowerCase().includes(query) ||
+          member.name.toLowerCase().includes(query)
+        );
+        if (!matchEmployee) return false;
+      }
+
+      // 部门搜索
+      if (departmentSearch.trim()) {
+        const query = departmentSearch.trim().toLowerCase();
+        const matchDepartment = team.members?.some(member =>
+          member.department.toLowerCase().includes(query)
+        );
+        if (!matchDepartment) return false;
+      }
+
+      // 团队名搜索
+      if (teamNameSearch.trim()) {
+        const query = teamNameSearch.trim().toLowerCase();
+        const matchTeamName = team.name.toLowerCase().includes(query);
+        if (!matchTeamName) return false;
+      }
+
+      return true;
     });
-  }, [existingTeams, searchText]);
+  }, [existingTeams, employeeSearch, departmentSearch, teamNameSearch]);
 
   const paginatedTeams = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
@@ -82,7 +121,9 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
   }, [existingTeams, selectedTeams]);
 
   const handleReset = () => {
-    setSearchText('');
+    setEmployeeSearch('');
+    setDepartmentSearch('');
+    setTeamNameSearch('');
     setCurrentPage(1);
   };
 
@@ -319,9 +360,34 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                             style={{
                               fontSize: '12px',
                               color: '#666',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
                             }}
                           >
-                            {team.memberCount}人
+                            <span>{team.members?.filter(m => m.isSelected !== false).length || 0}人</span>
+                            <button
+                              onClick={() => {
+                                setSelectedTeamForDetail(team);
+                                setDetailModalVisible(true);
+                              }}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#1890ff',
+                                fontSize: '12px',
+                                cursor: 'pointer',
+                                padding: '0',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '2px',
+                              }}
+                            >
+                              <span>查看详情</span>
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="9 18 15 12 9 6" />
+                              </svg>
+                            </button>
                           </div>
                         </div>
                         {hoveredTeamId === team.id && (
@@ -365,38 +431,80 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
             >
               <input
                 type="text"
-                placeholder="请输入工号或团队名"
-                value={searchText}
+                placeholder="请输入工号或姓名"
+                value={employeeSearch}
                 onChange={(e) => {
-                  setSearchText(e.target.value);
+                  setEmployeeSearch(e.target.value);
                   setCurrentPage(1);
                 }}
-                onFocus={() => setInputFocused(true)}
-                onBlur={() => setInputFocused(false)}
+                onFocus={() => setEmployeeInputFocused(true)}
+                onBlur={() => setEmployeeInputFocused(false)}
                 style={{
                   padding: '6px 12px',
-                  border: `1px solid ${inputFocused ? '#1890ff' : '#d9d9d9'}`,
+                  border: `1px solid ${employeeInputFocused ? '#1890ff' : '#d9d9d9'}`,
                   borderRadius: '4px',
                   fontSize: '14px',
-                  width: '200px',
+                  width: '140px',
                   outline: 'none',
                   transition: 'border-color 0.2s, box-shadow 0.2s',
-                  boxShadow: inputFocused ? '0 0 0 2px rgba(24, 144, 255, 0.2)' : 'none',
+                  boxShadow: employeeInputFocused ? '0 0 0 2px rgba(24, 144, 255, 0.2)' : 'none',
+                }}
+              />
+              <input
+                type="text"
+                placeholder="请输入部门"
+                value={departmentSearch}
+                onChange={(e) => {
+                  setDepartmentSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
+                onFocus={() => setDepartmentInputFocused(true)}
+                onBlur={() => setDepartmentInputFocused(false)}
+                style={{
+                  padding: '6px 12px',
+                  border: `1px solid ${departmentInputFocused ? '#1890ff' : '#d9d9d9'}`,
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  width: '140px',
+                  outline: 'none',
+                  transition: 'border-color 0.2s, box-shadow 0.2s',
+                  boxShadow: departmentInputFocused ? '0 0 0 2px rgba(24, 144, 255, 0.2)' : 'none',
+                }}
+              />
+              <input
+                type="text"
+                placeholder="请输入团队名"
+                value={teamNameSearch}
+                onChange={(e) => {
+                  setTeamNameSearch(e.target.value);
+                  setCurrentPage(1);
+                }}
+                onFocus={() => setTeamNameInputFocused(true)}
+                onBlur={() => setTeamNameInputFocused(false)}
+                style={{
+                  padding: '6px 12px',
+                  border: `1px solid ${teamNameInputFocused ? '#1890ff' : '#d9d9d9'}`,
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  width: '140px',
+                  outline: 'none',
+                  transition: 'border-color 0.2s, box-shadow 0.2s',
+                  boxShadow: teamNameInputFocused ? '0 0 0 2px rgba(24, 144, 255, 0.2)' : 'none',
                 }}
               />
               <button
                 onClick={() => setCurrentPage(1)}
-                disabled={!searchText.trim()}
+                disabled={!employeeSearch.trim() && !departmentSearch.trim() && !teamNameSearch.trim()}
                 onMouseEnter={() => setSearchBtnHovered(true)}
                 onMouseLeave={() => setSearchBtnHovered(false)}
                 style={{
                   padding: '6px 20px',
-                  backgroundColor: !searchText.trim() ? '#d9d9d9' : (searchBtnHovered ? '#40a9ff' : '#1890ff'),
+                  backgroundColor: (!employeeSearch.trim() && !departmentSearch.trim() && !teamNameSearch.trim()) ? '#d9d9d9' : (searchBtnHovered ? '#40a9ff' : '#1890ff'),
                   color: '#fff',
                   border: 'none',
                   borderRadius: '4px',
                   fontSize: '14px',
-                  cursor: !searchText.trim() ? 'not-allowed' : 'pointer',
+                  cursor: (!employeeSearch.trim() && !departmentSearch.trim() && !teamNameSearch.trim()) ? 'not-allowed' : 'pointer',
                   transition: 'background-color 0.2s',
                 }}
               >
@@ -716,6 +824,33 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
           </button>
         </div>
       </div>
+
+      {/* 团队详情弹框 - 与首页共用 */}
+      <TeamMembersModal
+        visible={detailModalVisible}
+        team={selectedTeamForDetail || { id: '', name: '', leaderName: '', leaderId: '', memberCount: 0 }}
+        onClose={() => {
+          setDetailModalVisible(false);
+          setSelectedTeamForDetail(null);
+        }}
+        onConfirm={(updatedTeam) => {
+          // 更新本地团队数据
+          setExistingTeams(prev => {
+            const newTeams = [...prev];
+            const teamIndex = newTeams.findIndex(t => t.id === updatedTeam.id);
+            if (teamIndex !== -1) {
+              newTeams[teamIndex] = updatedTeam;
+            }
+            return newTeams;
+          });
+          // 通知父组件团队已更新
+          if (onUpdateTeam) {
+            onUpdateTeam(updatedTeam);
+          }
+          setDetailModalVisible(false);
+          setSelectedTeamForDetail(null);
+        }}
+      />
     </div>
   );
 };
