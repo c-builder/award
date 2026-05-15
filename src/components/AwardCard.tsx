@@ -430,8 +430,10 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                     e.currentTarget.style.borderStyle = 'dashed';
                   }}
                 >
-                  <span>等共{filteredTeams?.length}个团队（已选{selectedCount}）</span>
-                  <span style={{ fontWeight: 600 }}>查看全部 →</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                    <span>等共{filteredTeams?.length}个团队（已选{selectedCount}）</span>
+                    <span style={{ fontWeight: 600 }}>查看全部 →</span>
+                  </div>
                 </button>
               )}
             </div>
@@ -511,8 +513,10 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                     e.currentTarget.style.borderStyle = 'dashed';
                   }}
                 >
-                  <span>等共{filteredRecipients.length}人</span>
-                  <span style={{ fontWeight: 600 }}>查看全部 →</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                    <span>等共{filteredRecipients.length}人</span>
+                    <span style={{ fontWeight: 600 }}>查看全部 →</span>
+                  </div>
                 </button>
               )}
             </div>

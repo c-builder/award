@@ -231,7 +231,7 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
         >
           <input
             type="text"
-            placeholder="输入工号添加跨部门成员"
+            placeholder="请输入工号"
             value={searchText}
             onChange={(e) => {
               setSearchText(e.target.value);
