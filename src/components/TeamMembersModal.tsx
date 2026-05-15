@@ -133,12 +133,6 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
     onClose();
   };
 
-  const getRowBgColor = (employeeId: string, checked: boolean) => {
-    if (checked) return '#e6f7ff';
-    if (hoveredRowId === employeeId) return '#fafafa';
-    return 'transparent';
-  };
-
   if (!visible) return null;
 
   const thStyle: React.CSSProperties = {

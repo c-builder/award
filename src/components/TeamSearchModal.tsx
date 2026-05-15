@@ -141,12 +141,6 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
     }
   };
 
-  const getRowBgColor = (teamId: string, isSelected: boolean) => {
-    if (isSelected) return '#e6f7ff';
-    if (hoveredRowId === teamId) return '#fafafa';
-    return 'transparent';
-  };
-
   if (!visible) return null;
 
   const thStyle: React.CSSProperties = {
