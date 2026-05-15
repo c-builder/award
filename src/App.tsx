@@ -539,28 +539,64 @@ function App() {
       >
 
         {currentStep === 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            {/* 全选/取消全选 */}
-            <button
-              onClick={() => handleSelectAll(selectedAwardIds.size < filteredAwards.length)}
-              disabled={filteredAwards.length === 0}
-              style={{
-                padding: '6px 16px',
-                backgroundColor: filteredAwards.length === 0 ? '#f5f5f5' : '#fff',
-                color: filteredAwards.length === 0 ? '#bfbfbf' : '#1890ff',
-                border: '1px solid #d9d9d9',
-                borderRadius: '4px',
-                cursor: filteredAwards.length === 0 ? 'not-allowed' : 'pointer',
-                fontSize: '14px',
-                transition: 'all 0.2s',
-              }}
-            >
-              {selectedAwardIds.size === filteredAwards.length && filteredAwards.length > 0 ? '取消全选' : '全选'}
-            </button>
-            {/* 已选X个奖项 */}
-            <span style={{ fontSize: '14px', color: '#666' }}>
-              已选 <strong style={{ color: '#1890ff', fontSize: '16px' }}>{selectedAwardIds.size}</strong> 个奖项
-            </span>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '24px',
+              padding: '12px 20px',
+              backgroundColor: '#fff',
+              borderRadius: '8px',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+              border: '1px solid #f0f0f0',
+            }}
+          >
+            {/* 左侧：全选复选框 + 统计 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              {/* 全选复选框 */}
+              <div
+                onClick={() => handleSelectAll(selectedAwardIds.size < filteredAwards.length)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  cursor: filteredAwards.length === 0 ? 'not-allowed' : 'pointer',
+                  opacity: filteredAwards.length === 0 ? 0.5 : 1,
+                }}
+              >
+                <div
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    border: `2px solid ${selectedAwardIds.size > 0 ? '#1890ff' : '#d9d9d9'}`,
+                    borderRadius: '2px',
+                    backgroundColor: selectedAwardIds.size === filteredAwards.length && filteredAwards.length > 0 ? '#1890ff' : '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {selectedAwardIds.size === filteredAwards.length && filteredAwards.length > 0 && (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                  {selectedAwardIds.size > 0 && selectedAwardIds.size < filteredAwards.length && (
+                    <div style={{ width: '8px', height: '2px', backgroundColor: '#1890ff' }} />
+                  )}
+                </div>
+                <span style={{ fontSize: '14px', color: '#333', fontWeight: 500 }}>全选</span>
+              </div>
+
+              {/* 分隔线 */}
+              <div style={{ width: '1px', height: '16px', backgroundColor: '#e8e8e8' }} />
+
+              {/* 已选统计 */}
+              <span style={{ fontSize: '14px', color: '#666' }}>
+                已选 <strong style={{ color: '#1890ff', fontSize: '16px', fontWeight: 600 }}>{selectedAwardIds.size}</strong> 个奖项
+              </span>
+            </div>
           </div>
         )}
 
