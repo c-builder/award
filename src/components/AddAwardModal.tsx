@@ -50,7 +50,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [selectedAwardIds, setSelectedAwardIds] = useState<Set<string>>(new Set());
   const [expandedAwardIds, setExpandedAwardIds] = useState<Set<string>>(new Set());
-  const [existingAwardAlert, setExistingAwardAlert] = useState<string | null>(null);
   const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
   const [hoveredAwardId, setHoveredAwardId] = useState<string | null>(null);
   const [inputFocused, setInputFocused] = useState(false);
@@ -58,16 +57,15 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
   useEffect(() => {
     if (visible) {
       setSelectedDeptPath(externalDeptPath);
-      const customAwardIds = new Set<string>();
+      // 初始化时，所有已存在的奖项（包括默认和自定义）都设为选中状态
+      const allExistingAwardIds = new Set<string>();
       existingAwards.forEach(existingAward => {
-        if (!existingAward.isDefault) {
-          const mockAward = MOCK_AWARDS.find(mock => mock.name === existingAward.title);
-          if (mockAward) {
-            customAwardIds.add(mockAward.id);
-          }
+        const mockAward = MOCK_AWARDS.find(mock => mock.name === existingAward.title);
+        if (mockAward) {
+          allExistingAwardIds.add(mockAward.id);
         }
       });
-      setSelectedAwardIds(customAwardIds);
+      setSelectedAwardIds(allExistingAwardIds);
     }
   }, [visible, existingAwards, externalDeptPath]);
 
@@ -78,7 +76,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
       setSearchKeyword('');
       setSelectedAwardIds(new Set());
       setExpandedAwardIds(new Set());
-      setExistingAwardAlert(null);
       setCurrentPage(1);
     }
   }, [visible]);
@@ -105,9 +102,8 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
     });
   }, [selectedDeptPath, searchKeyword]);
 
-  const selectableAwards = useMemo(() => {
-    return filteredAwards.filter(award => !existingDefaultAwardNames.has(award.name));
-  }, [filteredAwards, existingDefaultAwardNames]);
+  // 所有奖项都可以选择（包括默认奖项）
+  const selectableAwards = filteredAwards;
 
   const selectableSelectedCount = useMemo(() => {
     return selectableAwards.filter(award => selectedAwardIds.has(award.id)).length;
@@ -132,6 +128,11 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
     }
   };
 
+  // 判断奖项是否为系统推荐（默认奖项）
+  const isSystemRecommended = (awardName: string) => {
+    return existingDefaultAwardNames.has(awardName);
+  };
+
   const paginatedAwards = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
     return filteredAwards.slice(startIndex, startIndex + pageSize);
@@ -150,12 +151,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
     const award = MOCK_AWARDS.find(a => a.id === awardId);
     if (!award) return;
 
-    if (existingDefaultAwardNames.has(award.name)) {
-      setExistingAwardAlert(`"${award.name}" 已存在于当前展播中`);
-      setTimeout(() => setExistingAwardAlert(null), 3000);
-      return;
-    }
-
+    // 允许所有奖项自由选择和取消，包括默认奖项
     const newSelected = new Set(selectedAwardIds);
     if (newSelected.has(awardId)) {
       newSelected.delete(awardId);
@@ -284,28 +280,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
           </button>
         </div>
 
-        {existingAwardAlert && (
-          <div
-            style={{
-              padding: '12px 24px',
-              backgroundColor: '#fff2f0',
-              borderBottom: '1px solid #ffccc7',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ff4d4f" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            <span style={{ fontSize: '14px', color: '#ff4d4f' }}>
-              {existingAwardAlert}
-            </span>
-          </div>
-        )}
-
         {/* 主内容区域 - 左右布局 */}
         <div style={{ flex: 1, overflow: 'hidden', display: 'flex', overscrollBehavior: 'contain' }}>
           {/* 左侧 - 已选奖项 */}
@@ -397,9 +371,37 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                           style={{
                             fontSize: '12px',
                             color: '#666',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
                           }}
                         >
-                          {award.category} · {award.recipientCount}人
+                          <span>{award.category} · {award.recipientCount}人</span>
+                          {isSystemRecommended(award.name) ? (
+                            <span
+                              style={{
+                                padding: '1px 4px',
+                                backgroundColor: '#52c41a',
+                                color: '#fff',
+                                borderRadius: '3px',
+                                fontSize: '10px',
+                              }}
+                            >
+                              系统
+                            </span>
+                          ) : (
+                            <span
+                              style={{
+                                padding: '1px 4px',
+                                backgroundColor: '#1890ff',
+                                color: '#fff',
+                                borderRadius: '3px',
+                                fontSize: '10px',
+                              }}
+                            >
+                              用户
+                            </span>
+                          )}
                         </div>
                       </div>
                       {hoveredAwardId === award.id && (
@@ -597,8 +599,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                       const isSelected = selectedAwardIds.has(award.id);
                       const isExpanded = expandedAwardIds.has(award.id);
                       const recipients = award.recipients || [];
-                      const isDefaultExisting = existingDefaultAwardNames.has(award.name);
-                      const isChecked = isDefaultExisting ? true : isSelected;
+                      const isSystemRec = isSystemRecommended(award.name);
                       const isLast = index === paginatedAwards.length - 1 && !isExpanded;
 
                       const rows = [
@@ -613,23 +614,22 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                         >
                           <td style={{ ...tdStyle(false), textAlign: 'center' }}>
                             <div
-                              onClick={() => !isDefaultExisting && toggleAwardSelection(award.id)}
+                              onClick={() => toggleAwardSelection(award.id)}
                               style={{
                                 width: '18px',
                                 height: '18px',
-                                border: `2px solid ${isChecked ? '#1890ff' : '#d9d9d9'}`,
+                                border: `2px solid ${isSelected ? '#1890ff' : '#d9d9d9'}`,
                                 borderRadius: '3px',
-                                backgroundColor: isChecked ? '#1890ff' : '#fff',
+                                backgroundColor: isSelected ? '#1890ff' : '#fff',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 margin: '0 auto',
-                                cursor: isDefaultExisting ? 'not-allowed' : 'pointer',
+                                cursor: 'pointer',
                                 transition: 'all 0.2s',
-                                opacity: isDefaultExisting ? 0.5 : 1,
                               }}
                             >
-                              {isChecked && (
+                              {isSelected && (
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                   <polyline points="20 6 9 17 4 12" />
                                 </svg>
@@ -638,25 +638,42 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                           </td>
                           <td style={{
                             ...tdStyle(false),
-                            color: isDefaultExisting ? '#8c8c8c' : '#262626',
-                            fontWeight: isDefaultExisting ? 400 : 500,
+                            color: '#262626',
+                            fontWeight: 500,
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',
                           }}
                             title={award.name}
                           >
-                            {award.name}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span>{award.name}</span>
+                              {isSystemRec && (
+                                <span
+                                  style={{
+                                    padding: '2px 6px',
+                                    backgroundColor: '#52c41a',
+                                    color: '#fff',
+                                    borderRadius: '4px',
+                                    fontSize: '11px',
+                                    fontWeight: 400,
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  系统推荐
+                                </span>
+                              )}
+                            </div>
                           </td>
-                          <td style={{ ...tdStyle(false), color: isDefaultExisting ? '#8c8c8c' : '#595959' }}>
+                          <td style={{ ...tdStyle(false), color: '#595959' }}>
                             {award.category}
                           </td>
-                          <td style={{ ...tdStyle(false), color: isDefaultExisting ? '#8c8c8c' : '#595959' }}>
+                          <td style={{ ...tdStyle(false), color: '#595959' }}>
                             {award.recipientCount}
                           </td>
                           <td style={{
                             ...tdStyle(false),
-                            color: isDefaultExisting ? '#8c8c8c' : '#595959',
+                            color: '#595959',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',
