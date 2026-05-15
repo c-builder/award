@@ -337,7 +337,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
             >
               <input
                 type="text"
-                placeholder="搜索姓名/工号"
+                placeholder="请输入姓名/工号"
                 value={searchText}
                 onChange={(e) => { setSearchText(e.target.value); setCurrentPage(1); }}
                 style={{

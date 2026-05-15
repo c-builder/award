@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Pagination } from './Pagination';
 import { TeamMembersModal } from './TeamMembersModal';
+import { DeptCascader } from './DeptCascader';
 import type { Team } from './types';
 
 export interface TeamSearchModalProps {
@@ -33,7 +34,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
   }, [propExistingTeams]);
 
   const [employeeSearch, setEmployeeSearch] = useState('');
-  const [departmentSearch, setDepartmentSearch] = useState('');
+  const [selectedDeptPath, setSelectedDeptPath] = useState<string[]>([]);
   const [teamNameSearch, setTeamNameSearch] = useState('');
   const [selectedTeams, setSelectedTeams] = useState<Set<string>>(new Set());
   const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
@@ -46,7 +47,6 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
   const [cancelBtnHovered, setCancelBtnHovered] = useState(false);
   const [confirmBtnHovered, setConfirmBtnHovered] = useState(false);
   const [employeeInputFocused, setEmployeeInputFocused] = useState(false);
-  const [departmentInputFocused, setDepartmentInputFocused] = useState(false);
   const [teamNameInputFocused, setTeamNameInputFocused] = useState(false);
   const [selectedTeamForDetail, setSelectedTeamForDetail] = useState<Team | null>(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
@@ -71,7 +71,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
         setSelectedTeams(initialSelected);
       }
       setEmployeeSearch('');
-      setDepartmentSearch('');
+      setSelectedDeptPath([]);
       setTeamNameSearch('');
       setExpandedTeams(new Set());
       setCurrentPage(1);
@@ -90,11 +90,11 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
         if (!matchEmployee) return false;
       }
 
-      // 部门搜索
-      if (departmentSearch.trim()) {
-        const query = departmentSearch.trim().toLowerCase();
+      // 部门搜索 - 使用 DeptCascader 的值
+      if (selectedDeptPath.length > 0) {
+        const selectedDept = selectedDeptPath[0];
         const matchDepartment = team.members?.some(member =>
-          member.department.toLowerCase().includes(query)
+          member.department.split('/')[0] === selectedDept
         );
         if (!matchDepartment) return false;
       }
@@ -108,7 +108,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
 
       return true;
     });
-  }, [existingTeams, employeeSearch, departmentSearch, teamNameSearch]);
+  }, [existingTeams, employeeSearch, selectedDeptPath, teamNameSearch]);
 
   const paginatedTeams = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
@@ -122,7 +122,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
 
   const handleReset = () => {
     setEmployeeSearch('');
-    setDepartmentSearch('');
+    setSelectedDeptPath([]);
     setTeamNameSearch('');
     setCurrentPage(1);
   };
@@ -223,6 +223,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
           backgroundColor: '#fff',
           borderRadius: '8px',
           width: '1100px',
+          minHeight: '600px',
           maxHeight: '80vh',
           display: 'flex',
           flexDirection: 'column',
@@ -431,7 +432,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
             >
               <input
                 type="text"
-                placeholder="请输入工号或姓名"
+                placeholder="请输入姓名/工号"
                 value={employeeSearch}
                 onChange={(e) => {
                   setEmployeeSearch(e.target.value);
@@ -444,32 +445,20 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                   border: `1px solid ${employeeInputFocused ? '#1890ff' : '#d9d9d9'}`,
                   borderRadius: '4px',
                   fontSize: '14px',
-                  width: '140px',
+                  flex: 1,
+                  minWidth: '120px',
                   outline: 'none',
                   transition: 'border-color 0.2s, box-shadow 0.2s',
                   boxShadow: employeeInputFocused ? '0 0 0 2px rgba(24, 144, 255, 0.2)' : 'none',
                 }}
               />
-              <input
-                type="text"
-                placeholder="请输入部门"
-                value={departmentSearch}
-                onChange={(e) => {
-                  setDepartmentSearch(e.target.value);
+              <DeptCascader
+                value={selectedDeptPath}
+                onChange={(value) => {
+                  setSelectedDeptPath(value);
                   setCurrentPage(1);
                 }}
-                onFocus={() => setDepartmentInputFocused(true)}
-                onBlur={() => setDepartmentInputFocused(false)}
-                style={{
-                  padding: '6px 12px',
-                  border: `1px solid ${departmentInputFocused ? '#1890ff' : '#d9d9d9'}`,
-                  borderRadius: '4px',
-                  fontSize: '14px',
-                  width: '140px',
-                  outline: 'none',
-                  transition: 'border-color 0.2s, box-shadow 0.2s',
-                  boxShadow: departmentInputFocused ? '0 0 0 2px rgba(24, 144, 255, 0.2)' : 'none',
-                }}
+                placeholder="全部部门"
               />
               <input
                 type="text"
@@ -486,7 +475,8 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                   border: `1px solid ${teamNameInputFocused ? '#1890ff' : '#d9d9d9'}`,
                   borderRadius: '4px',
                   fontSize: '14px',
-                  width: '140px',
+                  flex: 1,
+                  minWidth: '120px',
                   outline: 'none',
                   transition: 'border-color 0.2s, box-shadow 0.2s',
                   boxShadow: teamNameInputFocused ? '0 0 0 2px rgba(24, 144, 255, 0.2)' : 'none',
@@ -494,18 +484,20 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
               />
               <button
                 onClick={() => setCurrentPage(1)}
-                disabled={!employeeSearch.trim() && !departmentSearch.trim() && !teamNameSearch.trim()}
+                disabled={!employeeSearch.trim() && selectedDeptPath.length === 0 && !teamNameSearch.trim()}
                 onMouseEnter={() => setSearchBtnHovered(true)}
                 onMouseLeave={() => setSearchBtnHovered(false)}
                 style={{
                   padding: '6px 20px',
-                  backgroundColor: (!employeeSearch.trim() && !departmentSearch.trim() && !teamNameSearch.trim()) ? '#d9d9d9' : (searchBtnHovered ? '#40a9ff' : '#1890ff'),
+                  backgroundColor: (!employeeSearch.trim() && selectedDeptPath.length === 0 && !teamNameSearch.trim()) ? '#d9d9d9' : (searchBtnHovered ? '#40a9ff' : '#1890ff'),
                   color: '#fff',
                   border: 'none',
                   borderRadius: '4px',
                   fontSize: '14px',
-                  cursor: (!employeeSearch.trim() && !departmentSearch.trim() && !teamNameSearch.trim()) ? 'not-allowed' : 'pointer',
+                  cursor: (!employeeSearch.trim() && selectedDeptPath.length === 0 && !teamNameSearch.trim()) ? 'not-allowed' : 'pointer',
                   transition: 'background-color 0.2s',
+                  flexShrink: 0,
+                  whiteSpace: 'nowrap',
                 }}
               >
                 查询
@@ -523,6 +515,8 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                   fontSize: '14px',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
+                  flexShrink: 0,
+                  whiteSpace: 'nowrap',
                 }}
               >
                 重置
@@ -766,15 +760,17 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
               ) : (
                 <div />
               )}
-              <Pagination
-                current={currentPage}
-                pageSize={pageSize}
-                total={filteredTeams.length}
-                onChange={setCurrentPage}
-                onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
-                showTotal
-                showPageSize
-              />
+              {filteredTeams.length > 0 && (
+                <Pagination
+                  current={currentPage}
+                  pageSize={pageSize}
+                  total={filteredTeams.length}
+                  onChange={setCurrentPage}
+                  onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
+                  showTotal
+                  showPageSize
+                />
+              )}
             </div>
           </div>
         </div>

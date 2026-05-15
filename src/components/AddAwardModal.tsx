@@ -57,17 +57,6 @@ const MOCK_AWARDS: AwardItem[] = (awardsData as Award[]).map(award => {
   };
 });
 
-const RECENT_MONTHS = 3;
-const REFERENCE_DATE = new Date('2026-01-15');
-
-const isWithinRecentMonths = (dateStr?: string): boolean => {
-  if (!dateStr) return false;
-  const issueDate = new Date(dateStr);
-  const threeMonthsAgo = new Date(REFERENCE_DATE);
-  threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - RECENT_MONTHS);
-  return issueDate >= threeMonthsAgo;
-};
-
 const formatIssueDate = (dateStr?: string): string => {
   if (!dateStr) return '';
   const date = new Date(dateStr);
@@ -392,7 +381,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                             fontSize: '14px',
                             fontWeight: 500,
                             color: '#333',
-                            marginBottom: '4px',
+                            marginBottom: '6px',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',
@@ -401,36 +390,60 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                         >
                           {award.name}
                         </div>
-                        <div style={{ fontSize: '12px', color: '#666' }}>
-                          {award.category} · {award.recipientCount}人
-                        </div>
-                        <div style={{ fontSize: '11px', color: '#8c8c8c', marginTop: '2px' }}>
-                          {formatIssueDate(award.issueDate)}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                          {/* 奖项类别标签 */}
+                          <span
+                            style={{
+                              padding: '2px 8px',
+                              backgroundColor: award.category === '团队奖' ? '#e6f7ff' : '#f0fdf4',
+                              color: award.category === '团队奖' ? '#1890ff' : '#16a34a',
+                              borderRadius: '4px',
+                              fontSize: '11px',
+                              fontWeight: 500,
+                            }}
+                          >
+                            {award.category}
+                          </span>
+                          {/* 获奖人数 */}
+                          <span style={{ fontSize: '12px', color: '#666', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                              <circle cx="9" cy="7" r="4"></circle>
+                              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            {award.recipientCount}人
+                          </span>
+                          {/* 颁发日期 */}
+                          <span style={{ fontSize: '12px', color: '#999', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                              <line x1="16" y1="2" x2="16" y2="6"></line>
+                              <line x1="8" y1="2" x2="8" y2="6"></line>
+                              <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            {formatIssueDate(award.issueDate)}
+                          </span>
                         </div>
                       </div>
-                      <button
-                        onClick={() => toggleAwardSelection(award.id)}
-                        style={{
-                          width: '24px',
-                          height: '24px',
-                          border: 'none',
-                          backgroundColor: hoveredAwardId === award.id ? '#ff4d4f' : 'transparent',
-                          color: hoveredAwardId === award.id ? '#fff' : '#999',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'all 0.2s',
-                          flexShrink: 0,
-                        }}
-                        title="删除"
-                      >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <line x1="18" y1="6" x2="6" y2="18"></line>
-                          <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                      </button>
+                      {hoveredAwardId === award.id && (
+                        <button
+                          onClick={() => toggleAwardSelection(award.id)}
+                          style={{
+                            padding: '4px 8px',
+                            backgroundColor: '#ff4d4f',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            marginLeft: '8px',
+                            flexShrink: 0,
+                          }}
+                        >
+                          删除
+                        </button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -607,7 +620,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                       const isSelected = selectedAwardIds.has(award.id);
                       const isExpanded = expandedAwardIds.has(award.id);
                       const recipients = award.recipients || [];
-                      const isRecent = isWithinRecentMonths(award.issueDate);
                       const isLast = index === paginatedAwards.length - 1 && !isExpanded;
 
                       const rows = [
@@ -656,35 +668,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                           >
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <span>{award.name}</span>
-                              {isRecent ? (
-                                <span
-                                  style={{
-                                    padding: '2px 6px',
-                                    backgroundColor: '#52c41a',
-                                    color: '#fff',
-                                    borderRadius: '4px',
-                                    fontSize: '11px',
-                                    fontWeight: 400,
-                                    flexShrink: 0,
-                                  }}
-                                >
-                                  近期
-                                </span>
-                              ) : (
-                                <span
-                                  style={{
-                                    padding: '2px 6px',
-                                    backgroundColor: '#faad14',
-                                    color: '#fff',
-                                    borderRadius: '4px',
-                                    fontSize: '11px',
-                                    fontWeight: 400,
-                                    flexShrink: 0,
-                                  }}
-                                >
-                                  历史
-                                </span>
-                              )}
                             </div>
                             <div style={{ fontSize: '12px', color: '#8c8c8c', marginTop: '2px' }}>
                               {formatIssueDate(award.issueDate)}

@@ -76,7 +76,7 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
 
   const handleSearch = () => {
     if (!searchText.trim()) {
-      setSearchError('请输入工号');
+      setSearchError('请输入姓名/工号');
       setSearchResult(null);
       return;
     }
@@ -231,7 +231,7 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
         >
           <input
             type="text"
-            placeholder="请输入工号"
+            placeholder="请输入姓名/工号"
             value={searchText}
             onChange={(e) => {
               setSearchText(e.target.value);
