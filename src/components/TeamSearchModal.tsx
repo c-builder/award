@@ -489,10 +489,9 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                         <tr
                           key={team.id}
                           style={{
-                            backgroundColor: getRowBgColor(team.id, isSelected),
+                            backgroundColor: hoveredRowId === team.id ? '#fafafa' : 'transparent',
                             cursor: viewOnly ? 'default' : 'pointer',
                             transition: 'background-color 0.2s',
-                            borderLeft: isSelected ? '3px solid #1890ff' : '3px solid transparent',
                           }}
                           onMouseEnter={() => setHoveredRowId(team.id)}
                           onMouseLeave={() => setHoveredRowId(null)}

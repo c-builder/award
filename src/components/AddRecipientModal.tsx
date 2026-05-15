@@ -461,7 +461,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
                         <tr
                           key={emp.employeeId}
                           style={{
-                            backgroundColor: !readonly && selected ? '#e6f7ff' : 'transparent',
+                            backgroundColor: 'transparent',
                             cursor: readonly ? 'default' : 'pointer',
                           }}
                           onClick={() => !readonly && toggleSelection(emp)}

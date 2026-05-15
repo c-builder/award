@@ -306,7 +306,7 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
           )}
         </div>
 
-        <div style={{ flex: 1, overflow: 'auto', overscrollBehavior: 'contain' }}>
+        <div style={{ flex: 1, overflow: 'auto', overscrollBehavior: 'contain', padding: '0 20px', backgroundColor: '#fafafa' }}>
           {members.length === 0 ? (
             <div style={{
               padding: '48px 0',
@@ -362,10 +362,9 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
                     <tr
                       key={member.employeeId}
                       style={{
-                        backgroundColor: getRowBgColor(member.employeeId, checked),
+                        backgroundColor: hoveredRowId === member.employeeId ? '#fafafa' : 'transparent',
                         cursor: 'pointer',
                         transition: 'background-color 0.2s',
-                        borderLeft: checked ? '3px solid #1890ff' : '3px solid transparent',
                       }}
                       onClick={() => toggleMember(member.employeeId)}
                       onMouseEnter={() => setHoveredRowId(member.employeeId)}
