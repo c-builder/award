@@ -155,6 +155,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
           backgroundColor: '#fff',
           borderRadius: '8px',
           width: '1100px',
+          minHeight: '600px',
           maxHeight: '80vh',
           display: 'flex',
           flexDirection: 'column',
@@ -271,24 +272,27 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
                               fontWeight: 500,
                               color: '#333',
                               marginBottom: '4px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '8px',
                             }}
                           >
-                            {recipient.name}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: '12px',
-                              color: '#666',
-                              fontFamily: 'monospace',
-                            }}
-                          >
-                            {recipient.employeeId}
+                            <span>{recipient.name}</span>
+                            <span
+                              style={{
+                                fontSize: '12px',
+                                color: '#666',
+                                fontFamily: 'monospace',
+                                fontWeight: 400,
+                              }}
+                            >
+                              {recipient.employeeId}
+                            </span>
                           </div>
                           <div
                             style={{
                               fontSize: '12px',
                               color: '#999',
-                              marginTop: '2px',
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
                               whiteSpace: 'nowrap',
@@ -515,31 +519,33 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
               </div>
 
               {/* 分页器 */}
-              <div style={{
-                padding: '0 24px',
-                borderTop: '1px solid #f0f0f0',
-                flexShrink: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}>
-                {!readonly ? (
-                  <div style={{ fontSize: '14px', color: '#595959' }}>
-                    已选 <span style={{ color: '#1890ff', fontWeight: 500 }}>{selectedRecipients.length}</span> 人
-                  </div>
-                ) : (
-                  <div />
-                )}
-                <Pagination
-                  current={currentPage}
-                  pageSize={pageSize}
-                  total={filteredEmployees.length}
-                  onChange={handlePageChange}
-                  onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
-                  showTotal
-                  showPageSize
-                />
-              </div>
+              {filteredEmployees.length > 0 && (
+                <div style={{
+                  padding: '0 24px',
+                  borderTop: '1px solid #f0f0f0',
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}>
+                  {!readonly ? (
+                    <div style={{ fontSize: '14px', color: '#595959' }}>
+                      已选 <span style={{ color: '#1890ff', fontWeight: 500 }}>{selectedRecipients.length}</span> 人
+                    </div>
+                  ) : (
+                    <div />
+                  )}
+                  <Pagination
+                    current={currentPage}
+                    pageSize={pageSize}
+                    total={filteredEmployees.length}
+                    onChange={handlePageChange}
+                    onPageSizeChange={(size) => { setPageSize(size); setCurrentPage(1); }}
+                    showTotal
+                    showPageSize
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
