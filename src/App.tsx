@@ -378,7 +378,7 @@ function App() {
         </div>
       </div>
 
-      <main style={{ padding: '24px 24px 80px 24px', maxWidth: '1200px', margin: '0 auto' }}>
+      <main style={{ padding: '24px 24px 120px 24px', maxWidth: '1200px', margin: '0 auto' }}>
         {currentStep === 0 && (
           <>
             <div
