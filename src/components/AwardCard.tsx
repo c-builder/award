@@ -10,6 +10,8 @@ export interface AwardCardProps {
   award: Award;
   index?: number;
   currentDepartment?: string;
+  selected?: boolean;
+  onSelect?: (selected: boolean) => void;
   onAddRecipient?: (allRecipients: Recipient[], selectedRecipients: Recipient[]) => void;
   onRemoveRecipient?: (recipient: Recipient) => void;
   onAddTeam?: () => void;
@@ -155,6 +157,8 @@ const TeamCard: React.FC<TeamCardProps> = ({
 
 export const AwardCard: React.FC<AwardCardProps> = ({
   award,
+  selected = false,
+  onSelect,
   currentDepartment = '',
   onAddRecipient,
   onRemoveRecipient,
@@ -307,6 +311,29 @@ export const AwardCard: React.FC<AwardCardProps> = ({
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+          {/* 复选框 */}
+          <div
+            onClick={() => onSelect?.(!selected)}
+            style={{
+              width: '18px',
+              height: '18px',
+              border: `2px solid ${selected ? '#1890ff' : '#d9d9d9'}`,
+              borderRadius: '3px',
+              backgroundColor: selected ? '#1890ff' : '#fff',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+              flexShrink: 0,
+            }}
+          >
+            {selected && (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            )}
+          </div>
           <div style={{ flex: 1 }}>
             <h3
               style={{
@@ -332,27 +359,6 @@ export const AwardCard: React.FC<AwardCardProps> = ({
               >
                 {isTeamAward ? '团队奖' : '个人奖'}
               </span>
-              <button
-                style={{
-                  padding: '4px 12px',
-                  backgroundColor: '#1890ff',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '4px',
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  marginLeft: '8px',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#40a9ff';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#1890ff';
-                }}
-              >
-                加入展播池
-              </button>
             </h3>
             <p
               style={{

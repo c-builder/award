@@ -39,6 +39,9 @@ function App() {
     })), []);
   const [awards, setAwards] = useState<Award[]>(initialAwards);
 
+  // 选中的奖项ID集合（用于展播）
+  const [selectedAwardIds, setSelectedAwardIds] = useState<Set<string>>(new Set());
+
   const [addRecipientModalVisible, setAddRecipientModalVisible] = useState(false);
   const [teamSearchModalVisible, setTeamSearchModalVisible] = useState(false);
   const [teamSearchViewOnly, setTeamSearchViewOnly] = useState(false);
@@ -177,6 +180,34 @@ function App() {
 
   const handleRemoveAward = (awardId: string) => {
     setAwards((prev) => prev.filter((award) => award.id !== awardId));
+    // 同时从选中列表中移除
+    setSelectedAwardIds((prev) => {
+      const newSet = new Set(prev);
+      newSet.delete(awardId);
+      return newSet;
+    });
+  };
+
+  // 处理奖项选中/取消选中
+  const handleSelectAward = (awardId: string, selected: boolean) => {
+    setSelectedAwardIds((prev) => {
+      const newSet = new Set(prev);
+      if (selected) {
+        newSet.add(awardId);
+      } else {
+        newSet.delete(awardId);
+      }
+      return newSet;
+    });
+  };
+
+  // 全选/取消全选
+  const handleSelectAll = (selectAll: boolean) => {
+    if (selectAll) {
+      setSelectedAwardIds(new Set(filteredAwards.map(a => a.id)));
+    } else {
+      setSelectedAwardIds(new Set());
+    }
   };
 
   const handleAddAward = (selectedAwards: Award[]) => {
@@ -259,17 +290,6 @@ function App() {
     );
     setTeamSearchModalVisible(false);
   };
-
-  const canProceedToNextStep = useMemo(() => {
-    // 只要有奖项且有记录就可以进入下一步
-    return awards.some((award) => {
-      if (award.awardType === 'individual') {
-        return award.recipients.length > 0;
-      } else {
-        return (award.teams?.length || 0) > 0;
-      }
-    });
-  }, [awards]);
 
   return (
     <div
@@ -444,6 +464,8 @@ function App() {
                   <AwardCard
                     key={award.id}
                     award={award}
+                    selected={selectedAwardIds.has(award.id)}
+                    onSelect={(selected) => handleSelectAward(award.id, selected)}
                     currentDepartment={selectedDepartment === '全部部门' ? '' : selectedDepartment}
                     onAddRecipient={
                       award.awardType === 'individual'
@@ -516,6 +538,32 @@ function App() {
         }}
       >
 
+        {currentStep === 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {/* 全选/取消全选 */}
+            <button
+              onClick={() => handleSelectAll(selectedAwardIds.size < filteredAwards.length)}
+              disabled={filteredAwards.length === 0}
+              style={{
+                padding: '6px 16px',
+                backgroundColor: filteredAwards.length === 0 ? '#f5f5f5' : '#fff',
+                color: filteredAwards.length === 0 ? '#bfbfbf' : '#1890ff',
+                border: '1px solid #d9d9d9',
+                borderRadius: '4px',
+                cursor: filteredAwards.length === 0 ? 'not-allowed' : 'pointer',
+                fontSize: '14px',
+                transition: 'all 0.2s',
+              }}
+            >
+              {selectedAwardIds.size === filteredAwards.length && filteredAwards.length > 0 ? '取消全选' : '全选'}
+            </button>
+            {/* 已选X个奖项 */}
+            <span style={{ fontSize: '14px', color: '#666' }}>
+              已选 <strong style={{ color: '#1890ff', fontSize: '16px' }}>{selectedAwardIds.size}</strong> 个奖项
+            </span>
+          </div>
+        )}
+
         {currentStep > 0 && (
           <button
             onClick={() => setCurrentStep(currentStep - 1)}
@@ -535,14 +583,14 @@ function App() {
         {currentStep < steps.length - 1 && (
           <button
             onClick={() => setCurrentStep(currentStep + 1)}
-            disabled={currentStep === 0 ? !canProceedToNextStep : false}
+            disabled={currentStep === 0 ? selectedAwardIds.size === 0 : false}
             style={{
               padding: '8px 24px',
-              backgroundColor: currentStep === 0 && !canProceedToNextStep ? '#e2e8f0' : '#1890ff',
+              backgroundColor: currentStep === 0 && selectedAwardIds.size === 0 ? '#e2e8f0' : '#1890ff',
               color: '#fff',
               border: 'none',
               borderRadius: '4px',
-              cursor: currentStep === 0 && !canProceedToNextStep ? 'not-allowed' : 'pointer',
+              cursor: currentStep === 0 && selectedAwardIds.size === 0 ? 'not-allowed' : 'pointer',
               fontSize: '14px',
               zIndex: 1000,
             }}
