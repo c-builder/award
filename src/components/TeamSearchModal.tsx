@@ -57,12 +57,19 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
     }
   }, [visible, existingTeams, departmentTeams]);
 
-  // 根据搜索条件过滤团队 - 显示所有团队，不只是当前部门的
+  // 根据搜索条件过滤团队 - 支持按团队名或成员工号搜索
   const filteredTeams = useMemo(() => {
     if (!searchText.trim()) return existingTeams;
-    return existingTeams.filter(team =>
-      team.name.toLowerCase().includes(searchText.trim().toLowerCase())
-    );
+    const query = searchText.trim().toLowerCase();
+    return existingTeams.filter(team => {
+      // 匹配团队名称
+      const matchName = team.name.toLowerCase().includes(query);
+      // 匹配团队成员工号
+      const matchEmployeeId = team.members?.some(member =>
+        member.employeeId.toLowerCase().includes(query)
+      );
+      return matchName || matchEmployeeId;
+    });
   }, [existingTeams, searchText]);
 
   const paginatedTeams = useMemo(() => {
@@ -251,8 +258,8 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                 style={{
                   display: 'grid',
                   gridTemplateColumns: viewOnly 
-                    ? '80px 200px 120px 80px 120px 2fr 100px' 
-                    : '50px 50px 80px 200px 120px 80px 120px 2fr 100px',
+                    ? '80px 1fr 80px 120px 2fr 100px' 
+                    : '50px 50px 80px 1fr 80px 120px 2fr 100px',
                   padding: '12px 24px',
                   backgroundColor: '#fafafa',
                   borderBottom: '1px solid #e8e8e8',
@@ -288,7 +295,6 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                 )}
                 <div style={{ textAlign: 'center' }}>序号</div>
                 <div>奖项名称</div>
-                <div>所属部门</div>
                 <div>奖项类别</div>
                 <div>获奖人数</div>
                 <div>颁发/设立部门</div>
@@ -300,8 +306,6 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                 const isSelected = selectedTeams.has(team.id);
                 const isExpanded = expandedTeams.has(team.id);
                 const seq = (currentPage - 1) * pageSize + index + 1;
-                // 获取团队所属部门（取第一个成员的部门）
-                const teamDept = team.members?.[0]?.department.split('/')[0] || '-';
 
                 return (
                   <React.Fragment key={team.id}>
@@ -309,8 +313,8 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                       style={{
                         display: 'grid',
                         gridTemplateColumns: viewOnly 
-                          ? '80px 200px 120px 80px 120px 2fr 100px' 
-                          : '50px 50px 80px 200px 120px 80px 120px 2fr 100px',
+                          ? '80px 1fr 80px 120px 2fr 100px' 
+                          : '50px 50px 80px 1fr 80px 120px 2fr 100px',
                         padding: '12px 24px',
                         borderBottom: '1px solid #f0f0f0',
                         fontSize: '14px',
@@ -347,13 +351,8 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                       <div style={{ textAlign: 'center', color: '#666' }}>{seq}</div>
 
                       {/* 奖项名称 */}
-                      <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <div>
                         {team.name}
-                      </div>
-
-                      {/* 所属部门 */}
-                      <div style={{ color: '#666', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {teamDept}
                       </div>
 
                       {/* 奖项类别 */}
