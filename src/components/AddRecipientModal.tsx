@@ -375,7 +375,21 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
           </div>
 
           {/* 分页器 */}
-          <div style={{ padding: '0 24px', borderTop: '1px solid #f0f0f0', flexShrink: 0 }}>
+          <div style={{
+            padding: '0 24px',
+            borderTop: '1px solid #f0f0f0',
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            {!readonly ? (
+              <div style={{ fontSize: '14px', color: '#595959' }}>
+                已勾选 <span style={{ color: '#1890ff', fontWeight: 500 }}>{selectedRecipients.length}</span> 条
+              </div>
+            ) : (
+              <div />
+            )}
             <Pagination
               current={currentPage}
               pageSize={pageSize}
