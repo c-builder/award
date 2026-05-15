@@ -525,7 +525,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
               }}>
                 {!readonly ? (
                   <div style={{ fontSize: '14px', color: '#595959' }}>
-                    已勾选 <span style={{ color: '#1890ff', fontWeight: 500 }}>{selectedRecipients.length}</span> 条
+                    已选 <span style={{ color: '#1890ff', fontWeight: 500 }}>{selectedRecipients.length}</span> 人
                   </div>
                 ) : (
                   <div />

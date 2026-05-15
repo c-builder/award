@@ -409,7 +409,17 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
           )}
         </div>
 
-        <div style={{ padding: '0 24px', borderTop: '1px solid #f0f0f0', flexShrink: 0 }}>
+        <div style={{
+          padding: '0 24px',
+          borderTop: '1px solid #f0f0f0',
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
+          <div style={{ fontSize: '14px', color: '#595959' }}>
+            已选 <span style={{ color: '#1890ff', fontWeight: 500 }}>{selectedMemberIds.size}</span> 人
+          </div>
           <Pagination
             current={currentPage}
             pageSize={pageSize}

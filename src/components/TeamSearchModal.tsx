@@ -653,7 +653,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
             }}>
               {!viewOnly ? (
                 <div style={{ fontSize: '14px', color: '#595959' }}>
-                  已勾选 <span style={{ color: '#1890ff', fontWeight: 500 }}>{selectedTeams.size}</span> 条
+                  已选 <span style={{ color: '#1890ff', fontWeight: 500 }}>{selectedTeams.size}</span> 个团队
                 </div>
               ) : (
                 <div />
