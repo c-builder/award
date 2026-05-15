@@ -90,10 +90,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
     return new Set(existingAwards.filter(award => award.isDefault).map(award => award.title));
   }, [existingAwards]);
 
-  const existingCustomAwardNames = useMemo(() => {
-    return new Set(existingAwards.filter(award => !award.isDefault).map(award => award.title));
-  }, [existingAwards]);
-
   const filteredAwards = useMemo(() => {
     return MOCK_AWARDS.filter((award) => {
       if (selectedDeptPath.length > 0) {
@@ -602,7 +598,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                       const isExpanded = expandedAwardIds.has(award.id);
                       const recipients = award.recipients || [];
                       const isDefaultExisting = existingDefaultAwardNames.has(award.name);
-                      const isCustomExisting = existingCustomAwardNames.has(award.name);
                       const isChecked = isDefaultExisting ? true : isSelected;
                       const isLast = index === paginatedAwards.length - 1 && !isExpanded;
 
