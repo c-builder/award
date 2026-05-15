@@ -1165,11 +1165,16 @@ function App() {
                 ...t,
                 isManuallyAdded: true,
               })),
-              // 更新 allTeams 的 isSelected 状态，保持完整列表
-              allTeams: (award.allTeams || []).map(t => ({
-                ...t,
-                isSelected: selectedTeams.some(st => st.id === t.id),
-              })),
+              // 更新 allTeams 的 isSelected 状态，保持完整列表和成员数据
+              allTeams: (award.allTeams || []).map(t => {
+                const selectedTeam = selectedTeams.find(st => st.id === t.id);
+                return {
+                  ...t,
+                  isSelected: !!selectedTeam,
+                  // 保留选中团队的最新成员数据
+                  members: selectedTeam?.members || t.members,
+                };
+              }),
             }
           : award
       )

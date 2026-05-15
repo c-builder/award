@@ -219,7 +219,10 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
             }}
           />
           <button
-            onClick={() => {}}
+            onClick={() => {
+              // 搜索是实时响应的，点击查询按钮只是重置到第一页
+              setCurrentPage(1);
+            }}
             disabled={!searchText.trim()}
             style={{
               padding: '8px 20px',
@@ -460,9 +463,23 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                 );
               })}
 
-              {/* 分页 */}
+              {/* 分页 - 固定在底部 */}
               {filteredTeams.length > 0 && (
-                <div style={{ padding: '12px 24px', borderTop: '1px solid #f0f0f0' }}>
+                <div style={{ 
+                  padding: '12px 24px', 
+                  borderTop: '1px solid #f0f0f0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}>
+                  {/* 左侧显示已勾选数量 */}
+                  {!viewOnly && (
+                    <div style={{ fontSize: '14px', color: '#666' }}>
+                      已勾选 <span style={{ color: '#1890ff', fontWeight: 500 }}>{selectedTeams.size}</span> 条
+                    </div>
+                  )}
+                  {viewOnly && <div></div>}
+                  {/* 右侧分页 */}
                   <Pagination
                     current={currentPage}
                     pageSize={pageSize}
