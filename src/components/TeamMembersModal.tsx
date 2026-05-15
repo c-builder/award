@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Pagination } from './Pagination';
 import { Team, TeamMember } from './types';
+import employeesData from '../mock/data/employees.json';
 
 export interface TeamMembersModalProps {
   visible: boolean;
@@ -11,38 +12,7 @@ export interface TeamMembersModalProps {
 
 const DEFAULT_PAGE_SIZE = 10;
 
-const mockAllEmployees: TeamMember[] = [
-  { name: '李水花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
-  { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
-  { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
-  { name: '王五', employeeId: '00507890', department: '华为公司' },
-  { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
-  { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
-  { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
-  { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
-  { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/平台开发部' },
-  { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
-  { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
-  { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
-  { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
-  { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
-  { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能座舱组' },
-  { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/大数据组' },
-  { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台运维部' },
-  { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/流程部/优化组' },
-  { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
-  { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
-  { name: '袁六三', employeeId: '00558888', department: 'IT平台服务部/平台开发部' },
-  { name: '柳六四', employeeId: '00559999', department: '质量与流程IT部/IT部/开发组' },
-  { name: '酆六五', employeeId: '00560000', department: '智能汽车解决方案部/智能座舱组' },
-  { name: '鲍六六', employeeId: '00561111', department: '云与计算业务部/大数据组' },
-  { name: '史六七', employeeId: '00562222', department: 'IT平台服务部/技术支持部' },
-  { name: '唐六八', employeeId: '00563333', department: '质量与流程IT部/质量部/测试组' },
-  { name: '费六九', employeeId: '00564444', department: '智能汽车解决方案部/智能驾驶组' },
-  { name: '廉七十', employeeId: '00565555', department: '云与计算业务部/云计算组' },
-  { name: '岑七一', employeeId: '00566666', department: 'IT平台服务部/平台运维部' },
-  { name: '薛七二', employeeId: '00567777', department: '质量与流程IT部/流程部/优化组' },
-];
+const mockAllEmployees: TeamMember[] = employeesData as TeamMember[];
 
 export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
   visible,
@@ -56,6 +26,12 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
   const [searchText, setSearchText] = useState('');
   const [searchResult, setSearchResult] = useState<TeamMember | null>(null);
   const [searchError, setSearchError] = useState('');
+  const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
+  const [searchBtnHovered, setSearchBtnHovered] = useState(false);
+  const [addBtnHovered, setAddBtnHovered] = useState(false);
+  const [cancelBtnHovered, setCancelBtnHovered] = useState(false);
+  const [confirmBtnHovered, setConfirmBtnHovered] = useState(false);
+  const [inputFocused, setInputFocused] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -157,7 +133,29 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
     onClose();
   };
 
+  const getRowBgColor = (employeeId: string, checked: boolean) => {
+    if (checked) return '#e6f7ff';
+    if (hoveredRowId === employeeId) return '#fafafa';
+    return 'transparent';
+  };
+
   if (!visible) return null;
+
+  const thStyle: React.CSSProperties = {
+    padding: '14px 16px',
+    textAlign: 'left',
+    fontWeight: 600,
+    color: '#333',
+    borderBottom: '2px solid #e8e8e8',
+    fontSize: '13px',
+    whiteSpace: 'nowrap',
+  };
+
+  const tdStyle = (isLast: boolean): React.CSSProperties => ({
+    padding: '13px 16px',
+    borderBottom: isLast ? 'none' : '1px solid #f0f0f0',
+    fontSize: '14px',
+  });
 
   return (
     <div
@@ -181,15 +179,14 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
         style={{
           backgroundColor: '#fff',
           borderRadius: '8px',
-          width: '700px',
+          width: '800px',
           maxHeight: '80vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          boxShadow: '0 6px 16px rgba(0, 0, 0, 0.12), 0 3px 6px -4px rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 标题栏 */}
         <div
           style={{
             padding: '16px 24px',
@@ -199,7 +196,7 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
             alignItems: 'center',
           }}
         >
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 500, color: '#333' }}>
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#333' }}>
             {team.name} - 成员列表
           </h3>
           <button
@@ -210,15 +207,24 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
               fontSize: '18px',
               color: '#999',
               cursor: 'pointer',
-              padding: '4px',
+              padding: '4px 8px',
               lineHeight: 1,
+              borderRadius: '4px',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#333';
+              e.currentTarget.style.backgroundColor = '#f5f5f5';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#999';
+              e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
             ×
           </button>
         </div>
 
-        {/* 添加成员搜索栏 */}
         <div
           style={{
             padding: '12px 24px',
@@ -241,25 +247,32 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
             onKeyDown={(e) => {
               if (e.key === 'Enter') handleSearch();
             }}
+            onFocus={() => setInputFocused(true)}
+            onBlur={() => setInputFocused(false)}
             style={{
               padding: '6px 12px',
-              border: '1px solid #d9d9d9',
+              border: `1px solid ${inputFocused ? '#1890ff' : '#d9d9d9'}`,
               borderRadius: '4px',
               fontSize: '14px',
               width: '200px',
               outline: 'none',
+              transition: 'border-color 0.2s, box-shadow 0.2s',
+              boxShadow: inputFocused ? '0 0 0 2px rgba(24, 144, 255, 0.2)' : 'none',
             }}
           />
           <button
             onClick={handleSearch}
+            onMouseEnter={() => setSearchBtnHovered(true)}
+            onMouseLeave={() => setSearchBtnHovered(false)}
             style={{
               padding: '6px 16px',
-              backgroundColor: '#1890ff',
+              backgroundColor: searchBtnHovered ? '#40a9ff' : '#1890ff',
               color: '#fff',
               border: 'none',
               borderRadius: '4px',
               fontSize: '13px',
               cursor: 'pointer',
+              transition: 'background-color 0.2s',
             }}
           >
             查询
@@ -274,14 +287,17 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
               </span>
               <button
                 onClick={handleAddMember}
+                onMouseEnter={() => setAddBtnHovered(true)}
+                onMouseLeave={() => setAddBtnHovered(false)}
                 style={{
                   padding: '4px 12px',
-                  backgroundColor: '#52c41a',
+                  backgroundColor: addBtnHovered ? '#73d13d' : '#52c41a',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '4px',
                   fontSize: '12px',
                   cursor: 'pointer',
+                  transition: 'background-color 0.2s',
                 }}
               >
                 添加
@@ -290,127 +306,116 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
           )}
         </div>
 
-        {/* 表格 */}
         <div style={{ flex: 1, overflow: 'auto', overscrollBehavior: 'contain' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ backgroundColor: '#fafafa' }}>
-                <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0', width: '60px' }}>
-                  <div
-                    onClick={toggleAll}
-                    style={{
-                      width: '18px',
-                      height: '18px',
-                      border: `2px solid ${isAllSelected || isIndeterminate ? '#1890ff' : '#d9d9d9'}`,
-                      borderRadius: '3px',
-                      backgroundColor: isAllSelected || isIndeterminate ? '#1890ff' : '#fff',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      margin: '0 auto',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    {isAllSelected ? (
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#fff"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    ) : isIndeterminate ? (
-                      <div
-                        style={{
-                          width: '10px',
-                          height: '2px',
-                          backgroundColor: '#fff',
-                          borderRadius: '1px',
-                        }}
-                      />
-                    ) : null}
-                  </div>
-                </th>
-                <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0', width: '80px' }}>序号</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>姓名</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>工号</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>部门</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>角色</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedMembers.map((member, index) => {
-                const checked = selectedMemberIds.has(member.employeeId);
-                const seq = (currentPage - 1) * pageSize + index + 1;
-                return (
-                  <tr
-                    key={member.employeeId}
-                    style={{
-                      backgroundColor: checked ? '#e6f7ff' : 'transparent',
-                      cursor: 'pointer',
-                    }}
-                    onClick={() => toggleMember(member.employeeId)}
-                  >
-                    <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', textAlign: 'center' }}>
-                      <div
-                        style={{
-                          width: '18px',
-                          height: '18px',
-                          border: `2px solid ${checked ? '#1890ff' : '#d9d9d9'}`,
-                          borderRadius: '3px',
-                          backgroundColor: checked ? '#1890ff' : '#fff',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          margin: '0 auto',
-                          transition: 'all 0.2s',
-                        }}
-                      >
-                        {checked && (
-                          <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="#fff"
-                            strokeWidth="3"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        )}
-                      </div>
-                    </td>
-                    <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', textAlign: 'center', color: '#666' }}>
-                      {seq}
-                    </td>
-                    <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', color: '#333' }}>
-                      {member.name}
-                    </td>
-                    <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', color: '#666', fontFamily: 'monospace' }}>
-                      {member.employeeId}
-                    </td>
-                    <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', color: '#666' }}>
-                      {member.department}
-                    </td>
-                    <td style={{ padding: '12px 16px', borderBottom: '1px solid #f0f0f0', color: '#666' }}>
-                      {member.role || '-'}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          {members.length === 0 ? (
+            <div style={{
+              padding: '48px 0',
+              textAlign: 'center',
+              color: '#bfbfbf',
+              fontSize: '14px',
+            }}>
+              暂无成员数据
+            </div>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#fafafa' }}>
+                  <th style={{ ...thStyle, textAlign: 'center', width: '60px' }}>
+                    <div
+                      onClick={toggleAll}
+                      style={{
+                        width: '18px',
+                        height: '18px',
+                        border: `2px solid ${isAllSelected || isIndeterminate ? '#1890ff' : '#d9d9d9'}`,
+                        borderRadius: '3px',
+                        backgroundColor: isAllSelected || isIndeterminate ? '#1890ff' : '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        margin: '0 auto',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      {isAllSelected ? (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      ) : isIndeterminate ? (
+                        <div style={{ width: '10px', height: '2px', backgroundColor: '#fff', borderRadius: '1px' }} />
+                      ) : null}
+                    </div>
+                  </th>
+                  <th style={{ ...thStyle, textAlign: 'center', width: '70px' }}>序号</th>
+                  <th style={{ ...thStyle, width: '100px' }}>姓名</th>
+                  <th style={{ ...thStyle, width: '120px' }}>工号</th>
+                  <th style={{ ...thStyle }}>部门</th>
+                  <th style={{ ...thStyle, width: '90px' }}>角色</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedMembers.map((member, index) => {
+                  const checked = selectedMemberIds.has(member.employeeId);
+                  const seq = (currentPage - 1) * pageSize + index + 1;
+                  const isLast = index === paginatedMembers.length - 1;
+                  return (
+                    <tr
+                      key={member.employeeId}
+                      style={{
+                        backgroundColor: getRowBgColor(member.employeeId, checked),
+                        cursor: 'pointer',
+                        transition: 'background-color 0.2s',
+                        borderLeft: checked ? '3px solid #1890ff' : '3px solid transparent',
+                      }}
+                      onClick={() => toggleMember(member.employeeId)}
+                      onMouseEnter={() => setHoveredRowId(member.employeeId)}
+                      onMouseLeave={() => setHoveredRowId(null)}
+                    >
+                      <td style={{ ...tdStyle(isLast), textAlign: 'center' }}>
+                        <div
+                          style={{
+                            width: '18px',
+                            height: '18px',
+                            border: `2px solid ${checked ? '#1890ff' : '#d9d9d9'}`,
+                            borderRadius: '3px',
+                            backgroundColor: checked ? '#1890ff' : '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto',
+                            transition: 'all 0.2s',
+                          }}
+                        >
+                          {checked && (
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                        </div>
+                      </td>
+                      <td style={{ ...tdStyle(isLast), textAlign: 'center', color: '#8c8c8c' }}>
+                        {seq}
+                      </td>
+                      <td style={{ ...tdStyle(isLast), color: '#262626', fontWeight: 500 }}>
+                        {member.name}
+                      </td>
+                      <td style={{ ...tdStyle(isLast), color: '#595959', fontFamily: 'monospace', letterSpacing: '0.5px' }}>
+                        {member.employeeId}
+                      </td>
+                      <td style={{ ...tdStyle(isLast), color: '#595959' }}>
+                        {member.department}
+                      </td>
+                      <td style={{ ...tdStyle(isLast), color: '#8c8c8c' }}>
+                        {member.role || '-'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
 
-        {/* 分页器 */}
         <div style={{ padding: '0 24px', borderTop: '1px solid #f0f0f0', flexShrink: 0 }}>
           <Pagination
             current={currentPage}
@@ -423,7 +428,6 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
           />
         </div>
 
-        {/* 底部按钮 */}
         <div
           style={{
             padding: '16px 24px',
@@ -435,28 +439,34 @@ export const TeamMembersModal: React.FC<TeamMembersModalProps> = ({
         >
           <button
             onClick={onClose}
+            onMouseEnter={() => setCancelBtnHovered(true)}
+            onMouseLeave={() => setCancelBtnHovered(false)}
             style={{
               padding: '8px 24px',
-              backgroundColor: '#fff',
-              color: '#666',
-              border: '1px solid #d9d9d9',
+              backgroundColor: cancelBtnHovered ? '#fff' : '#fff',
+              color: '#595959',
+              border: `1px solid ${cancelBtnHovered ? '#40a9ff' : '#d9d9d9'}`,
               borderRadius: '4px',
               fontSize: '14px',
               cursor: 'pointer',
+              transition: 'all 0.2s',
             }}
           >
             取消
           </button>
           <button
             onClick={handleConfirm}
+            onMouseEnter={() => setConfirmBtnHovered(true)}
+            onMouseLeave={() => setConfirmBtnHovered(false)}
             style={{
               padding: '8px 24px',
-              backgroundColor: '#1890ff',
+              backgroundColor: confirmBtnHovered ? '#40a9ff' : '#1890ff',
               color: '#fff',
               border: 'none',
               borderRadius: '4px',
               fontSize: '14px',
               cursor: 'pointer',
+              transition: 'background-color 0.2s',
             }}
           >
             确定

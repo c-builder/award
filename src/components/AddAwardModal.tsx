@@ -2,24 +2,16 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { DeptCascader } from './DeptCascader';
 import { Pagination } from './Pagination';
 import { Award } from './types';
+import addAwardItemsData from '../mock/data/addAwardItems.json';
 
-/**
- * 获奖人员信息
- */
 export interface Recipient {
   name: string;
   employeeId: string;
   department: string;
 }
 
-/**
- * 奖项类别
- */
 export type AwardCategory = '个人奖' | '团队奖';
 
-/**
- * 奖项项
- */
 export interface AwardItem {
   id: string;
   name: string;
@@ -30,331 +22,22 @@ export interface AwardItem {
   recipients?: Recipient[];
 }
 
-/**
- * 添加展播奖项弹窗Props
- */
 export interface AddAwardModalProps {
   visible: boolean;
   onCancel: () => void;
   onConfirm: (selectedAwards: AwardItem[]) => void;
-  /** 当前已存在的奖项列表（用于重复检测） */
   existingAwards?: Award[];
-  /** 外部部门筛选状态（与主页面同步） */
   externalDeptPath?: string[];
 }
 
-/**
- * 年份选项
- */
 const YEAR_OPTIONS = [
   { value: '2025', label: '2025年' },
   { value: '2024', label: '2024年' },
   { value: '2023', label: '2023年' },
 ];
 
-/**
- * 模拟获奖人员数据
- */
-const MOCK_RECIPIENTS: Record<string, Recipient[]> = {
-  'award-001': [
-    { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
-    { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
-    { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
-    { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
-    { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
-    { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
-    { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
-    { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
-    { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
-  ],
-  'award-002': [
-    { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
-    { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
-    { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
-    { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
-    { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
-    { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
-    { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
-    { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
-    { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
-    { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
-    { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
-    { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
-    { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/云计算组' },
-    { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台开发部' },
-    { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/质量部/测试组' },
-    { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
-    { name: '秦二二', employeeId: '00517777', department: 'IT平台服务部/平台运维部' },
-    { name: '尤二三', employeeId: '00518888', department: '质量与流程IT部/流程部/优化组' },
-    { name: '许二四', employeeId: '00519999', department: '智能汽车解决方案部/智能座舱组' },
-    { name: '何二五', employeeId: '00520000', department: '云与计算业务部/大数据组' },
-    { name: '吕二六', employeeId: '00521111', department: 'IT平台服务部/技术支持部' },
-    { name: '施二七', employeeId: '00522222', department: '质量与流程IT部/IT部/开发组' },
-    { name: '张二八', employeeId: '00523333', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '孔二九', employeeId: '00524444', department: '云与计算业务部/云计算组' },
-    { name: '曹三十', employeeId: '00525555', department: 'IT平台服务部/平台开发部' },
-  ],
-  'award-003': [
-    { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
-    { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
-    { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
-    { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
-    { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
-    { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
-  ],
-  'award-004': [
-    { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
-    { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
-    { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
-    { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
-  ],
-  'award-005': [
-    { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
-    { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
-    { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
-    { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
-    { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
-    { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
-    { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
-    { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
-    { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
-    { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
-    { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
-    { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
-    { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/云计算组' },
-  ],
-  'award-006': [
-    { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
-    { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
-    { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
-    { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
-    { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
-    { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
-    { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
-    { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
-    { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
-    { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
-    { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
-    { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
-    { name: '卫十六', employeeId: '00511111', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '蒋十七', employeeId: '00512222', department: '云与计算业务部/云计算组' },
-    { name: '沈十八', employeeId: '00513333', department: 'IT平台服务部/平台开发部' },
-    { name: '韩十九', employeeId: '00514444', department: '质量与流程IT部/质量部/测试组' },
-    { name: '杨二十', employeeId: '00515555', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '朱二一', employeeId: '00516666', department: '云与计算业务部/云计算组' },
-    { name: '秦二二', employeeId: '00517777', department: 'IT平台服务部/平台运维部' },
-    { name: '尤二三', employeeId: '00518888', department: '质量与流程IT部/流程部/优化组' },
-    { name: '许二四', employeeId: '00519999', department: '智能汽车解决方案部/智能座舱组' },
-    { name: '何二五', employeeId: '00520000', department: '云与计算业务部/大数据组' },
-    { name: '吕二六', employeeId: '00521111', department: 'IT平台服务部/技术支持部' },
-  ],
-  'award-007': [
-    { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
-    { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
-    { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
-    { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
-    { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
-    { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
-    { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
-    { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
-    { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
-    { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
-  ],
-  'award-008': [
-    { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
-    { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
-    { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
-    { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
-    { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
-    { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
-    { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
-  ],
-  'award-009': [
-    { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
-    { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
-    { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
-    { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
-    { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
-    { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
-    { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
-    { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
-    { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
-  ],
-  'award-010': [
-    { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
-    { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
-    { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
-    { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
-    { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
-    { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
-    { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
-    { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
-    { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
-    { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
-  ],
-  'award-011': [
-    { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
-    { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
-    { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
-    { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
-  ],
-  'award-012': [
-    { name: '李山花', employeeId: '00494097', department: 'IT平台服务部/平台开发部' },
-    { name: '张三', employeeId: '00501234', department: '质量与流程IT部/质量部/测试组' },
-    { name: '李四', employeeId: '00505678', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '王五', employeeId: '00507890', department: '云与计算业务部/云计算组' },
-    { name: '赵六', employeeId: '00501111', department: 'IT平台服务部/平台运维部' },
-    { name: '钱七', employeeId: '00502222', department: '质量与流程IT部/流程部/优化组' },
-    { name: '孙八', employeeId: '00503333', department: '智能汽车解决方案部/智能座舱组' },
-    { name: '周九', employeeId: '00504444', department: '云与计算业务部/大数据组' },
-    { name: '吴十', employeeId: '00505555', department: 'IT平台服务部/技术支持部' },
-    { name: '郑十一', employeeId: '00506666', department: '质量与流程IT部/IT部/开发组' },
-    { name: '王十二', employeeId: '00507777', department: '智能汽车解决方案部/智能驾驶组' },
-    { name: '冯十三', employeeId: '00508888', department: '云与计算业务部/云计算组' },
-    { name: '陈十四', employeeId: '00509999', department: 'IT平台服务部/平台开发部' },
-    { name: '褚十五', employeeId: '00510000', department: '质量与流程IT部/质量部/测试组' },
-  ],
-};
+const MOCK_AWARDS = addAwardItemsData as AwardItem[];
 
-/**
- * 模拟奖项数据 - 跨部门数据（带完整部门路径）
- */
-const MOCK_AWARDS: AwardItem[] = [
-  {
-    id: 'award-001',
-    name: '2025年半年度优秀个人奖',
-    category: '个人奖',
-    recipientCount: 10,
-    issuingDepartment: 'IT平台服务部/平台开发部',
-    issuingDepartmentPath: ['IT平台服务部', '平台开发部'],
-    recipients: MOCK_RECIPIENTS['award-001'],
-  },
-  {
-    id: 'award-002',
-    name: '2025年明日之星',
-    category: '个人奖',
-    recipientCount: 29,
-    issuingDepartment: '华为公司',
-    issuingDepartmentPath: ['华为公司'],
-    recipients: MOCK_RECIPIENTS['award-002'],
-  },
-  {
-    id: 'award-003',
-    name: '2025年OCC委员会4月激励奖',
-    category: '团队奖',
-    recipientCount: 7,
-    issuingDepartment: '质量与流程IT部/质量部',
-    issuingDepartmentPath: ['质量与流程IT部', '质量部'],
-    recipients: MOCK_RECIPIENTS['award-003'],
-  },
-  {
-    id: 'award-004',
-    name: '2025年对首批落地短信费用治理优秀个人奖',
-    category: '个人奖',
-    recipientCount: 5,
-    issuingDepartment: '质量与流程IT部/流程部',
-    issuingDepartmentPath: ['质量与流程IT部', '流程部'],
-    recipients: MOCK_RECIPIENTS['award-004'],
-  },
-  {
-    id: 'award-005',
-    name: '2025年流程IT持续改进团队及时激励奖',
-    category: '团队奖',
-    recipientCount: 16,
-    issuingDepartment: '智能汽车解决方案部/智能驾驶组',
-    issuingDepartmentPath: ['智能汽车解决方案部', '智能驾驶组'],
-    recipients: MOCK_RECIPIENTS['award-005'],
-  },
-  {
-    id: 'award-006',
-    name: '2025年公有云业务部金戈奖(总裁奖)',
-    category: '团队奖',
-    recipientCount: 25,
-    issuingDepartment: '质量与流程IT部/IT部',
-    issuingDepartmentPath: ['质量与流程IT部', 'IT部'],
-    recipients: MOCK_RECIPIENTS['award-006'],
-  },
-  {
-    id: 'award-007',
-    name: '2025年Q1优秀团队奖',
-    category: '团队奖',
-    recipientCount: 12,
-    issuingDepartment: 'IT平台服务部/平台运维部',
-    issuingDepartmentPath: ['IT平台服务部', '平台运维部'],
-    recipients: MOCK_RECIPIENTS['award-007'],
-  },
-  {
-    id: 'award-008',
-    name: '2025年创新突破个人奖',
-    category: '个人奖',
-    recipientCount: 8,
-    issuingDepartment: '智能汽车解决方案部/车联网组',
-    issuingDepartmentPath: ['智能汽车解决方案部', '车联网组'],
-    recipients: MOCK_RECIPIENTS['award-008'],
-  },
-  {
-    id: 'award-009',
-    name: '2025年优秀项目经理奖',
-    category: '个人奖',
-    recipientCount: 10,
-    issuingDepartment: '华为公司/人力资源部',
-    issuingDepartmentPath: ['华为公司', '人力资源部'],
-    recipients: MOCK_RECIPIENTS['award-009'],
-  },
-  {
-    id: 'award-010',
-    name: '2025年技术创新团队奖',
-    category: '团队奖',
-    recipientCount: 12,
-    issuingDepartment: 'IT平台服务部/平台开发部',
-    issuingDepartmentPath: ['IT平台服务部', '平台开发部'],
-    recipients: MOCK_RECIPIENTS['award-010'],
-  },
-  {
-    id: 'award-011',
-    name: '2025年质量之星奖',
-    category: '个人奖',
-    recipientCount: 5,
-    issuingDepartment: '质量与流程IT部/质量部',
-    issuingDepartmentPath: ['质量与流程IT部', '质量部'],
-    recipients: MOCK_RECIPIENTS['award-011'],
-  },
-  {
-    id: 'award-012',
-    name: '2025年数字化转型优秀团队奖',
-    category: '团队奖',
-    recipientCount: 14,
-    issuingDepartment: '云与计算业务部/云计算组',
-    issuingDepartmentPath: ['云与计算业务部', '云计算组'],
-    recipients: MOCK_RECIPIENTS['award-012'],
-  },
-];
-
-/**
- * 添加展播奖项弹窗组件
- * 支持按年份、部门筛选，搜索奖项名称，选择奖项后确认添加
- * 支持行内展开查看获奖人员
- * 支持重复添加检测和已选奖项跨部门显示
- */
 export const AddAwardModal: React.FC<AddAwardModalProps> = ({
   visible,
   onCancel,
@@ -362,31 +45,21 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
   existingAwards = [],
   externalDeptPath = [],
 }) => {
-  // 筛选状态
   const [year, setYear] = useState<string>('2025');
   const [selectedDeptPath, setSelectedDeptPath] = useState<string[]>([]);
   const [searchKeyword, setSearchKeyword] = useState<string>('');
-
-  // 已选奖项ID集合
   const [selectedAwardIds, setSelectedAwardIds] = useState<Set<string>>(new Set());
-
-  // 展开的奖项ID集合
   const [expandedAwardIds, setExpandedAwardIds] = useState<Set<string>>(new Set());
-
-  // 已存在奖项提示
   const [existingAwardAlert, setExistingAwardAlert] = useState<string | null>(null);
+  const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
+  const [inputFocused, setInputFocused] = useState(false);
 
-  // 弹窗打开时，同步外部部门筛选状态，并根据当前筛选条件初始化选中状态
   useEffect(() => {
     if (visible) {
-      // 同步外部部门筛选状态
       setSelectedDeptPath(externalDeptPath);
-
-      // 获取所有已存在的自定义奖项的ID集合（不受当前筛选条件限制）
       const customAwardIds = new Set<string>();
       existingAwards.forEach(existingAward => {
         if (!existingAward.isDefault) {
-          // 在所有模拟奖项中查找对应的奖项ID
           const mockAward = MOCK_AWARDS.find(mock => mock.name === existingAward.title);
           if (mockAward) {
             customAwardIds.add(mockAward.id);
@@ -397,7 +70,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
     }
   }, [visible, existingAwards, externalDeptPath]);
 
-  // 弹窗关闭时重置状态
   useEffect(() => {
     if (!visible) {
       setYear('2025');
@@ -410,25 +82,21 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
     }
   }, [visible]);
 
-  // 分页状态
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
 
-  // 获取已存在的默认奖项名称集合（isDefault=true 的默认数据）
   const existingDefaultAwardNames = useMemo(() => {
     return new Set(existingAwards.filter(award => award.isDefault).map(award => award.title));
   }, [existingAwards]);
 
-  // 获取已存在的自定义奖项名称集合（isDefault=false 的数据）
   const existingCustomAwardNames = useMemo(() => {
     return new Set(existingAwards.filter(award => !award.isDefault).map(award => award.title));
   }, [existingAwards]);
 
-  // 筛选后的奖项列表（只显示当前筛选条件下的奖项）
   const filteredAwards = useMemo(() => {
     return MOCK_AWARDS.filter((award) => {
       if (selectedDeptPath.length > 0) {
-        const match = selectedDeptPath.every((dept, index) => 
+        const match = selectedDeptPath.every((dept, index) =>
           award.issuingDepartmentPath[index] === dept
         );
         if (!match) return false;
@@ -440,7 +108,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
     });
   }, [selectedDeptPath, searchKeyword]);
 
-  // 全选/取消全选逻辑
   const selectableAwards = useMemo(() => {
     return filteredAwards.filter(award => !existingDefaultAwardNames.has(award.name));
   }, [filteredAwards, existingDefaultAwardNames]);
@@ -468,36 +135,29 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
     }
   };
 
-  // 分页后的奖项列表
   const paginatedAwards = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
     return filteredAwards.slice(startIndex, startIndex + pageSize);
   }, [filteredAwards, currentPage]);
 
-  // 筛选条件改变时重置页码
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedDeptPath, searchKeyword]);
 
-  // 已选奖项列表
   const selectedAwards = useMemo(() => {
     return MOCK_AWARDS.filter((award) => selectedAwardIds.has(award.id));
   }, [selectedAwardIds]);
 
-  // 切换奖项选中状态
   const toggleAwardSelection = (awardId: string) => {
     const award = MOCK_AWARDS.find(a => a.id === awardId);
     if (!award) return;
 
-    // 检查是否是默认数据（isDefault=true），默认数据不可选中
     if (existingDefaultAwardNames.has(award.name)) {
       setExistingAwardAlert(`"${award.name}" 已存在于当前展播中`);
-      // 3秒后清除提示
       setTimeout(() => setExistingAwardAlert(null), 3000);
       return;
     }
 
-    // 其他情况（新数据或自定义数据），直接切换选中状态
     const newSelected = new Set(selectedAwardIds);
     if (newSelected.has(awardId)) {
       newSelected.delete(awardId);
@@ -507,7 +167,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
     setSelectedAwardIds(newSelected);
   };
 
-  // 切换奖项展开状态
   const toggleAwardExpand = (awardId: string) => {
     const newExpanded = new Set(expandedAwardIds);
     if (newExpanded.has(awardId)) {
@@ -518,38 +177,54 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
     setExpandedAwardIds(newExpanded);
   };
 
-  // 移除已选奖项
   const removeSelectedAward = (awardId: string) => {
     const newSelected = new Set(selectedAwardIds);
     newSelected.delete(awardId);
     setSelectedAwardIds(newSelected);
   };
 
-  // 重置筛选条件
   const handleReset = () => {
     setYear('2025');
     setSelectedDeptPath([]);
     setSearchKeyword('');
   };
 
-  // 确认添加
   const handleConfirm = () => {
     const selectedList = MOCK_AWARDS.filter((award) => selectedAwardIds.has(award.id));
     onConfirm(selectedList);
   };
 
-  // 处理搜索框回车事件
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      // 回车时触发查询（这里已经实时筛选，可以添加额外逻辑）
     }
+  };
+
+  const getRowBgColor = (awardId: string, isChecked: boolean) => {
+    if (isChecked) return '#e6f7ff';
+    if (hoveredRowId === awardId) return '#fafafa';
+    return 'transparent';
   };
 
   if (!visible) return null;
 
+  const thStyle: React.CSSProperties = {
+    padding: '14px 16px',
+    textAlign: 'left',
+    fontWeight: 600,
+    color: '#333',
+    borderBottom: '2px solid #e8e8e8',
+    fontSize: '13px',
+    whiteSpace: 'nowrap',
+  };
+
+  const tdStyle = (isLast: boolean): React.CSSProperties => ({
+    padding: '13px 16px',
+    borderBottom: isLast ? 'none' : '1px solid #f0f0f0',
+    fontSize: '14px',
+  });
+
   return (
     <div
-      className="modal-overlay"
       style={{
         position: 'fixed',
         top: 0,
@@ -567,7 +242,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
       onClick={onCancel}
     >
       <div
-        className="modal-content"
         style={{
           backgroundColor: '#fff',
           borderRadius: '8px',
@@ -575,13 +249,11 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
           maxHeight: '85vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          boxShadow: '0 6px 16px rgba(0, 0, 0, 0.12), 0 3px 6px -4px rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05)',
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 弹窗标题 */}
         <div
-          className="modal-header"
           style={{
             padding: '16px 24px',
             borderBottom: '1px solid #f0f0f0',
@@ -590,44 +262,35 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
             alignItems: 'center',
           }}
         >
-          <h3
-            style={{
-              margin: 0,
-              fontSize: '16px',
-              fontWeight: 500,
-              color: '#333',
-            }}
-          >
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#333' }}>
             添加展播奖项
           </h3>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            {/* 关闭按钮 */}
-            <button
-              onClick={onCancel}
-              style={{
-                background: 'none',
-                border: '1px solid #d9d9d9',
-                borderRadius: '4px',
-                fontSize: '14px',
-                color: '#666',
-                cursor: 'pointer',
-                padding: '4px 8px',
-                lineHeight: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-              title="关闭"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-          </div>
+          <button
+            onClick={onCancel}
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '18px',
+              color: '#999',
+              cursor: 'pointer',
+              padding: '4px 8px',
+              lineHeight: 1,
+              borderRadius: '4px',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#333';
+              e.currentTarget.style.backgroundColor = '#f5f5f5';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#999';
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
+          >
+            ×
+          </button>
         </div>
 
-        {/* 重复添加提示 */}
         {existingAwardAlert && (
           <div
             style={{
@@ -650,18 +313,16 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
           </div>
         )}
 
-        {/* 筛选栏 */}
         <div
-          className="modal-filter"
           style={{
-            padding: '16px 24px',
+            padding: '12px 24px',
             borderBottom: '1px solid #f0f0f0',
             display: 'flex',
             alignItems: 'center',
             gap: '16px',
+            backgroundColor: '#fafafa',
           }}
         >
-          {/* 年份筛选 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '14px', color: '#333', whiteSpace: 'nowrap' }}>年份:</span>
             <select
@@ -686,7 +347,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
             </select>
           </div>
 
-          {/* 部门级联选择器 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '14px', color: '#333', whiteSpace: 'nowrap' }}>部门:</span>
             <DeptCascader
@@ -696,7 +356,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
             />
           </div>
 
-          {/* 搜索框 */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
             <input
               type="text"
@@ -704,26 +363,22 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
               onKeyDown={handleKeyDown}
+              onFocus={() => setInputFocused(true)}
+              onBlur={() => setInputFocused(false)}
               style={{
                 padding: '6px 12px',
-                border: '1px solid #d9d9d9',
+                border: `1px solid ${inputFocused ? '#1890ff' : '#d9d9d9'}`,
                 borderRadius: '4px',
                 fontSize: '14px',
                 flex: 1,
                 maxWidth: '200px',
                 outline: 'none',
-                transition: 'border-color 0.3s',
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = '#1890ff';
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = '#d9d9d9';
+                transition: 'border-color 0.2s, box-shadow 0.2s',
+                boxShadow: inputFocused ? '0 0 0 2px rgba(24, 144, 255, 0.2)' : 'none',
               }}
             />
           </div>
 
-          {/* 查询按钮 */}
           <button
             onClick={() => {}}
             style={{
@@ -734,7 +389,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
               borderRadius: '4px',
               fontSize: '14px',
               cursor: 'pointer',
-              transition: 'background-color 0.3s',
+              transition: 'background-color 0.2s',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = '#40a9ff';
@@ -746,398 +401,333 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
             查询
           </button>
 
-          {/* 重置按钮 */}
           <button
             onClick={handleReset}
             style={{
               padding: '6px 20px',
               backgroundColor: '#fff',
-              color: '#666',
+              color: '#595959',
               border: '1px solid #d9d9d9',
               borderRadius: '4px',
               fontSize: '14px',
               cursor: 'pointer',
-              transition: 'all 0.3s',
+              transition: 'all 0.2s',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#1890ff';
+              e.currentTarget.style.borderColor = '#40a9ff';
               e.currentTarget.style.color = '#1890ff';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.borderColor = '#d9d9d9';
-              e.currentTarget.style.color = '#666';
+              e.currentTarget.style.color = '#595959';
             }}
           >
             重置
           </button>
         </div>
 
-        {/* 表格区域 */}
-        <div
-          className="modal-body"
-          style={{
-            flex: 1,
-            overflow: 'auto',
-            padding: '0',
-            display: 'flex',
-            flexDirection: 'column',
-            overscrollBehavior: 'contain',
-          }}
-        >
-          {/* 表格头部 */}
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '50px 2.5fr 1fr 1fr 2fr 100px',
-              padding: '12px 24px',
-              backgroundColor: '#fafafa',
-              borderBottom: '1px solid #e8e8e8',
+        <div style={{ flex: 1, overflow: 'auto', overscrollBehavior: 'contain' }}>
+          {filteredAwards.length === 0 ? (
+            <div style={{
+              padding: '48px 0',
+              textAlign: 'center',
+              color: '#bfbfbf',
               fontSize: '14px',
-              fontWeight: 500,
-              color: '#666',
-              flexShrink: 0,
-            }}
-          >
-            <div style={{ display: 'flex' }}>
-              <div
-                onClick={toggleAll}
-                style={{
-                  width: '18px',
-                  height: '18px',
-                  border: `2px solid ${isAllSelected || isIndeterminate ? '#1890ff' : '#d9d9d9'}`,
-                  borderRadius: '3px',
-                  backgroundColor: isAllSelected || isIndeterminate ? '#1890ff' : '#fff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: selectableAwards.length > 0 ? 'pointer' : 'default',
-                  transition: 'all 0.2s',
-                  opacity: selectableAwards.length === 0 ? 0.5 : 1,
-                }}
-              >
-                {isAllSelected ? (
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#fff"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                ) : isIndeterminate ? (
-                  <div
-                    style={{
-                      width: '10px',
-                      height: '2px',
-                      backgroundColor: '#fff',
-                      borderRadius: '1px',
-                    }}
-                  />
-                ) : null}
-              </div>
+            }}>
+              暂无符合条件的奖项
             </div>
-            <div>奖项名称</div>
-            <div>奖项类别</div>
-            <div>获奖人数</div>
-            <div>颁发/设立部门</div>
-            <div>操作</div>
-          </div>
-
-          {/* 表格内容 */}
-          <div style={{ flex: 1, overflow: 'auto' }}>
-            {paginatedAwards.length > 0 ? (
-              paginatedAwards.map((award) => {
-                const isSelected = selectedAwardIds.has(award.id);
-                const isExpanded = expandedAwardIds.has(award.id);
-                const recipients = award.recipients || [];
-                const isDefaultExisting = existingDefaultAwardNames.has(award.name);
-                const isCustomExisting = existingCustomAwardNames.has(award.name);
-                // 选中状态：
-                // - 默认数据（isDefault=true）：只要存在就显示为选中
-                // - 自定义数据（isDefault=false）：根据 selectedAwardIds 决定
-                const isChecked = isDefaultExisting ? true : isSelected;
-
-                return (
-                  <React.Fragment key={award.id}>
-                    {/* 主行 */}
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+              <thead>
+                <tr style={{ backgroundColor: '#fafafa' }}>
+                  <th style={{ ...thStyle, textAlign: 'center', width: '50px' }}>
                     <div
+                      onClick={toggleAll}
                       style={{
-                        display: 'grid',
-                        gridTemplateColumns: '50px 2.5fr 1fr 1fr 2fr 100px',
-                        padding: '14px 24px',
-                        borderBottom: '1px solid #f0f0f0',
-                        fontSize: '14px',
-                        color: '#333',
-                        backgroundColor: isChecked ? '#e6f7ff' : '#fff',
+                        width: '18px',
+                        height: '18px',
+                        border: `2px solid ${isAllSelected || isIndeterminate ? '#1890ff' : '#d9d9d9'}`,
+                        borderRadius: '3px',
+                        backgroundColor: isAllSelected || isIndeterminate ? '#1890ff' : '#fff',
+                        display: 'flex',
                         alignItems: 'center',
-                        transition: 'background-color 0.2s',
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isChecked) {
-                          e.currentTarget.style.backgroundColor = '#fafafa';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isChecked) {
-                          e.currentTarget.style.backgroundColor = '#fff';
-                        }
+                        justifyContent: 'center',
+                        margin: '0 auto',
+                        cursor: selectableAwards.length > 0 ? 'pointer' : 'default',
+                        transition: 'all 0.2s',
+                        opacity: selectableAwards.length === 0 ? 0.5 : 1,
                       }}
                     >
-                      {/* 多选框 */}
-                      <div
-                        onClick={() => !isDefaultExisting && toggleAwardSelection(award.id)}
-                        style={{
-                          width: '16px',
-                          height: '16px',
-                          borderRadius: '2px',
-                          border: `2px solid ${isChecked ? '#1890ff' : '#d9d9d9'}`,
-                          backgroundColor: isChecked ? '#1890ff' : '#fff',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          cursor: isDefaultExisting ? 'not-allowed' : 'pointer',
-                          transition: 'all 0.2s',
-                          opacity: isDefaultExisting ? 0.5 : 1,
-                        }}
-                      >
-                        {isChecked && (
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
-                        )}
-                      </div>
+                      {isAllSelected ? (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      ) : isIndeterminate ? (
+                        <div style={{ width: '10px', height: '2px', backgroundColor: '#fff', borderRadius: '1px' }} />
+                      ) : null}
+                    </div>
+                  </th>
+                  <th style={{ ...thStyle }}>奖项名称</th>
+                  <th style={{ ...thStyle, width: '80px' }}>奖项类别</th>
+                  <th style={{ ...thStyle, width: '90px' }}>获奖人数</th>
+                  <th style={{ ...thStyle, width: '200px' }}>颁发/设立部门</th>
+                  <th style={{ ...thStyle, textAlign: 'center', width: '100px' }}>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedAwards.map((award, index) => {
+                  const isSelected = selectedAwardIds.has(award.id);
+                  const isExpanded = expandedAwardIds.has(award.id);
+                  const recipients = award.recipients || [];
+                  const isDefaultExisting = existingDefaultAwardNames.has(award.name);
+                  const isCustomExisting = existingCustomAwardNames.has(award.name);
+                  const isChecked = isDefaultExisting ? true : isSelected;
+                  const isLast = index === paginatedAwards.length - 1 && !isExpanded;
 
-                      {/* 奖项名称 */}
-                      <div
-                        style={{
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          paddingRight: '16px',
-                          color: isDefaultExisting ? '#999' : '#333',
-                        }}
+                  const rows = [
+                    <tr
+                      key={award.id}
+                      style={{
+                        backgroundColor: getRowBgColor(award.id, isChecked),
+                        transition: 'background-color 0.2s',
+                        borderLeft: isChecked ? '3px solid #1890ff' : '3px solid transparent',
+                      }}
+                      onMouseEnter={() => setHoveredRowId(award.id)}
+                      onMouseLeave={() => setHoveredRowId(null)}
+                    >
+                      <td style={{ ...tdStyle(false), textAlign: 'center' }}>
+                        <div
+                          onClick={() => !isDefaultExisting && toggleAwardSelection(award.id)}
+                          style={{
+                            width: '18px',
+                            height: '18px',
+                            border: `2px solid ${isChecked ? '#1890ff' : '#d9d9d9'}`,
+                            borderRadius: '3px',
+                            backgroundColor: isChecked ? '#1890ff' : '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            margin: '0 auto',
+                            cursor: isDefaultExisting ? 'not-allowed' : 'pointer',
+                            transition: 'all 0.2s',
+                            opacity: isDefaultExisting ? 0.5 : 1,
+                          }}
+                        >
+                          {isChecked && (
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                        </div>
+                      </td>
+                      <td style={{
+                        ...tdStyle(false),
+                        color: isDefaultExisting ? '#8c8c8c' : '#262626',
+                        fontWeight: isDefaultExisting ? 400 : 500,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
                         title={award.name}
                       >
                         {award.name}
-                      </div>
-
-                      {/* 奖项类别 */}
-                      <div style={{ color: isDefaultExisting ? '#999' : '#666' }}>{award.category}</div>
-
-                      {/* 获奖人数 */}
-                      <div style={{ color: isDefaultExisting ? '#999' : '#666' }}>{award.recipientCount}</div>
-
-                      {/* 颁发/设立部门 */}
-                      <div
-                        style={{
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          paddingRight: '16px',
-                          color: isDefaultExisting ? '#999' : '#666',
-                        }}
+                      </td>
+                      <td style={{ ...tdStyle(false), color: isDefaultExisting ? '#8c8c8c' : '#595959' }}>
+                        {award.category}
+                      </td>
+                      <td style={{ ...tdStyle(false), color: isDefaultExisting ? '#8c8c8c' : '#595959' }}>
+                        {award.recipientCount}
+                      </td>
+                      <td style={{
+                        ...tdStyle(false),
+                        color: isDefaultExisting ? '#8c8c8c' : '#595959',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
                         title={award.issuingDepartment}
                       >
                         {award.issuingDepartment}
-                      </div>
-
-                      {/* 操作 */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        {/* 查看/收起按钮 */}
-                        <button
-                          onClick={() => toggleAwardExpand(award.id)}
-                          style={{
-                            background: 'none',
-                            border: 'none',
-                            color: '#1890ff',
-                            cursor: 'pointer',
-                            fontSize: '14px',
-                            padding: '0',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.color = '#40a9ff';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.color = '#1890ff';
-                          }}
-                        >
-                          <span>{isExpanded ? '收起' : '查看'}</span>
-                          <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+                      </td>
+                      <td style={{ ...tdStyle(false), textAlign: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+                          <button
+                            onClick={() => toggleAwardExpand(award.id)}
                             style={{
-                              transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                              transition: 'transform 0.2s',
-                            }}
-                          >
-                            <polyline points="6 9 12 15 18 9" />
-                          </svg>
-                        </button>
-
-                        {/* 移除按钮 - 仅对已选中的自定义奖项显示 */}
-                        {(isCustomExisting || isSelected) && !isDefaultExisting && (
-                          <span
-                            onClick={() => toggleAwardSelection(award.id)}
-                            style={{
-                              color: '#ff4d4f',
+                              background: 'none',
+                              border: 'none',
+                              color: '#1890ff',
                               cursor: 'pointer',
                               fontSize: '14px',
+                              padding: '2px 4px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              borderRadius: '4px',
+                              transition: 'all 0.2s',
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.color = '#ff7875';
+                              e.currentTarget.style.backgroundColor = '#e6f7ff';
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.color = '#ff4d4f';
+                              e.currentTarget.style.backgroundColor = 'transparent';
                             }}
                           >
-                            移除
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* 展开区域 - 获奖人员列表 */}
-                    {isExpanded && (
-                      <div
-                        style={{
-                          padding: '16px 24px 16px 74px',
-                          backgroundColor: '#fafafa',
-                          borderBottom: '1px solid #f0f0f0',
-                          animation: 'slideDown 0.2s ease-out',
-                        }}
-                      >
-                        <div
-                          style={{
-                            fontSize: '14px',
-                            fontWeight: 500,
-                            color: '#333',
-                            marginBottom: '12px',
-                          }}
-                        >
-                          获奖人员 ({recipients.length}人):
-                        </div>
-                        <div
-                          style={{
-                            display: 'flex',
-                            flexWrap: 'wrap',
-                            gap: '12px',
-                          }}
-                        >
-                          {recipients.map((recipient, index) => (
-                            <div
-                              key={`${recipient.employeeId}-${index}`}
+                            <span>{isExpanded ? '收起' : '查看'}</span>
+                            <svg
+                              width="12"
+                              height="12"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
                               style={{
-                                padding: '10px 14px',
-                                backgroundColor: '#fff',
-                                border: '1px solid #e8e8e8',
-                                borderRadius: '6px',
-                                minWidth: '140px',
-                                maxWidth: '180px',
+                                transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                                transition: 'transform 0.2s',
+                              }}
+                            >
+                              <polyline points="6 9 12 15 18 9" />
+                            </svg>
+                          </button>
+
+                          {(isCustomExisting || isSelected) && !isDefaultExisting && (
+                            <span
+                              onClick={() => toggleAwardSelection(award.id)}
+                              style={{
+                                color: '#ff4d4f',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                padding: '2px 4px',
+                                borderRadius: '4px',
                                 transition: 'all 0.2s',
                               }}
                               onMouseEnter={(e) => {
-                                e.currentTarget.style.borderColor = '#1890ff';
-                                e.currentTarget.style.boxShadow = '0 2px 8px rgba(24, 144, 255, 0.15)';
+                                e.currentTarget.style.color = '#ff7875';
+                                e.currentTarget.style.backgroundColor = '#fff1f0';
                               }}
                               onMouseLeave={(e) => {
-                                e.currentTarget.style.borderColor = '#e8e8e8';
-                                e.currentTarget.style.boxShadow = 'none';
+                                e.currentTarget.style.color = '#ff4d4f';
+                                e.currentTarget.style.backgroundColor = 'transparent';
                               }}
                             >
-                              <div
-                                style={{
-                                  fontSize: '14px',
-                                  fontWeight: 500,
-                                  color: '#333',
-                                  marginBottom: '4px',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
-                                }}
-                                title={recipient.name}
-                              >
-                                {recipient.name}
-                              </div>
-                              <div
-                                style={{
-                                  fontSize: '12px',
-                                  color: '#666',
-                                  marginBottom: '2px',
-                                }}
-                              >
-                                {recipient.employeeId}
-                              </div>
-                              <div
-                                style={{
-                                  fontSize: '11px',
-                                  color: '#999',
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
-                                }}
-                                title={recipient.department}
-                              >
-                                {recipient.department}
-                              </div>
-                            </div>
-                          ))}
+                              移除
+                            </span>
+                          )}
                         </div>
-                      </div>
-                    )}
-                  </React.Fragment>
-                );
-              })
-            ) : (
-              <div
-                style={{
-                  padding: '48px 24px',
-                  textAlign: 'center',
-                  color: '#999',
-                  fontSize: '14px',
-                }}
-              >
-                暂无符合条件的奖项
-              </div>
-            )}
-          </div>
+                      </td>
+                    </tr>,
+                  ];
 
-          {/* 分页器 - 固定在表格底部 */}
-          {filteredAwards.length > 0 && (
-            <div
-              style={{
-                padding: '0 24px',
-                borderTop: '1px solid #f0f0f0',
-                backgroundColor: '#fff',
-                flexShrink: 0,
-              }}
-            >
-              <Pagination
-                current={currentPage}
-                pageSize={pageSize}
-                total={filteredAwards.length}
-                onChange={setCurrentPage}
-              />
-            </div>
+                  if (isExpanded) {
+                    rows.push(
+                      <tr key={`${award.id}-recipients`}>
+                        <td
+                          colSpan={6}
+                          style={{
+                            padding: 0,
+                            borderBottom: isLast ? 'none' : '1px solid #f0f0f0',
+                          }}
+                        >
+                          <div
+                            style={{
+                              padding: '16px 24px 16px 74px',
+                              backgroundColor: '#fafafa',
+                              animation: 'slideDown 0.2s ease-out',
+                            }}
+                          >
+                            <div style={{ fontSize: '14px', fontWeight: 500, color: '#333', marginBottom: '12px' }}>
+                              获奖人员 ({recipients.length}人):
+                            </div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+                              {recipients.map((recipient, idx) => (
+                                <div
+                                  key={`${recipient.employeeId}-${idx}`}
+                                  style={{
+                                    padding: '10px 14px',
+                                    backgroundColor: '#fff',
+                                    border: '1px solid #e8e8e8',
+                                    borderRadius: '6px',
+                                    minWidth: '140px',
+                                    maxWidth: '180px',
+                                    transition: 'all 0.2s',
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.borderColor = '#1890ff';
+                                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(24, 144, 255, 0.15)';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.borderColor = '#e8e8e8';
+                                    e.currentTarget.style.boxShadow = 'none';
+                                  }}
+                                >
+                                  <div
+                                    style={{
+                                      fontSize: '14px',
+                                      fontWeight: 500,
+                                      color: '#333',
+                                      marginBottom: '4px',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                    title={recipient.name}
+                                  >
+                                    {recipient.name}
+                                  </div>
+                                  <div style={{ fontSize: '12px', color: '#595959', marginBottom: '2px', fontFamily: 'monospace', letterSpacing: '0.5px' }}>
+                                    {recipient.employeeId}
+                                  </div>
+                                  <div
+                                    style={{
+                                      fontSize: '11px',
+                                      color: '#8c8c8c',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                    title={recipient.department}
+                                  >
+                                    {recipient.department}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  }
+
+                  return rows;
+                })}
+              </tbody>
+            </table>
           )}
         </div>
 
-        {/* 已添加奖项区域 */}
+        {filteredAwards.length > 0 && (
+          <div style={{
+            padding: '0 24px',
+            borderTop: '1px solid #f0f0f0',
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}>
+            <div style={{ fontSize: '14px', color: '#595959' }}>
+              已勾选 <span style={{ color: '#1890ff', fontWeight: 500 }}>{selectedAwardIds.size}</span> 条
+            </div>
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={filteredAwards.length}
+              onChange={setCurrentPage}
+            />
+          </div>
+        )}
+
         {selectedAwards.length > 0 && (
           <div
-            className="modal-selected"
             style={{
               padding: '12px 24px',
               borderTop: '1px solid #f0f0f0',
@@ -1148,14 +738,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
               flexWrap: 'wrap',
             }}
           >
-            <span
-              style={{
-                fontSize: '14px',
-                color: '#666',
-                whiteSpace: 'nowrap',
-                paddingTop: '4px',
-              }}
-            >
+            <span style={{ fontSize: '14px', color: '#595959', whiteSpace: 'nowrap', paddingTop: '4px' }}>
               已添加:
             </span>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', flex: 1 }}>
@@ -1190,7 +773,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                     style={{
                       background: 'none',
                       border: 'none',
-                      padding: '0',
+                      padding: 0,
                       marginLeft: '4px',
                       cursor: 'pointer',
                       color: '#999',
@@ -1200,12 +783,16 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                       justifyContent: 'center',
                       width: '16px',
                       height: '16px',
+                      borderRadius: '4px',
+                      transition: 'all 0.2s',
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.color = '#ff4d4f';
+                      e.currentTarget.style.backgroundColor = '#fff1f0';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.color = '#999';
+                      e.currentTarget.style.backgroundColor = 'transparent';
                     }}
                   >
                     ×
@@ -1216,9 +803,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
           </div>
         )}
 
-        {/* 底部按钮 */}
         <div
-          className="modal-footer"
           style={{
             padding: '16px 24px',
             borderTop: '1px solid #f0f0f0',
@@ -1230,9 +815,9 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
           <button
             onClick={onCancel}
             style={{
-              padding: '9px 28px',
+              padding: '8px 24px',
               backgroundColor: '#fff',
-              color: '#666',
+              color: '#595959',
               border: '1px solid #d9d9d9',
               borderRadius: '4px',
               fontSize: '14px',
@@ -1240,12 +825,12 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
               transition: 'all 0.2s',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#1890ff';
+              e.currentTarget.style.borderColor = '#40a9ff';
               e.currentTarget.style.color = '#1890ff';
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.borderColor = '#d9d9d9';
-              e.currentTarget.style.color = '#666';
+              e.currentTarget.style.color = '#595959';
             }}
           >
             取消
@@ -1253,7 +838,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
           <button
             onClick={handleConfirm}
             style={{
-              padding: '9px 28px',
+              padding: '8px 24px',
               backgroundColor: '#1890ff',
               color: '#fff',
               border: 'none',
@@ -1274,7 +859,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
         </div>
       </div>
 
-      {/* CSS 动画 */}
       <style>{`
         @keyframes slideDown {
           from {
