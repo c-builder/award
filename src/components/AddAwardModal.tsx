@@ -806,13 +806,23 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                                           overflow: 'hidden',
                                           textOverflow: 'ellipsis',
                                           whiteSpace: 'nowrap',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '8px',
                                         }}
-                                        title={recipient.name}
+                                        title={`${recipient.name} ${recipient.employeeId}`}
                                       >
-                                        {recipient.name}
-                                      </div>
-                                      <div style={{ fontSize: '12px', color: '#595959', marginBottom: '2px', fontFamily: 'monospace', letterSpacing: '0.5px' }}>
-                                        {recipient.employeeId}
+                                        <span>{recipient.name}</span>
+                                        <span
+                                          style={{
+                                            fontSize: '12px',
+                                            color: '#666',
+                                            fontFamily: 'monospace',
+                                            fontWeight: 400,
+                                          }}
+                                        >
+                                          {recipient.employeeId}
+                                        </span>
                                       </div>
                                       <div
                                         style={{

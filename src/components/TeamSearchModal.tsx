@@ -710,11 +710,28 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                                         maxWidth: '200px',
                                       }}
                                     >
-                                      <div style={{ fontSize: '14px', fontWeight: 500, color: '#333', marginBottom: '4px' }}>
-                                        {member.name}
-                                      </div>
-                                      <div style={{ fontSize: '12px', color: '#595959', marginBottom: '2px', fontFamily: 'monospace', letterSpacing: '0.5px' }}>
-                                        {member.employeeId}
+                                      <div
+                                        style={{
+                                          fontSize: '14px',
+                                          fontWeight: 500,
+                                          color: '#333',
+                                          marginBottom: '4px',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: '8px',
+                                        }}
+                                      >
+                                        <span>{member.name}</span>
+                                        <span
+                                          style={{
+                                            fontSize: '12px',
+                                            color: '#666',
+                                            fontFamily: 'monospace',
+                                            fontWeight: 400,
+                                          }}
+                                        >
+                                          {member.employeeId}
+                                        </span>
                                       </div>
                                       <div
                                         style={{
