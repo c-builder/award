@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Pagination } from './Pagination';
+import { Pagination, MODAL_TABLE_MIN_HEIGHT } from './Pagination';
 import { TeamMembersModal } from './TeamMembersModal';
 import { DeptCascader } from './DeptCascader';
 import type { Team } from './types';
@@ -524,7 +524,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
             </div>
 
             {/* 表格区域 */}
-            <div style={{ flex: 1, overflow: 'auto', overscrollBehavior: 'contain' }}>
+            <div style={{ flex: 1, overflow: 'auto', overscrollBehavior: 'contain', minHeight: MODAL_TABLE_MIN_HEIGHT }}>
               {filteredTeams.length === 0 ? (
                 <div style={{
                   padding: '48px 0',

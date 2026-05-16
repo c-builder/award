@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { DeptCascader } from './DeptCascader';
-import { Pagination } from './Pagination';
+import { Pagination, MODAL_TABLE_MIN_HEIGHT } from './Pagination';
 import { AwardRecipientsModal } from './AwardRecipientsModal';
 import { Award } from './types';
 import awardsData from '../mock/data/awards.json';
@@ -587,7 +587,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
             </div>
 
             {/* 表格区域 */}
-            <div style={{ flex: 1, overflow: 'auto', overscrollBehavior: 'contain' }}>
+            <div style={{ flex: 1, overflow: 'auto', overscrollBehavior: 'contain', minHeight: MODAL_TABLE_MIN_HEIGHT }}>
               {filteredAwards.length === 0 ? (
                 <div style={{
                   padding: '48px 0',

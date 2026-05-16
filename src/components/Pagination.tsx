@@ -1,5 +1,8 @@
 import React from 'react';
 
+/** 弹窗表格滚动区最小高度（约 1 行表头 + 10 行数据，对齐默认每页条数） */
+export const MODAL_TABLE_MIN_HEIGHT = 480;
+
 export interface PaginationProps {
   /** 当前页码 */
   current: number;

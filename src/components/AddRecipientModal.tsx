@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Recipient, Award } from './types';
 import { DeptCascader } from './DeptCascader';
-import { Pagination } from './Pagination';
+import { Pagination, MODAL_TABLE_MIN_HEIGHT } from './Pagination';
 
 export interface AddRecipientModalProps {
   visible: boolean;
@@ -391,7 +391,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
             {/* 表格区域 */}
             <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
               {/* 表格 */}
-              <div style={{ flex: 1, overflow: 'auto', padding: '16px 0' }}>
+              <div style={{ flex: 1, overflow: 'auto', padding: '16px 0', minHeight: MODAL_TABLE_MIN_HEIGHT }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
                     <tr style={{ backgroundColor: '#fafafa' }}>
