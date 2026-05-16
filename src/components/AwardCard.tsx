@@ -464,7 +464,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                   }}
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                    <span>等共已选{filteredTeams?.length}个团队</span>
+                    <span>等共{filteredTeams?.length}个团队</span>
                     <span style={{ fontWeight: 600 }}>查看全部 →</span>
                   </div>
                 </button>
@@ -547,7 +547,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                   }}
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                    <span>等共已选{filteredRecipients.length}人</span>
+                    <span>等共{filteredRecipients.length}人</span>
                     <span style={{ fontWeight: 600 }}>查看全部 →</span>
                   </div>
                 </button>
