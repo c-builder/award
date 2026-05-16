@@ -230,6 +230,7 @@ function App() {
           isDefault: existingAward?.isDefault || item.isDefault || false,
           issueDate: item.issueDate,
           pushDate: existingAward?.pushDate || item.pushDate || new Date().toISOString().split('T')[0],
+          awardCount: existingAward?.awardCount ?? item.awardCount,
         };
       });
 

@@ -77,4 +77,8 @@ export interface Award {
    * 格式: YYYY-MM-DD
    */
   issueDate?: string;
+  /**
+   * 颁奖数量（奖项官方统计数，不随编辑或部门筛选变化）
+   */
+  awardCount?: number;
 }

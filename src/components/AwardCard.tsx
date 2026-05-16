@@ -172,6 +172,12 @@ export const AwardCard: React.FC<AwardCardProps> = ({
 
   const isTeamAward = award.awardType === 'team';
 
+  const awardCount =
+    award.awardCount ??
+    (isTeamAward
+      ? (award.allTeams?.length ?? award.teams?.length ?? 0)
+      : award.recipients.length);
+
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [membersModalVisible, setMembersModalVisible] = useState(false);
   const [viewAllModalVisible, setViewAllModalVisible] = useState(false);
@@ -371,7 +377,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
               }}
             >
               <span>颁发部门: {award.issuingDepartment}</span>
-              <span>颁奖数: {isTeamAward ? (award.teams?.length || 0) : award.recipients.length}</span>
+              <span>颁奖数: {awardCount}</span>
             </p>
           </div>
         </div>
@@ -458,7 +464,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                   }}
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                    <span>等共{filteredTeams?.length}个团队（已选{selectedCount}）</span>
+                    <span>等共已选{filteredTeams?.length}个团队</span>
                     <span style={{ fontWeight: 600 }}>查看全部 →</span>
                   </div>
                 </button>
@@ -541,7 +547,7 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                   }}
                 >
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                    <span>等共{filteredRecipients.length}人</span>
+                    <span>等共已选{filteredRecipients.length}人</span>
                     <span style={{ fontWeight: 600 }}>查看全部 →</span>
                   </div>
                 </button>
