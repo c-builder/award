@@ -421,17 +421,19 @@ function App() {
               style={{
                 marginBottom: '16px',
                 padding: '12px 16px',
-                backgroundColor: '#e6f4ff',
-                border: '1px solid #91caff',
-                borderRadius: '6px',
+                background: 'linear-gradient(135deg, #f8fbff 0%, #f0f6fc 100%)',
+                border: '1px solid #d4e8f7',
+                borderRadius: '8px',
                 fontSize: '14px',
-                color: '#0958d9',
+                color: '#4a5568',
+                lineHeight: 1.6,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
+                gap: '10px',
+                boxShadow: '0 1px 2px rgba(24, 144, 255, 0.06)',
               }}
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="#0958d9">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="#1890ff" style={{ flexShrink: 0 }}>
                 <path d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm6.5-.25A.75.75 0 0 1 7.25 7h1.5a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75zM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
               </svg>
               <span>已为你筛选出近期获奖数据，请你从中挑选用于展播的奖项。</span>
