@@ -173,7 +173,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
             alignItems: 'center',
           }}
         >
-          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 500, color: '#333' }}>
+          <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#333' }}>
             {readonly ? '获奖人列表' : '编辑获奖人'}{currentAward ? ` - ${currentAward.title}` : ''}
           </h3>
           <button
@@ -184,8 +184,18 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
               fontSize: '18px',
               color: '#999',
               cursor: 'pointer',
-              padding: '4px',
+              padding: '4px 8px',
               lineHeight: 1,
+              borderRadius: '4px',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = '#333';
+              e.currentTarget.style.backgroundColor = '#f5f5f5';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = '#999';
+              e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
             ×
@@ -409,7 +419,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
                   <thead>
                     <tr style={{ backgroundColor: '#fafafa' }}>
                       {!readonly && (
-                        <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0', width: '60px' }}>
+                        <th style={{ padding: '14px 16px', textAlign: 'center', fontWeight: 600, color: '#333', borderBottom: '2px solid #e8e8e8', fontSize: '13px', width: '60px' }}>
                           <div
                             onClick={() => {
                               if (isHeaderDisabled) return;
@@ -464,10 +474,10 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
                           </div>
                         </th>
                       )}
-                      <th style={{ padding: '12px 16px', textAlign: 'center', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0', width: '80px' }}>序号</th>
-                      <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>姓名</th>
-                      <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>工号</th>
-                      <th style={{ padding: '12px 16px', textAlign: 'left', fontWeight: 500, color: '#333', borderBottom: '1px solid #f0f0f0' }}>部门</th>
+                      <th style={{ padding: '14px 16px', textAlign: 'center', fontWeight: 600, color: '#333', borderBottom: '2px solid #e8e8e8', fontSize: '13px', width: '80px' }}>序号</th>
+                      <th style={{ padding: '14px 16px', textAlign: 'left', fontWeight: 600, color: '#333', borderBottom: '2px solid #e8e8e8', fontSize: '13px' }}>姓名</th>
+                      <th style={{ padding: '14px 16px', textAlign: 'left', fontWeight: 600, color: '#333', borderBottom: '2px solid #e8e8e8', fontSize: '13px' }}>工号</th>
+                      <th style={{ padding: '14px 16px', textAlign: 'left', fontWeight: 600, color: '#333', borderBottom: '2px solid #e8e8e8', fontSize: '13px' }}>部门</th>
                     </tr>
                   </thead>
                   <tbody>
