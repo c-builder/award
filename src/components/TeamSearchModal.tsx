@@ -334,13 +334,38 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                               fontWeight: 500,
                               color: '#333',
                               marginBottom: '4px',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              gap: '8px',
                             }}
-                            title={team.name}
                           >
-                            {team.name}
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {team.name}
+                            </span>
+                            <button
+                              onClick={() => removeFromSelected(team.id)}
+                              style={{
+                                width: '20px',
+                                height: '20px',
+                                backgroundColor: hoveredTeamId === team.id ? '#ff4d4f' : 'transparent',
+                                color: hoveredTeamId === team.id ? '#fff' : '#999',
+                                border: 'none',
+                                borderRadius: '4px',
+                                fontSize: '14px',
+                                cursor: hoveredTeamId === team.id ? 'pointer' : 'default',
+                                flexShrink: 0,
+                                opacity: hoveredTeamId === team.id ? 1 : 0.6,
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                lineHeight: 1,
+                              }}
+                              title="删除"
+                            >
+                              ×
+                            </button>
                           </div>
                           <div
                             style={{
@@ -348,6 +373,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                               color: '#666',
                               display: 'flex',
                               alignItems: 'center',
+                              justifyContent: 'space-between',
                               gap: '8px',
                             }}
                           >
@@ -377,24 +403,6 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                             </button>
                           </div>
                         </div>
-                        {hoveredTeamId === team.id && (
-                          <button
-                            onClick={() => removeFromSelected(team.id)}
-                            style={{
-                              padding: '4px 8px',
-                              backgroundColor: '#ff4d4f',
-                              color: '#fff',
-                              border: 'none',
-                              borderRadius: '4px',
-                              fontSize: '12px',
-                              cursor: 'pointer',
-                              marginLeft: '8px',
-                              flexShrink: 0,
-                            }}
-                          >
-                            删除
-                          </button>
-                        )}
                       </div>
                     ))}
                   </div>

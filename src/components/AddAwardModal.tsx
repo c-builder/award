@@ -380,58 +380,71 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                         boxShadow: hoveredAwardId === award.id
                           ? '0 2px 8px rgba(0,0,0,0.1)'
                           : 'none',
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '12px',
                       }}
                       onMouseEnter={() => setHoveredAwardId(award.id)}
                       onMouseLeave={() => setHoveredAwardId(null)}
                     >
-                      {/* 左侧内容 */}
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        {/* 第一行：奖项名称 + 类别标签 */}
-                        <div
+                      {/* 第一行：奖项名称 + 删除按钮 */}
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '8px',
+                          marginBottom: '6px',
+                        }}
+                      >
+                        <span
                           style={{
+                            fontSize: '14px',
+                            fontWeight: 500,
+                            color: '#333',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            flex: 1,
+                          }}
+                          title={award.name}
+                        >
+                          {award.name}
+                        </span>
+                        <button
+                          onClick={() => toggleAwardSelection(award.id)}
+                          style={{
+                            width: '20px',
+                            height: '20px',
+                            backgroundColor: hoveredAwardId === award.id ? '#ff4d4f' : 'transparent',
+                            color: hoveredAwardId === award.id ? '#fff' : '#999',
+                            border: 'none',
+                            borderRadius: '4px',
+                            fontSize: '14px',
+                            cursor: hoveredAwardId === award.id ? 'pointer' : 'default',
+                            flexShrink: 0,
+                            opacity: hoveredAwardId === award.id ? 1 : 0.6,
+                            transition: 'all 0.2s',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '8px',
-                            marginBottom: '6px',
-                            flexWrap: 'wrap',
+                            justifyContent: 'center',
+                            lineHeight: 1,
                           }}
+                          title="删除"
                         >
-                          <span
-                            style={{
-                              fontSize: '14px',
-                              fontWeight: 500,
-                              color: '#333',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap',
-                              maxWidth: '100%',
-                            }}
-                            title={award.name}
-                          >
-                            {award.name}
-                          </span>
-                          <span
-                            style={{
-                              padding: '2px 8px',
-                              backgroundColor: award.category === '团队奖' ? '#e6f7ff' : '#f0fdf4',
-                              color: award.category === '团队奖' ? '#1890ff' : '#16a34a',
-                              borderRadius: '4px',
-                              fontSize: '11px',
-                              fontWeight: 500,
-                              flexShrink: 0,
-                            }}
-                          >
-                            {award.category}
-                          </span>
-                        </div>
-                        {/* 第二行：统计数据 */}
-                        <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px' }}>
+                          ×
+                        </button>
+                      </div>
+                      {/* 第二行：统计数据 + 查看详情 */}
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          gap: '8px',
+                          marginBottom: '6px',
+                        }}
+                      >
+                        <span style={{ fontSize: '12px', color: '#666' }}>
                           颁奖数：{award.totalCount}，部门获奖数：{award.currentDeptCount}
-                        </div>
-                        {/* 第三行：查看详情 */}
+                        </span>
                         <button
                           onClick={() => {
                             setSelectedAwardForDrawer(award);
@@ -448,6 +461,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                             display: 'flex',
                             alignItems: 'center',
                             gap: '2px',
+                            flexShrink: 0,
                           }}
                         >
                           <span>查看详情</span>
@@ -456,25 +470,21 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                           </svg>
                         </button>
                       </div>
-                      {/* 右侧删除按钮 */}
-                      <button
-                        onClick={() => toggleAwardSelection(award.id)}
-                        style={{
-                          padding: '4px 8px',
-                          backgroundColor: hoveredAwardId === award.id ? '#ff4d4f' : 'transparent',
-                          color: hoveredAwardId === award.id ? '#fff' : 'transparent',
-                          border: 'none',
-                          borderRadius: '4px',
-                          fontSize: '12px',
-                          cursor: hoveredAwardId === award.id ? 'pointer' : 'default',
-                          flexShrink: 0,
-                          opacity: hoveredAwardId === award.id ? 1 : 0,
-                          transition: 'all 0.2s',
-                          alignSelf: 'center',
-                        }}
-                      >
-                        删除
-                      </button>
+                      {/* 第三行：类别标签 */}
+                      <div>
+                        <span
+                          style={{
+                            padding: '2px 8px',
+                            backgroundColor: award.category === '团队奖' ? '#e6f7ff' : '#f0fdf4',
+                            color: award.category === '团队奖' ? '#1890ff' : '#16a34a',
+                            borderRadius: '4px',
+                            fontSize: '11px',
+                            fontWeight: 500,
+                          }}
+                        >
+                          {award.category}
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>

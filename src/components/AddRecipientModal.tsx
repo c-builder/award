@@ -266,6 +266,7 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
                         onMouseLeave={() => setHoveredRecipientId(null)}
                       >
                         <div style={{ flex: 1, minWidth: 0 }}>
+                          {/* 第一行：姓名 + 工号 + 删除按钮 */}
                           <div
                             style={{
                               fontSize: '14px',
@@ -274,21 +275,51 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
                               marginBottom: '4px',
                               display: 'flex',
                               alignItems: 'center',
+                              justifyContent: 'space-between',
                               gap: '8px',
                             }}
                           >
-                            <span>{recipient.name}</span>
-                            <span
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden' }}>
+                              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {recipient.name}
+                              </span>
+                              <span
+                                style={{
+                                  fontSize: '12px',
+                                  color: '#666',
+                                  fontFamily: 'monospace',
+                                  fontWeight: 400,
+                                  flexShrink: 0,
+                                }}
+                              >
+                                {recipient.employeeId}
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => removeFromSelected(recipient.employeeId)}
                               style={{
-                                fontSize: '12px',
-                                color: '#666',
-                                fontFamily: 'monospace',
-                                fontWeight: 400,
+                                width: '20px',
+                                height: '20px',
+                                backgroundColor: hoveredRecipientId === recipient.employeeId ? '#ff4d4f' : 'transparent',
+                                color: hoveredRecipientId === recipient.employeeId ? '#fff' : '#999',
+                                border: 'none',
+                                borderRadius: '4px',
+                                fontSize: '14px',
+                                cursor: hoveredRecipientId === recipient.employeeId ? 'pointer' : 'default',
+                                flexShrink: 0,
+                                opacity: hoveredRecipientId === recipient.employeeId ? 1 : 0.6,
+                                transition: 'all 0.2s',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                lineHeight: 1,
                               }}
+                              title="删除"
                             >
-                              {recipient.employeeId}
-                            </span>
+                              ×
+                            </button>
                           </div>
+                          {/* 第二行：部门 */}
                           <div
                             style={{
                               fontSize: '12px',
@@ -301,24 +332,6 @@ export const AddRecipientModal: React.FC<AddRecipientModalProps> = ({
                             {recipient.department}
                           </div>
                         </div>
-                        {hoveredRecipientId === recipient.employeeId && (
-                          <button
-                            onClick={() => removeFromSelected(recipient.employeeId)}
-                            style={{
-                              padding: '4px 8px',
-                              backgroundColor: '#ff4d4f',
-                              color: '#fff',
-                              border: 'none',
-                              borderRadius: '4px',
-                              fontSize: '12px',
-                              cursor: 'pointer',
-                              marginLeft: '8px',
-                              flexShrink: 0,
-                            }}
-                          >
-                            删除
-                          </button>
-                        )}
                       </div>
                     ))}
                   </div>
