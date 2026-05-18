@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Pagination, MODAL_TABLE_MIN_HEIGHT } from './Pagination';
-import { TeamMembersModal } from './TeamMembersModal';
+import { AwardDetailDrawer } from './AwardDetailDrawer';
 import { DeptCascader } from './DeptCascader';
 import type { Team } from './types';
 
@@ -10,7 +10,6 @@ export interface TeamSearchModalProps {
   existingTeams?: Team[];
   onCancel: () => void;
   onConfirm: (selectedTeams: Team[]) => void;
-  onUpdateTeam?: (updatedTeam: Team) => void;
   viewOnly?: boolean;
   currentDepartment?: string;
 }
@@ -21,7 +20,6 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
   existingTeams: propExistingTeams = [],
   onCancel,
   onConfirm,
-  onUpdateTeam,
   viewOnly = false,
   currentDepartment = '',
 }) => {
@@ -37,7 +35,6 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
   const [selectedDeptPath, setSelectedDeptPath] = useState<string[]>([]);
   const [teamNameSearch, setTeamNameSearch] = useState('');
   const [selectedTeams, setSelectedTeams] = useState<Set<string>>(new Set());
-  const [expandedTeams, setExpandedTeams] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
@@ -49,7 +46,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
   const [employeeInputFocused, setEmployeeInputFocused] = useState(false);
   const [teamNameInputFocused, setTeamNameInputFocused] = useState(false);
   const [selectedTeamForDetail, setSelectedTeamForDetail] = useState<Team | null>(null);
-  const [detailModalVisible, setDetailModalVisible] = useState(false);
+  const [drawerVisible, setDrawerVisible] = useState(false);
 
   const departmentTeams = useMemo(() => {
     if (!currentDepartment) return existingTeams;
@@ -73,7 +70,6 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
       setEmployeeSearch('');
       setSelectedDeptPath([]);
       setTeamNameSearch('');
-      setExpandedTeams(new Set());
       setCurrentPage(1);
     }
   }, [visible, existingTeams, departmentTeams]);
@@ -144,16 +140,6 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
     const newSelected = new Set(selectedTeams);
     newSelected.delete(teamId);
     setSelectedTeams(newSelected);
-  };
-
-  const toggleTeamExpand = (teamId: string) => {
-    const newExpanded = new Set(expandedTeams);
-    if (newExpanded.has(teamId)) {
-      newExpanded.delete(teamId);
-    } else {
-      newExpanded.add(teamId);
-    }
-    setExpandedTeams(newExpanded);
   };
 
   const handleConfirm = () => {
@@ -370,7 +356,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                             <button
                               onClick={() => {
                                 setSelectedTeamForDetail(team);
-                                setDetailModalVisible(true);
+                                setDrawerVisible(true);
                               }}
                               style={{
                                 background: 'none',
@@ -577,11 +563,9 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                   <tbody>
                     {paginatedTeams.map((team, index) => {
                       const isSelected = selectedTeams.has(team.id);
-                      const isExpanded = expandedTeams.has(team.id);
                       const seq = (currentPage - 1) * pageSize + index + 1;
-                      const isExpandedLast = isExpanded && index === paginatedTeams.length - 1;
 
-                      const rows = [
+                      return (
                         <tr
                           key={team.id}
                           style={{
@@ -635,7 +619,10 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                           </td>
                           <td style={{ ...tdStyle(false), textAlign: 'center' }}>
                             <button
-                              onClick={() => toggleTeamExpand(team.id)}
+                              onClick={() => {
+                                setSelectedTeamForDetail(team);
+                                setDrawerVisible(true);
+                              }}
                               style={{
                                 background: 'none',
                                 border: 'none',
@@ -658,103 +645,11 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                                 e.currentTarget.style.backgroundColor = 'transparent';
                               }}
                             >
-                              <span>{isExpanded ? '收起' : '查看'}</span>
-                              <svg
-                                width="12"
-                                height="12"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                style={{
-                                  transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                                  transition: 'transform 0.2s',
-                                }}
-                              >
-                                <polyline points="6 9 12 15 18 9" />
-                              </svg>
+                              <span>查看详情</span>
                             </button>
                           </td>
-                        </tr>,
-                      ];
-
-                      if (isExpanded && team.members) {
-                        rows.push(
-                          <tr key={`${team.id}-members`}>
-                            <td
-                              colSpan={viewOnly ? 6 : 7}
-                              style={{
-                                padding: 0,
-                                borderBottom: isExpandedLast ? 'none' : '1px solid #f0f0f0',
-                              }}
-                            >
-                              <div
-                                style={{
-                                  padding: '16px 24px',
-                                  backgroundColor: '#fafafa',
-                                }}
-                              >
-                                <div style={{ fontSize: '14px', fontWeight: 500, color: '#333', marginBottom: '12px' }}>
-                                  获奖人员 ({team.members.length}人):
-                                </div>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-                                  {team.members.map((member, idx) => (
-                                    <div
-                                      key={idx}
-                                      style={{
-                                        padding: '12px 16px',
-                                        backgroundColor: '#fff',
-                                        border: '1px solid #e8e8e8',
-                                        borderRadius: '6px',
-                                        minWidth: '160px',
-                                        maxWidth: '200px',
-                                      }}
-                                    >
-                                      <div
-                                        style={{
-                                          fontSize: '14px',
-                                          fontWeight: 500,
-                                          color: '#333',
-                                          marginBottom: '4px',
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          gap: '8px',
-                                        }}
-                                      >
-                                        <span>{member.name}</span>
-                                        <span
-                                          style={{
-                                            fontSize: '12px',
-                                            color: '#666',
-                                            fontFamily: 'monospace',
-                                            fontWeight: 400,
-                                          }}
-                                        >
-                                          {member.employeeId}
-                                        </span>
-                                      </div>
-                                      <div
-                                        style={{
-                                          fontSize: '11px',
-                                          color: '#8c8c8c',
-                                          overflow: 'hidden',
-                                          textOverflow: 'ellipsis',
-                                          whiteSpace: 'nowrap',
-                                        }}
-                                        title={member.department}
-                                      >
-                                        {member.department}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      }
-
-                      return rows;
+                        </tr>
+                      );
                     })}
                   </tbody>
                 </table>
@@ -838,30 +733,41 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
         </div>
       </div>
 
-      {/* 团队详情弹框 - 与首页共用 */}
-      <TeamMembersModal
-        visible={detailModalVisible}
-        team={selectedTeamForDetail || { id: '', name: '', leaderName: '', leaderId: '', memberCount: 0 }}
+      {/* 团队详情 Drawer - 与首页共用 */}
+      <AwardDetailDrawer
+        visible={drawerVisible}
         onClose={() => {
-          setDetailModalVisible(false);
+          setDrawerVisible(false);
           setSelectedTeamForDetail(null);
         }}
-        onConfirm={(updatedTeam) => {
-          // 更新本地团队数据
-          setExistingTeams(prev => {
-            const newTeams = [...prev];
-            const teamIndex = newTeams.findIndex(t => t.id === updatedTeam.id);
-            if (teamIndex !== -1) {
-              newTeams[teamIndex] = updatedTeam;
-            }
-            return newTeams;
-          });
-          // 通知父组件团队已更新
-          if (onUpdateTeam) {
-            onUpdateTeam(updatedTeam);
+        mode="team"
+        team={selectedTeamForDetail || undefined}
+        awardTitle={awardTitle}
+        showSearch
+        onMemberDelete={(teamId, employeeId) => {
+          // 从团队中移除成员
+          if (selectedTeamForDetail && selectedTeamForDetail.id === teamId) {
+            const updatedMembers = selectedTeamForDetail.members?.map(m =>
+              m.employeeId === employeeId ? { ...m, isSelected: false } : m
+            ) || [];
+            setSelectedTeamForDetail({
+              ...selectedTeamForDetail,
+              members: updatedMembers,
+              memberCount: updatedMembers.filter(m => m.isSelected !== false).length,
+            });
+            // 同步更新现有团队列表
+            setExistingTeams(prev =>
+              prev.map(t =>
+                t.id === teamId
+                  ? {
+                      ...t,
+                      members: updatedMembers,
+                      memberCount: updatedMembers.filter(m => m.isSelected !== false).length,
+                    }
+                  : t
+              )
+            );
           }
-          setDetailModalVisible(false);
-          setSelectedTeamForDetail(null);
         }}
       />
     </div>

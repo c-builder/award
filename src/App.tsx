@@ -6,7 +6,7 @@ import {
   TeamSearchModal,
   AddAwardModal,
 } from './components';
-import { Award } from './components/types';
+import { Award, Recipient } from './components/types';
 import mockAwardsData from './mock/data/awards.json';
 
 const mockAwards: Award[] = mockAwardsData as Award[];
@@ -47,8 +47,8 @@ function App() {
   const [teamSearchViewOnly, setTeamSearchViewOnly] = useState(false);
   const [addAwardModalVisible, setAddAwardModalVisible] = useState(false);
   const [currentAwardId, setCurrentAwardId] = useState<string>('');
-  const [currentAllRecipients, setCurrentAllRecipients] = useState<any[]>([]);
-  const [currentSelectedRecipients, setCurrentSelectedRecipients] = useState<any[]>([]);
+  const [currentAllRecipients, setCurrentAllRecipients] = useState<Recipient[]>([]);
+  const [currentSelectedRecipients, setCurrentSelectedRecipients] = useState<Recipient[]>([]);
 
   const currentUserDepartment = 'IT平台服务部';
 
@@ -140,12 +140,6 @@ function App() {
     setTeamSearchModalVisible(true);
   };
 
-  const handleViewAllTeams = (awardId: string) => {
-    setCurrentAwardId(awardId);
-    setTeamSearchViewOnly(true);
-    setTeamSearchModalVisible(true);
-  };
-
   const handleRemoveTeam = (awardId: string, teamToRemove: any) => {
     setAwards((prev) =>
       prev.map((award) =>
@@ -158,9 +152,6 @@ function App() {
       )
     );
   };
-
-
-
 
 
   const handleUpdateTeam = (awardId: string, updatedTeam: any) => {
@@ -495,11 +486,6 @@ function App() {
                         ? (team) => handleUpdateTeam(award.id, team)
                         : undefined
                     }
-                    onViewAllTeams={
-                      award.awardType === 'team'
-                        ? () => handleViewAllTeams(award.id)
-                        : undefined
-                    }
                     onRemoveAward={() => handleRemoveAward(award.id)}
                   />
                 ))}
@@ -673,7 +659,6 @@ function App() {
         }
         onCancel={() => setTeamSearchModalVisible(false)}
         onConfirm={handleConfirmAddTeam}
-        onUpdateTeam={(updatedTeam) => handleUpdateTeam(currentAwardId, updatedTeam)}
         currentDepartment={selectedDepartment === '全部部门' ? '' : selectedDepartment}
         viewOnly={teamSearchViewOnly}
       />

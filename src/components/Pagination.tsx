@@ -118,7 +118,7 @@ export const Pagination: React.FC<PaginationProps> = ({
     >
       {/* 总条数 */}
       {showTotal && (
-        <span style={{ color: '#666', marginRight: '8px' }}>
+        <span style={{ color: '#666', marginRight: '8px', whiteSpace: 'nowrap' }}>
           共 {total} 条
         </span>
       )}
@@ -127,7 +127,11 @@ export const Pagination: React.FC<PaginationProps> = ({
       {showPageSize && onPageSizeChange && (
         <select
           value={pageSize}
-          onChange={(e) => onPageSizeChange(Number(e.target.value))}
+          onChange={(e) => {
+            e.stopPropagation();
+            onPageSizeChange(Number(e.target.value));
+          }}
+          onClick={(e) => e.stopPropagation()}
           style={{
             padding: '4px 8px',
             border: '1px solid #d9d9d9',
@@ -148,7 +152,10 @@ export const Pagination: React.FC<PaginationProps> = ({
 
       {/* 上一页 */}
       <button
-        onClick={() => handlePageChange(current - 1)}
+        onClick={(e) => {
+          e.stopPropagation();
+          handlePageChange(current - 1);
+        }}
         disabled={current === 1}
         style={{
           padding: '5px 12px',
@@ -189,7 +196,10 @@ export const Pagination: React.FC<PaginationProps> = ({
             <span style={{ color: '#999', padding: '0 4px' }}>...</span>
           ) : (
             <button
-              onClick={() => handlePageChange(page as number)}
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePageChange(page as number);
+              }}
               style={{
                 padding: '5px 12px',
                 backgroundColor: current === page ? '#1890ff' : '#fff',
@@ -226,7 +236,10 @@ export const Pagination: React.FC<PaginationProps> = ({
 
       {/* 下一页 */}
       <button
-        onClick={() => handlePageChange(current + 1)}
+        onClick={(e) => {
+          e.stopPropagation();
+          handlePageChange(current + 1);
+        }}
         disabled={current === totalPages}
         style={{
           padding: '5px 12px',

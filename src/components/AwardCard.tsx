@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Award, Recipient, Team } from './types';
 import { RecipientCard } from './RecipientCard';
-import { TeamMembersModal } from './TeamMembersModal';
-import { AddRecipientModal } from './AddRecipientModal';
+import { AwardDetailDrawer } from './AwardDetailDrawer';
 
 const MAX_DISPLAY_RECIPIENTS = 10;
 
@@ -18,7 +17,6 @@ export interface AwardCardProps {
   onRemoveTeam?: (team: Team) => void;
   onUpdateTeam?: (team: Team) => void;
   onRemoveAward?: () => void;
-  onViewAllTeams?: () => void;
 }
 
 interface TeamCardProps {
@@ -166,7 +164,6 @@ export const AwardCard: React.FC<AwardCardProps> = ({
   onRemoveTeam,
   onUpdateTeam,
   onRemoveAward,
-  onViewAllTeams,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -180,7 +177,6 @@ export const AwardCard: React.FC<AwardCardProps> = ({
 
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [membersModalVisible, setMembersModalVisible] = useState(false);
-  const [viewAllModalVisible, setViewAllModalVisible] = useState(false);
 
   const handleShowMembers = (team: Team) => {
     setSelectedTeam(team);
@@ -190,14 +186,6 @@ export const AwardCard: React.FC<AwardCardProps> = ({
   const handleCloseMembers = () => {
     setMembersModalVisible(false);
     setSelectedTeam(null);
-  };
-
-  const handleShowViewAll = () => {
-    setViewAllModalVisible(true);
-  };
-
-  const handleCloseViewAll = () => {
-    setViewAllModalVisible(false);
   };
 
   const filteredRecipients = award.recipients.filter(r => {
@@ -433,9 +421,9 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                   onShowMembers={handleShowMembers}
                 />
               ))}
-              {hasMoreTeams && (
+              {hasMoreTeams && onAddTeam && (
                 <button
-                  onClick={onViewAllTeams}
+                  onClick={onAddTeam}
                   style={{
                     padding: '12px 16px',
                     backgroundColor: '#f0f9ff',
@@ -516,18 +504,19 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                 />
               ))}
 
-              {hasMoreRecipients && (
+              {hasMoreRecipients && onAddRecipient && (
                 <button
-                  onClick={handleShowViewAll}
+                  onClick={() => onAddRecipient(award.recipients, selectedRecipients)}
                   style={{
                     padding: '12px 16px',
                     backgroundColor: '#f0f9ff',
                     border: '1px dashed #1890ff',
                     borderRadius: '6px',
+                    color: '#1890ff',
                     cursor: 'pointer',
                     fontSize: '13px',
-                    color: '#1890ff',
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
                     gap: '6px',
@@ -557,25 +546,31 @@ export const AwardCard: React.FC<AwardCardProps> = ({
         </>
       )}
 
-      <TeamMembersModal
+      <AwardDetailDrawer
         visible={membersModalVisible}
-        team={selectedTeam || { id: '', name: '', leaderName: '', leaderId: '', memberCount: 0 }}
         onClose={handleCloseMembers}
-        onConfirm={(updatedTeam) => {
-          if (onUpdateTeam) {
-            onUpdateTeam(updatedTeam);
+        mode="team"
+        team={selectedTeam || undefined}
+        awardTitle={award.title}
+        showSearch
+        onMemberDelete={(teamId, employeeId) => {
+          // 从团队中移除成员
+          if (selectedTeam && selectedTeam.id === teamId) {
+            const updatedMembers = selectedTeam.members?.map(m =>
+              m.employeeId === employeeId ? { ...m, isSelected: false } : m
+            ) || [];
+            const updatedTeam = {
+              ...selectedTeam,
+              members: updatedMembers,
+              memberCount: updatedMembers.filter(m => m.isSelected !== false).length,
+            };
+            setSelectedTeam(updatedTeam);
+            // 通知父组件更新
+            if (onUpdateTeam) {
+              onUpdateTeam(updatedTeam);
+            }
           }
         }}
-      />
-
-      <AddRecipientModal
-        visible={viewAllModalVisible}
-        currentAward={award}
-        allRecipients={filteredRecipients}
-        selectedRecipients={selectedRecipients}
-        onCancel={handleCloseViewAll}
-        onConfirm={() => {}}
-        readonly={true}
       />
     </div>
   );

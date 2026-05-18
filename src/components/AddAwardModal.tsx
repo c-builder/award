@@ -1,15 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { DeptCascader } from './DeptCascader';
 import { Pagination, MODAL_TABLE_MIN_HEIGHT } from './Pagination';
-import { AwardRecipientsModal } from './AwardRecipientsModal';
-import { Award } from './types';
+import { AwardDetailDrawer } from './AwardDetailDrawer';
+import { Award, Recipient } from './types';
 import awardsData from '../mock/data/awards.json';
-
-export interface Recipient {
-  name: string;
-  employeeId: string;
-  department: string;
-}
 
 export type AwardCategory = '个人奖' | '团队奖';
 
@@ -18,6 +12,7 @@ export interface AwardItem {
   name: string;
   category: AwardCategory;
   recipientCount: number;
+  teamCount?: number;
   issuingDepartment: string;
   issuingDepartmentPath: string[];
   recipients?: Recipient[];
@@ -47,6 +42,7 @@ const MOCK_AWARDS: AwardItem[] = (awardsData as Award[]).map(award => {
     recipientCount: award.awardType === 'individual'
       ? award.recipients.length
       : (award.teams?.reduce((sum, t) => sum + (t.memberCount || 0), 0) || 0),
+    teamCount: award.awardType === 'team' ? (award.teams?.length || 0) : undefined,
     issuingDepartment: award.issuingDepartment,
     issuingDepartmentPath: award.issuingDepartment.split('/'),
     recipients: allRecipients.map(r => ({
@@ -81,20 +77,18 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
   const [selectedDeptPath, setSelectedDeptPath] = useState<string[]>([]);
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [selectedAwardIds, setSelectedAwardIds] = useState<Set<string>>(new Set());
-  const [expandedAwardIds, setExpandedAwardIds] = useState<Set<string>>(new Set());
   const [hoveredRowId, setHoveredRowId] = useState<string | null>(null);
   const [hoveredAwardId, setHoveredAwardId] = useState<string | null>(null);
   const [inputFocused, setInputFocused] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
-  const [detailModalVisible, setDetailModalVisible] = useState(false);
-  const [selectedAwardForDetail, setSelectedAwardForDetail] = useState<AwardItem | null>(null);
+  const [drawerVisible, setDrawerVisible] = useState(false);
+  const [selectedAwardForDrawer, setSelectedAwardForDrawer] = useState<AwardItem | null>(null);
 
   useEffect(() => {
     if (visible) {
       setSelectedDeptPath(externalDeptPath);
       setSearchKeyword('');
-      setExpandedAwardIds(new Set());
       setCurrentPage(1);
     }
   }, [visible, externalDeptPath]);
@@ -104,7 +98,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
       setSelectedDeptPath([]);
       setSearchKeyword('');
       setSelectedAwardIds(new Set());
-      setExpandedAwardIds(new Set());
       setCurrentPage(1);
     }
   }, [visible]);
@@ -197,16 +190,6 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
       newSelected.add(awardId);
     }
     setSelectedAwardIds(newSelected);
-  };
-
-  const toggleAwardExpand = (awardId: string) => {
-    const newExpanded = new Set(expandedAwardIds);
-    if (newExpanded.has(awardId)) {
-      newExpanded.delete(awardId);
-    } else {
-      newExpanded.add(awardId);
-    }
-    setExpandedAwardIds(newExpanded);
   };
 
   const handleReset = () => {
@@ -410,21 +393,35 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                           >
                             {award.category}
                           </span>
-                          {/* 获奖人数 */}
+                          {/* 获奖人数/团队数 */}
                           <span style={{ fontSize: '12px', color: '#666', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                              <circle cx="9" cy="7" r="4"></circle>
-                              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                            </svg>
-                            {award.recipientCount}人
+                            {award.category === '团队奖' ? (
+                              <>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                  <circle cx="9" cy="7" r="4"></circle>
+                                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                                {award.teamCount}个团队
+                              </>
+                            ) : (
+                              <>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                  <circle cx="9" cy="7" r="4"></circle>
+                                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                                {award.recipientCount}人
+                              </>
+                            )}
                           </span>
                           {/* 查看详情 */}
                           <button
                             onClick={() => {
-                              setSelectedAwardForDetail(award);
-                              setDetailModalVisible(true);
+                              setSelectedAwardForDrawer(award);
+                              setDrawerVisible(true);
                             }}
                             style={{
                               background: 'none',
@@ -636,13 +633,10 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                     </tr>
                   </thead>
                   <tbody>
-                    {paginatedAwards.map((award, index) => {
+                    {paginatedAwards.map((award) => {
                       const isSelected = selectedAwardIds.has(award.id);
-                      const isExpanded = expandedAwardIds.has(award.id);
-                      const recipients = award.recipients || [];
-                      const isLast = index === paginatedAwards.length - 1 && !isExpanded;
 
-                      const rows = [
+                      return (
                         <tr
                           key={award.id}
                           style={{
@@ -713,7 +707,10 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                           <td style={{ ...tdStyle(false), textAlign: 'center' }}>
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
                               <button
-                                onClick={() => toggleAwardExpand(award.id)}
+                                onClick={() => {
+                                  setSelectedAwardForDrawer(award);
+                                  setDrawerVisible(true);
+                                }}
                                 style={{
                                   background: 'none',
                                   border: 'none',
@@ -734,118 +731,12 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                                   e.currentTarget.style.backgroundColor = 'transparent';
                                 }}
                               >
-                                <span>{isExpanded ? '收起' : '查看'}</span>
-                                <svg
-                                  width="12"
-                                  height="12"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  strokeWidth="2"
-                                  style={{
-                                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                                    transition: 'transform 0.2s',
-                                  }}
-                                >
-                                  <polyline points="6 9 12 15 18 9" />
-                                </svg>
+                                <span>查看详情</span>
                               </button>
                             </div>
                           </td>
-                        </tr>,
-                      ];
-
-                      if (isExpanded) {
-                        rows.push(
-                          <tr key={`${award.id}-recipients`}>
-                            <td
-                              colSpan={6}
-                              style={{
-                                padding: 0,
-                                borderBottom: isLast ? 'none' : '1px solid #f0f0f0',
-                              }}
-                            >
-                              <div
-                                style={{
-                                  padding: '16px 24px 16px 74px',
-                                  backgroundColor: '#fafafa',
-                                  animation: 'slideDown 0.2s ease-out',
-                                }}
-                              >
-                                <div style={{ fontSize: '14px', fontWeight: 500, color: '#333', marginBottom: '12px' }}>
-                                  获奖人员 ({recipients.length}人):
-                                </div>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-                                  {recipients.map((recipient, idx) => (
-                                    <div
-                                      key={`${recipient.employeeId}-${idx}`}
-                                      style={{
-                                        padding: '10px 14px',
-                                        backgroundColor: '#fff',
-                                        border: '1px solid #e8e8e8',
-                                        borderRadius: '6px',
-                                        minWidth: '140px',
-                                        maxWidth: '180px',
-                                        transition: 'all 0.2s',
-                                      }}
-                                      onMouseEnter={(e) => {
-                                        e.currentTarget.style.borderColor = '#1890ff';
-                                        e.currentTarget.style.boxShadow = '0 2px 8px rgba(24, 144, 255, 0.15)';
-                                      }}
-                                      onMouseLeave={(e) => {
-                                        e.currentTarget.style.borderColor = '#e8e8e8';
-                                        e.currentTarget.style.boxShadow = 'none';
-                                      }}
-                                    >
-                                      <div
-                                        style={{
-                                          fontSize: '14px',
-                                          fontWeight: 500,
-                                          color: '#333',
-                                          marginBottom: '4px',
-                                          overflow: 'hidden',
-                                          textOverflow: 'ellipsis',
-                                          whiteSpace: 'nowrap',
-                                          display: 'flex',
-                                          alignItems: 'center',
-                                          gap: '8px',
-                                        }}
-                                        title={`${recipient.name} ${recipient.employeeId}`}
-                                      >
-                                        <span>{recipient.name}</span>
-                                        <span
-                                          style={{
-                                            fontSize: '12px',
-                                            color: '#666',
-                                            fontFamily: 'monospace',
-                                            fontWeight: 400,
-                                          }}
-                                        >
-                                          {recipient.employeeId}
-                                        </span>
-                                      </div>
-                                      <div
-                                        style={{
-                                          fontSize: '11px',
-                                          color: '#8c8c8c',
-                                          overflow: 'hidden',
-                                          textOverflow: 'ellipsis',
-                                          whiteSpace: 'nowrap',
-                                        }}
-                                        title={recipient.department}
-                                      >
-                                        {recipient.department}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      }
-
-                      return rows;
+                        </tr>
+                      );
                     })}
                   </tbody>
                 </table>
@@ -932,14 +823,75 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
         </div>
       </div>
 
-      {/* 获奖人详情弹框 */}
-      <AwardRecipientsModal
-        visible={detailModalVisible}
-        awardName={selectedAwardForDetail?.name || ''}
-        recipients={selectedAwardForDetail?.recipients || []}
+      {/* 奖项详情 Drawer */}
+      <AwardDetailDrawer
+        visible={drawerVisible}
         onClose={() => {
-          setDetailModalVisible(false);
-          setSelectedAwardForDetail(null);
+          setDrawerVisible(false);
+          setSelectedAwardForDrawer(null);
+        }}
+        mode={selectedAwardForDrawer?.category === '团队奖' ? 'award' : 'team'}
+        awardTitle={selectedAwardForDrawer?.name}
+        teams={selectedAwardForDrawer?.category === '团队奖' ? (() => {
+          // 团队奖：从原始数据获取团队列表
+          const award = (awardsData as Award[]).find(a => a.id === selectedAwardForDrawer.id);
+          return award?.teams || [];
+        })() : undefined}
+        team={selectedAwardForDrawer?.category !== '团队奖' ? (() => {
+          // 个人奖：创建一个虚拟团队包含所有获奖人
+          return {
+            id: 'virtual-team',
+            name: '获奖人列表',
+            memberCount: selectedAwardForDrawer?.recipients?.length || 0,
+            members: selectedAwardForDrawer?.recipients?.map(r => ({
+              name: r.name,
+              employeeId: r.employeeId,
+              department: r.department,
+              isSelected: true,
+            })) || [],
+            isSelected: true,
+          };
+        })() : undefined}
+        showSearch={true}
+        showPagination={selectedAwardForDrawer?.category === '团队奖'}
+        onMemberDelete={(teamId, employeeId) => {
+          // 处理成员删除
+          if (selectedAwardForDrawer) {
+            if (selectedAwardForDrawer.category === '团队奖') {
+              // 团队奖：从对应团队中移除成员
+              const award = (awardsData as Award[]).find(a => a.id === selectedAwardForDrawer.id);
+              if (award && award.teams) {
+                const updatedTeams = award.teams.map(t => {
+                  if (t.id === teamId) {
+                    return {
+                      ...t,
+                      members: t.members?.map(m =>
+                        m.employeeId === employeeId ? { ...m, isSelected: false } : m
+                      ) || [],
+                    };
+                  }
+                  return t;
+                });
+                // 触发重新渲染
+                setSelectedAwardForDrawer({
+                  ...selectedAwardForDrawer,
+                  recipientCount: updatedTeams.reduce((sum, t) =>
+                    sum + (t.members?.filter(m => m.isSelected !== false).length || 0), 0
+                  ),
+                });
+              }
+            } else {
+              // 个人奖：从获奖人列表中移除
+              const updatedRecipients = selectedAwardForDrawer.recipients?.filter(
+                r => r.employeeId !== employeeId
+              ) || [];
+              setSelectedAwardForDrawer({
+                ...selectedAwardForDrawer,
+                recipients: updatedRecipients,
+                recipientCount: updatedRecipients.length,
+              });
+            }
+          }
         }}
       />
 

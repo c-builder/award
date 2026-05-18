@@ -10,7 +10,7 @@ export { AddRecipientModal, type AddRecipientModalProps } from './AddRecipientMo
 
 export { TeamSearchModal, type TeamSearchModalProps } from './TeamSearchModal';
 
-export { TeamMembersModal, type TeamMembersModalProps } from './TeamMembersModal';
+export { AwardDetailDrawer, type AwardDetailDrawerProps } from './AwardDetailDrawer';
 
 export { AddAwardModal, type AddAwardModalProps, type AwardItem, type AwardCategory } from './AddAwardModal';
 
