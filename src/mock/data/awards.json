@@ -710,7 +710,7 @@
         "id": "team-041",
         "name": "OCC成本控制优秀团队",
         "memberCount": 5,
-        "isSelected": false,
+        "isSelected": true,
         "members": [
           { "name": "李水花", "employeeId": "00494097", "department": "IT平台服务部/平台开发部", "role": "组长" },
           { "name": "吴十", "employeeId": "00505555", "department": "IT平台服务部/平台运维部" },
@@ -723,7 +723,7 @@
         "id": "team-042",
         "name": "OCC预算管理优秀团队",
         "memberCount": 5,
-        "isSelected": false,
+        "isSelected": true,
         "members": [
           { "name": "吴十", "employeeId": "00505555", "department": "IT平台服务部/平台运维部", "role": "组长" },
           { "name": "赵六", "employeeId": "00501111", "department": "IT平台服务部/平台开发部" },
@@ -736,7 +736,7 @@
         "id": "team-043",
         "name": "OCC资源调度优秀团队",
         "memberCount": 5,
-        "isSelected": false,
+        "isSelected": true,
         "members": [
           { "name": "赵六", "employeeId": "00501111", "department": "IT平台服务部/平台开发部", "role": "组长" },
           { "name": "陈十四", "employeeId": "00509999", "department": "IT平台服务部/平台运维部" },

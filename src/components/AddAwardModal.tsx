@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { DeptCascader } from './DeptCascader';
-import { Pagination, MODAL_TABLE_MIN_HEIGHT } from './Pagination';
+import { Pagination } from './Pagination';
 import { AwardDetailDrawer } from './AwardDetailDrawer';
 import { Award, Recipient } from './types';
 import awardsData from '../mock/data/awards.json';
@@ -18,6 +18,10 @@ export interface AwardItem {
   recipients?: Recipient[];
   issueDate?: string;
   isSelected?: boolean;
+  /** 当前部门获奖人数（个人奖）或团队数（团队奖） */
+  currentDeptCount?: number;
+  /** 总获奖人数（个人奖）或总团队数（团队奖） */
+  totalCount?: number;
 }
 
 export interface AddAwardModalProps {
@@ -28,12 +32,29 @@ export interface AddAwardModalProps {
   externalDeptPath?: string[];
 }
 
+// 当前用户部门（用于计算当前部门获奖数）
+const CURRENT_USER_DEPT = 'IT平台服务部';
+
 // 将 awards.json 转换为 AwardItem 格式
 const MOCK_AWARDS: AwardItem[] = (awardsData as Award[]).map(award => {
   // 对于团队奖，从teams.members中提取所有获奖人
   const allRecipients = award.awardType === 'team' && award.teams
     ? award.teams.flatMap(team => team.members || [])
     : award.recipients;
+
+  // 计算当前部门获奖人数（个人奖）或团队数（团队奖）
+  let currentDeptCount = 0;
+  if (award.awardType === 'individual') {
+    // 个人奖：统计当前部门获奖人数
+    currentDeptCount = award.recipients.filter(r =>
+      r.department.split('/')[0] === CURRENT_USER_DEPT
+    ).length;
+  } else {
+    // 团队奖：统计当前部门团队数
+    currentDeptCount = award.teams?.filter(t =>
+      t.members?.some(m => m.department.split('/')[0] === CURRENT_USER_DEPT)
+    ).length || 0;
+  }
 
   return {
     id: award.id,
@@ -51,6 +72,10 @@ const MOCK_AWARDS: AwardItem[] = (awardsData as Award[]).map(award => {
       department: r.department,
     })),
     issueDate: award.issueDate,
+    currentDeptCount,
+    totalCount: award.awardType === 'individual'
+      ? award.recipients.length
+      : (award.teams?.length || 0),
   };
 });
 
@@ -84,6 +109,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
   const pageSize = 10;
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedAwardForDrawer, setSelectedAwardForDrawer] = useState<AwardItem | null>(null);
+  const [drawerReadOnly, setDrawerReadOnly] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -355,7 +381,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                           ? '0 2px 8px rgba(0,0,0,0.1)'
                           : 'none',
                         display: 'flex',
-                        alignItems: 'center',
+                        alignItems: 'flex-start',
                         gap: '12px',
                       }}
                       onMouseEnter={() => setHoveredAwardId(award.id)}
@@ -363,24 +389,30 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                     >
                       {/* 左侧内容 */}
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        {/* 奖项名称 */}
+                        {/* 第一行：奖项名称 + 类别标签 */}
                         <div
                           style={{
-                            fontSize: '14px',
-                            fontWeight: 500,
-                            color: '#333',
-                            marginBottom: '8px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            marginBottom: '6px',
+                            flexWrap: 'wrap',
                           }}
-                          title={award.name}
                         >
-                          {award.name}
-                        </div>
-                        {/* 信息行：类别 + 人数 + 查看详情 */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                          {/* 奖项类别标签 */}
+                          <span
+                            style={{
+                              fontSize: '14px',
+                              fontWeight: 500,
+                              color: '#333',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              maxWidth: '100%',
+                            }}
+                            title={award.name}
+                          >
+                            {award.name}
+                          </span>
                           <span
                             style={{
                               padding: '2px 8px',
@@ -389,58 +421,40 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                               borderRadius: '4px',
                               fontSize: '11px',
                               fontWeight: 500,
+                              flexShrink: 0,
                             }}
                           >
                             {award.category}
                           </span>
-                          {/* 获奖人数/团队数 */}
-                          <span style={{ fontSize: '12px', color: '#666', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            {award.category === '团队奖' ? (
-                              <>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                  <circle cx="9" cy="7" r="4"></circle>
-                                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                </svg>
-                                {award.teamCount}个团队
-                              </>
-                            ) : (
-                              <>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                  <circle cx="9" cy="7" r="4"></circle>
-                                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                </svg>
-                                {award.recipientCount}人
-                              </>
-                            )}
-                          </span>
-                          {/* 查看详情 */}
-                          <button
-                            onClick={() => {
-                              setSelectedAwardForDrawer(award);
-                              setDrawerVisible(true);
-                            }}
-                            style={{
-                              background: 'none',
-                              border: 'none',
-                              color: '#1890ff',
-                              fontSize: '12px',
-                              cursor: 'pointer',
-                              padding: '0',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '2px',
-                            }}
-                          >
-                            <span>查看详情</span>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <polyline points="9 18 15 12 9 6" />
-                            </svg>
-                          </button>
                         </div>
+                        {/* 第二行：统计数据 */}
+                        <div style={{ fontSize: '12px', color: '#666', marginBottom: '6px' }}>
+                          颁奖数：{award.totalCount}，部门获奖数：{award.currentDeptCount}
+                        </div>
+                        {/* 第三行：查看详情 */}
+                        <button
+                          onClick={() => {
+                            setSelectedAwardForDrawer(award);
+                            setDrawerReadOnly(true);
+                            setDrawerVisible(true);
+                          }}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#1890ff',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            padding: '0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '2px',
+                          }}
+                        >
+                          <span>查看详情</span>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                          </svg>
+                        </button>
                       </div>
                       {/* 右侧删除按钮 */}
                       <button
@@ -584,7 +598,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
             </div>
 
             {/* 表格区域 */}
-            <div style={{ flex: 1, overflow: 'auto', overscrollBehavior: 'contain', minHeight: MODAL_TABLE_MIN_HEIGHT }}>
+            <div style={{ flex: 1, overflow: 'auto', overscrollBehavior: 'contain' }}>
               {filteredAwards.length === 0 ? (
                 <div style={{
                   padding: '48px 0',
@@ -705,35 +719,31 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
                             {award.issuingDepartment}
                           </td>
                           <td style={{ ...tdStyle(false), textAlign: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-                              <button
-                                onClick={() => {
-                                  setSelectedAwardForDrawer(award);
-                                  setDrawerVisible(true);
-                                }}
-                                style={{
-                                  background: 'none',
-                                  border: 'none',
-                                  color: '#1890ff',
-                                  cursor: 'pointer',
-                                  fontSize: '14px',
-                                  padding: '2px 4px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '4px',
-                                  borderRadius: '4px',
-                                  transition: 'all 0.2s',
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.backgroundColor = '#e6f7ff';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.backgroundColor = 'transparent';
-                                }}
-                              >
-                                <span>查看详情</span>
-                              </button>
-                            </div>
+                            <button
+                              onClick={() => {
+                                setSelectedAwardForDrawer(award);
+                                setDrawerReadOnly(true);
+                                setDrawerVisible(true);
+                              }}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                color: '#1890ff',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                padding: '2px 4px',
+                                borderRadius: '4px',
+                                transition: 'all 0.2s',
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = '#e6f7ff';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                              }}
+                            >
+                              查看详情
+                            </button>
                           </td>
                         </tr>
                       );
@@ -854,45 +864,7 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
         })() : undefined}
         showSearch={true}
         showPagination={selectedAwardForDrawer?.category === '团队奖'}
-        onMemberDelete={(teamId, employeeId) => {
-          // 处理成员删除
-          if (selectedAwardForDrawer) {
-            if (selectedAwardForDrawer.category === '团队奖') {
-              // 团队奖：从对应团队中移除成员
-              const award = (awardsData as Award[]).find(a => a.id === selectedAwardForDrawer.id);
-              if (award && award.teams) {
-                const updatedTeams = award.teams.map(t => {
-                  if (t.id === teamId) {
-                    return {
-                      ...t,
-                      members: t.members?.map(m =>
-                        m.employeeId === employeeId ? { ...m, isSelected: false } : m
-                      ) || [],
-                    };
-                  }
-                  return t;
-                });
-                // 触发重新渲染
-                setSelectedAwardForDrawer({
-                  ...selectedAwardForDrawer,
-                  recipientCount: updatedTeams.reduce((sum, t) =>
-                    sum + (t.members?.filter(m => m.isSelected !== false).length || 0), 0
-                  ),
-                });
-              }
-            } else {
-              // 个人奖：从获奖人列表中移除
-              const updatedRecipients = selectedAwardForDrawer.recipients?.filter(
-                r => r.employeeId !== employeeId
-              ) || [];
-              setSelectedAwardForDrawer({
-                ...selectedAwardForDrawer,
-                recipients: updatedRecipients,
-                recipientCount: updatedRecipients.length,
-              });
-            }
-          }
-        }}
+        readOnly={drawerReadOnly}
       />
 
       <style>{`

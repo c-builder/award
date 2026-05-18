@@ -12,6 +12,7 @@ export interface TeamSearchModalProps {
   onConfirm: (selectedTeams: Team[]) => void;
   viewOnly?: boolean;
   currentDepartment?: string;
+  onTeamUpdate?: (team: Team) => void;
 }
 
 export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
@@ -21,7 +22,8 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
   onCancel,
   onConfirm,
   viewOnly = false,
-  currentDepartment = '',
+  currentDepartment: _currentDepartment = '',
+  onTeamUpdate,
 }) => {
   // 使用本地状态管理 teams，以便支持实时更新
   const [existingTeams, setExistingTeams] = useState<Team[]>(propExistingTeams);
@@ -47,32 +49,29 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
   const [teamNameInputFocused, setTeamNameInputFocused] = useState(false);
   const [selectedTeamForDetail, setSelectedTeamForDetail] = useState<Team | null>(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [drawerReadOnly, setDrawerReadOnly] = useState(false);
 
-  const departmentTeams = useMemo(() => {
-    if (!currentDepartment) return existingTeams;
-    return existingTeams.filter(team => {
-      return team.members?.some(member => {
-        const memberDept = member.department.split('/')[0];
-        return memberDept === currentDepartment;
-      });
-    });
-  }, [existingTeams, currentDepartment]);
-
+  // 当弹框打开或 existingTeams 变化时，同步选中状态
   useEffect(() => {
     if (visible) {
+      // 从 existingTeams 中获取 isSelected 为 true 的团队ID
       const selectedFromState = existingTeams.filter(t => t.isSelected).map(t => t.id);
-      if (selectedFromState.length > 0) {
-        setSelectedTeams(new Set(selectedFromState));
+      
+      // 如果没有团队被选中（isSelected: true），则默认选中所有团队
+      // 这与 AwardCard 中的逻辑保持一致
+      if (selectedFromState.length === 0 && existingTeams.length > 0) {
+        const allTeamIds = existingTeams.map(t => t.id);
+        setSelectedTeams(new Set(allTeamIds));
       } else {
-        const initialSelected = new Set(departmentTeams.map(t => t.id));
-        setSelectedTeams(initialSelected);
+        setSelectedTeams(new Set(selectedFromState));
       }
+      
       setEmployeeSearch('');
       setSelectedDeptPath([]);
       setTeamNameSearch('');
       setCurrentPage(1);
     }
-  }, [visible, existingTeams, departmentTeams]);
+  }, [visible, existingTeams]);
 
   const filteredTeams = useMemo(() => {
     return existingTeams.filter(team => {
@@ -356,6 +355,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                             <button
                               onClick={() => {
                                 setSelectedTeamForDetail(team);
+                                setDrawerReadOnly(false);
                                 setDrawerVisible(true);
                               }}
                               style={{
@@ -370,7 +370,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                                 gap: '2px',
                               }}
                             >
-                              <span>查看详情</span>
+                              <span>编辑获奖人</span>
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="9 18 15 12 9 6" />
                               </svg>
@@ -621,6 +621,7 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
                             <button
                               onClick={() => {
                                 setSelectedTeamForDetail(team);
+                                setDrawerReadOnly(true);
                                 setDrawerVisible(true);
                               }}
                               style={{
@@ -744,29 +745,34 @@ export const TeamSearchModal: React.FC<TeamSearchModalProps> = ({
         team={selectedTeamForDetail || undefined}
         awardTitle={awardTitle}
         showSearch
-        onMemberDelete={(teamId, employeeId) => {
-          // 从团队中移除成员
-          if (selectedTeamForDetail && selectedTeamForDetail.id === teamId) {
-            const updatedMembers = selectedTeamForDetail.members?.map(m =>
-              m.employeeId === employeeId ? { ...m, isSelected: false } : m
-            ) || [];
-            setSelectedTeamForDetail({
+        showPagination
+        readOnly={drawerReadOnly}
+        onSelectionChange={(selectedMemberIds) => {
+          if (selectedTeamForDetail) {
+            // 更新团队成员的选中状态
+            const updatedMembers = selectedTeamForDetail.members?.map(member => ({
+              ...member,
+              isSelected: selectedMemberIds.includes(member.employeeId),
+            })) || [];
+
+            const updatedTeam: Team = {
               ...selectedTeamForDetail,
               members: updatedMembers,
               memberCount: updatedMembers.filter(m => m.isSelected !== false).length,
-            });
-            // 同步更新现有团队列表
-            setExistingTeams(prev =>
-              prev.map(t =>
-                t.id === teamId
-                  ? {
-                      ...t,
-                      members: updatedMembers,
-                      memberCount: updatedMembers.filter(m => m.isSelected !== false).length,
-                    }
-                  : t
-              )
-            );
+            };
+
+            // 更新抽屉中的团队数据
+            setSelectedTeamForDetail(updatedTeam);
+
+            // 更新 existingTeams 中对应的团队数据
+            setExistingTeams(prev => prev.map(t =>
+              t.id === updatedTeam.id ? updatedTeam : t
+            ));
+
+            // 实时通知父组件更新首页卡片
+            if (onTeamUpdate) {
+              onTeamUpdate(updatedTeam);
+            }
           }
         }}
       />

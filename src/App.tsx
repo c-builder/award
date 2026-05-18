@@ -147,12 +147,14 @@ function App() {
           ? {
               ...award,
               teams: award.teams?.filter((t) => t.id !== teamToRemove.id) || [],
+              allTeams: award.allTeams?.map((t) =>
+                t.id === teamToRemove.id ? { ...t, isSelected: false } : t
+              ),
             }
           : award
       )
     );
   };
-
 
   const handleUpdateTeam = (awardId: string, updatedTeam: any) => {
     setAwards((prev) =>
@@ -163,6 +165,9 @@ function App() {
               teams: award.teams?.map((t) =>
                 t.id === updatedTeam.id ? updatedTeam : t
               ) || [],
+              allTeams: award.allTeams?.map((t) =>
+                t.id === updatedTeam.id ? updatedTeam : t
+              ),
             }
           : award
       )
@@ -209,6 +214,11 @@ function App() {
         // 查找是否已存在该奖项（用于保留 recipients/teams 数据）
         const existingAward = prev.find(a => a.title === item.title);
 
+        // 确保 allTeams 包含所有团队（从原始数据或现有数据）
+        const allTeams = item.awardType === 'team'
+          ? (existingAward?.allTeams || item.allTeams || item.teams || [])
+          : undefined;
+
         return {
           id: existingAward?.id || item.id,
           title: item.title,
@@ -216,7 +226,7 @@ function App() {
           awardType: item.awardType,
           recipients: existingAward?.recipients || item.recipients || [],
           teams: existingAward?.teams || item.teams || (item.awardType === 'team' ? [] : undefined),
-          allTeams: item.allTeams,
+          allTeams,
           selected: false,
           isDefault: existingAward?.isDefault || item.isDefault || false,
           issueDate: item.issueDate,
@@ -653,14 +663,17 @@ function App() {
       <TeamSearchModal
         visible={teamSearchModalVisible}
         awardTitle={awards.find(a => a.id === currentAwardId)?.title || ''}
-        existingTeams={teamSearchViewOnly
-          ? (awards.find(a => a.id === currentAwardId)?.teams || [])
-          : (awards.find(a => a.id === currentAwardId)?.allTeams || [])
-        }
+        existingTeams={(() => {
+          const award = awards.find(a => a.id === currentAwardId);
+          return teamSearchViewOnly
+            ? (award?.teams || [])
+            : (award?.allTeams || award?.teams || []);
+        })()}
         onCancel={() => setTeamSearchModalVisible(false)}
         onConfirm={handleConfirmAddTeam}
         currentDepartment={selectedDepartment === '全部部门' ? '' : selectedDepartment}
         viewOnly={teamSearchViewOnly}
+        onTeamUpdate={(updatedTeam) => handleUpdateTeam(currentAwardId, updatedTeam)}
       />
 
       <AddAwardModal

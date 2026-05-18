@@ -141,9 +141,9 @@ const TeamCard: React.FC<TeamCardProps> = ({
             alignItems: 'center',
             gap: '4px',
           }}
-          title="查看成员列表"
+          title="编辑获奖人"
         >
-          <span>详情</span>
+          <span>编辑获奖人</span>
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="9 18 15 12 9 6" />
           </svg>
@@ -399,7 +399,10 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                   gap: '4px',
                 }}
               >
-                <span>+</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
                 <span>编辑获奖团队</span>
               </button>
             )}
@@ -478,7 +481,10 @@ export const AwardCard: React.FC<AwardCardProps> = ({
                   gap: '4px',
                 }}
               >
-                <span>+</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
                 <span>编辑获奖人</span>
               </button>
             )}
@@ -553,22 +559,21 @@ export const AwardCard: React.FC<AwardCardProps> = ({
         team={selectedTeam || undefined}
         awardTitle={award.title}
         showSearch
-        onMemberDelete={(teamId, employeeId) => {
-          // 从团队中移除成员
-          if (selectedTeam && selectedTeam.id === teamId) {
-            const updatedMembers = selectedTeam.members?.map(m =>
-              m.employeeId === employeeId ? { ...m, isSelected: false } : m
-            ) || [];
-            const updatedTeam = {
+        onSelectionChange={(selectedMemberIds) => {
+          if (selectedTeam && onUpdateTeam) {
+            // 更新团队成员的选中状态
+            const updatedMembers = selectedTeam.members?.map(member => ({
+              ...member,
+              isSelected: selectedMemberIds.includes(member.employeeId),
+            })) || [];
+            
+            const updatedTeam: Team = {
               ...selectedTeam,
               members: updatedMembers,
               memberCount: updatedMembers.filter(m => m.isSelected !== false).length,
             };
-            setSelectedTeam(updatedTeam);
-            // 通知父组件更新
-            if (onUpdateTeam) {
-              onUpdateTeam(updatedTeam);
-            }
+            
+            onUpdateTeam(updatedTeam);
           }
         }}
       />

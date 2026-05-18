@@ -12,7 +12,9 @@ export interface AwardDetailDrawerProps {
   team?: Team;
   showSearch?: boolean;
   showPagination?: boolean;
-  onMemberDelete?: (teamId: string, employeeId: string) => void;
+  onSelectionChange?: (selectedIds: string[]) => void;
+  /** 是否只读模式（不显示多选列和已选统计） */
+  readOnly?: boolean;
 }
 
 export const AwardDetailDrawer: React.FC<AwardDetailDrawerProps> = ({
@@ -24,7 +26,8 @@ export const AwardDetailDrawer: React.FC<AwardDetailDrawerProps> = ({
   team,
   showSearch = false,
   showPagination = false,
-  onMemberDelete,
+  onSelectionChange,
+  readOnly = false,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDeptPath, setSelectedDeptPath] = useState<string[]>([]);
@@ -32,6 +35,9 @@ export const AwardDetailDrawer: React.FC<AwardDetailDrawerProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [searchFocused, setSearchFocused] = useState(false);
+  
+  // 多选状态：存储选中的团队ID或成员ID
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // 使用 ref 存储上一次的 visible 值，只在 visible 从 false 变为 true 时重置状态
   const prevVisibleRef = useRef(visible);
@@ -42,6 +48,22 @@ export const AwardDetailDrawer: React.FC<AwardDetailDrawerProps> = ({
       setSearchQuery('');
       setSelectedDeptPath([]);
       setCurrentPage(1);
+      
+      // 根据传入数据的 isSelected 状态初始化选中状态
+      if (isAwardMode) {
+        const selectedTeamIds = teams.filter(t => t.isSelected !== false).map(t => t.id);
+        setSelectedIds(new Set(selectedTeamIds));
+        if (onSelectionChange) {
+          onSelectionChange(selectedTeamIds);
+        }
+      } else if (team) {
+        const selectedMemberIds = team.members?.filter(m => m.isSelected !== false).map(m => m.employeeId) || [];
+        setSelectedIds(new Set(selectedMemberIds));
+        if (onSelectionChange) {
+          onSelectionChange(selectedMemberIds);
+        }
+      }
+      
       if (teams.length === 1) {
         setExpandedTeamIds(new Set([teams[0].id]));
       } else if (team) {
@@ -118,6 +140,24 @@ export const AwardDetailDrawer: React.FC<AwardDetailDrawerProps> = ({
     return filteredTeams.slice(start, start + pageSize);
   }, [filteredTeams, currentPage, pageSize, showPagination]);
 
+  // 成员模式分页
+  const filteredMembers = useMemo(() => {
+    if (isAwardMode || !team) return [];
+    return team.members?.filter(m => {
+      if (searchQuery.trim()) {
+        const query = searchQuery.trim().toLowerCase();
+        return m.name.toLowerCase().includes(query) || m.employeeId.toLowerCase().includes(query);
+      }
+      return true;
+    }) || [];
+  }, [team, searchQuery, isAwardMode]);
+
+  const paginatedMembers = useMemo(() => {
+    if (!showPagination) return filteredMembers;
+    const start = (currentPage - 1) * pageSize;
+    return filteredMembers.slice(start, start + pageSize);
+  }, [filteredMembers, currentPage, pageSize, showPagination]);
+
   const toggleTeamExpand = (teamId: string) => {
     setExpandedTeamIds(prev => {
       const newSet = new Set(prev);
@@ -128,6 +168,36 @@ export const AwardDetailDrawer: React.FC<AwardDetailDrawerProps> = ({
       }
       return newSet;
     });
+  };
+
+  // 处理多选
+  const handleSelectAll = (checked: boolean) => {
+    if (isAwardMode) {
+      const newSelectedIds = checked ? new Set(filteredTeams.map(t => t.id)) : new Set<string>();
+      setSelectedIds(newSelectedIds);
+      if (onSelectionChange) {
+        onSelectionChange(Array.from(newSelectedIds));
+      }
+    } else if (team) {
+      const newSelectedIds = checked ? new Set(team.members?.map(m => m.employeeId) || []) : new Set<string>();
+      setSelectedIds(newSelectedIds);
+      if (onSelectionChange) {
+        onSelectionChange(Array.from(newSelectedIds));
+      }
+    }
+  };
+
+  const handleSelectItem = (id: string, checked: boolean) => {
+    const newSelectedIds = new Set(selectedIds);
+    if (checked) {
+      newSelectedIds.add(id);
+    } else {
+      newSelectedIds.delete(id);
+    }
+    setSelectedIds(newSelectedIds);
+    if (onSelectionChange) {
+      onSelectionChange(Array.from(newSelectedIds));
+    }
   };
 
   useEffect(() => {
@@ -143,11 +213,22 @@ export const AwardDetailDrawer: React.FC<AwardDetailDrawerProps> = ({
   if (!visible) return null;
 
   const displayTeams = isAwardMode ? paginatedTeams : filteredTeams;
+  // 总人数显示所有成员（不根据选中状态过滤）
   const totalMemberCount = isAwardMode
-    ? filteredTeams.reduce((sum, t) => sum + (t.members?.filter(m => m.isSelected !== false).length || 0), 0)
-    : (team?.members?.filter(m => m.isSelected !== false).length || 0);
+    ? filteredTeams.reduce((sum, t) => sum + (t.members?.length || 0), 0)
+    : (team?.members?.length || 0);
 
   const searchPlaceholder = isAwardMode ? '搜索团队名称…' : '搜索姓名/工号…';
+  
+  // 判断是否全选
+  const isAllSelected = isAwardMode 
+    ? filteredTeams.length > 0 && filteredTeams.every(t => selectedIds.has(t.id))
+    : (team?.members?.length || 0) > 0 && (team?.members?.every(m => selectedIds.has(m.employeeId)) || false);
+  
+  // 判断是否半选（部分选中）
+  const isIndeterminate = isAwardMode
+    ? filteredTeams.length > 0 && filteredTeams.some(t => selectedIds.has(t.id)) && !filteredTeams.every(t => selectedIds.has(t.id))
+    : (team?.members?.length || 0) > 0 && (team?.members?.some(m => selectedIds.has(m.employeeId)) && !team?.members?.every(m => selectedIds.has(m.employeeId)) || false);
 
   return (
     <>
@@ -179,7 +260,7 @@ export const AwardDetailDrawer: React.FC<AwardDetailDrawerProps> = ({
           top: 0,
           right: 0,
           bottom: 0,
-          width: '600px',
+          width: '700px',
           maxWidth: '100%',
           backgroundColor: '#fff',
           zIndex: 1051,
@@ -206,6 +287,7 @@ export const AwardDetailDrawer: React.FC<AwardDetailDrawerProps> = ({
           }
         `}</style>
 
+        {/* 标题区 */}
         <div
           style={{
             padding: '16px 24px',
@@ -225,12 +307,15 @@ export const AwardDetailDrawer: React.FC<AwardDetailDrawerProps> = ({
                 color: '#1a1a2e',
               }}
             >
-              {awardTitle}
+              {isAwardMode ? awardTitle : `${awardTitle} - ${team?.name}`}
             </h3>
             <div style={{ fontSize: '13px', color: '#666', marginTop: '4px' }}>
-              {isAwardMode
-                ? `共 ${filteredTeams.length} 个团队`
-                : `共 ${totalMemberCount} 人`
+              {readOnly
+                ? (isAwardMode ? `共 ${filteredTeams.length} 个团队` : `共 ${totalMemberCount} 人`)
+                : (isAwardMode
+                  ? `共 ${filteredTeams.length} 个团队，已选 ${selectedIds.size} 个`
+                  : `共 ${totalMemberCount} 人，已选 ${selectedIds.size} 人`
+                )
               }
             </div>
           </div>
@@ -263,6 +348,7 @@ export const AwardDetailDrawer: React.FC<AwardDetailDrawerProps> = ({
           </button>
         </div>
 
+        {/* 搜索区 */}
         {showSearch && (
           <div
             style={{
@@ -334,11 +420,12 @@ export const AwardDetailDrawer: React.FC<AwardDetailDrawerProps> = ({
           </div>
         )}
 
+        {/* 表格区 */}
         <div
           style={{
             flex: 1,
             overflow: 'auto',
-            padding: '16px 24px',
+            padding: '0',
           }}
         >
           {displayTeams.length === 0 ? (
@@ -366,21 +453,86 @@ export const AwardDetailDrawer: React.FC<AwardDetailDrawerProps> = ({
               <div>{searchQuery || selectedDeptPath.length > 0 ? '未找到匹配结果' : '暂无数据'}</div>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {displayTeams.map((t) => (
-                <TeamItem
-                  key={t.id}
-                  team={t}
-                  isExpanded={expandedTeamIds.has(t.id)}
-                  onToggle={() => toggleTeamExpand(t.id)}
-                  onMemberDelete={onMemberDelete}
-                />
-              ))}
+            <div>
+              {/* 表格头部 */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '12px 24px',
+                  backgroundColor: '#fafafa',
+                  borderBottom: '1px solid #f0f0f0',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  color: '#333',
+                }}
+              >
+                {!readOnly && (
+                  <div style={{ width: '50px', display: 'flex', justifyContent: 'center' }}>
+                    <div
+                      onClick={() => handleSelectAll(!isAllSelected)}
+                      style={{
+                        width: '18px',
+                        height: '18px',
+                        border: `2px solid ${isAllSelected || isIndeterminate ? '#1890ff' : '#d9d9d9'}`,
+                        borderRadius: '3px',
+                        backgroundColor: isAllSelected || isIndeterminate ? '#1890ff' : '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                      }}
+                    >
+                      {isAllSelected ? (
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      ) : isIndeterminate ? (
+                        <div style={{ width: '10px', height: '2px', backgroundColor: '#fff', borderRadius: '1px' }} />
+                      ) : null}
+                    </div>
+                  </div>
+                )}
+                <div style={{ flex: 1 }}>{isAwardMode ? '团队名称' : '姓名'}</div>
+                <div style={{ width: '120px' }}>{isAwardMode ? '成员数' : '工号'}</div>
+                <div style={{ width: '200px' }}>部门</div>
+                {isAwardMode && <div style={{ width: '60px' }}>操作</div>}
+              </div>
+
+              {/* 表格内容 */}
+              {isAwardMode ? (
+                // 团队模式：表格行 + 可展开成员列表
+                displayTeams.map((t) => (
+                  <TeamTableRow
+                    key={t.id}
+                    team={t}
+                    isSelected={selectedIds.has(t.id)}
+                    isExpanded={expandedTeamIds.has(t.id)}
+                    onSelect={(checked) => handleSelectItem(t.id, checked)}
+                    onToggle={() => toggleTeamExpand(t.id)}
+                    readOnly={readOnly}
+                  />
+                ))
+              ) : (
+                // 成员模式：简单表格行（支持分页）
+                paginatedMembers.map((member, index) => (
+                  <MemberTableRow
+                    key={member.employeeId}
+                    member={member}
+                    index={(currentPage - 1) * pageSize + index + 1}
+                    isSelected={selectedIds.has(member.employeeId)}
+                    onSelect={(checked) => handleSelectItem(member.employeeId, checked)}
+                    readOnly={readOnly}
+                  />
+                ))
+              )}
             </div>
           )}
         </div>
 
-        {isAwardMode && showPagination && filteredTeams.length > 0 && (
+        {/* 分页 */}
+        {showPagination && (
           <div
             style={{
               padding: '16px 24px',
@@ -392,7 +544,7 @@ export const AwardDetailDrawer: React.FC<AwardDetailDrawerProps> = ({
             <Pagination
               current={currentPage}
               pageSize={pageSize}
-              total={filteredTeams.length}
+              total={isAwardMode ? filteredTeams.length : filteredMembers.length}
               onChange={setCurrentPage}
               onPageSizeChange={(size) => {
                 setPageSize(size);
@@ -408,188 +560,218 @@ export const AwardDetailDrawer: React.FC<AwardDetailDrawerProps> = ({
   );
 };
 
-interface TeamItemProps {
+// 团队表格行组件
+interface TeamTableRowProps {
   team: Team;
+  isSelected: boolean;
   isExpanded: boolean;
+  onSelect: (checked: boolean) => void;
   onToggle: () => void;
-  onMemberDelete?: (teamId: string, employeeId: string) => void;
+  readOnly?: boolean;
 }
 
-const TeamItem: React.FC<TeamItemProps> = ({ team, isExpanded, onToggle, onMemberDelete }) => {
+const TeamTableRow: React.FC<TeamTableRowProps> = ({
+  team,
+  isSelected,
+  isExpanded,
+  onSelect,
+  onToggle,
+  readOnly = false,
+}) => {
   const selectedMembers = team.members?.filter(m => m.isSelected !== false) || [];
 
   return (
-    <div
-      style={{
-        border: '1px solid #e8e8e8',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        transition: 'border-color 0.2s',
-      }}
-    >
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onToggle();
-        }}
+    <>
+      {/* 团队行 */}
+      <div
         style={{
-          width: '100%',
-          padding: '12px 16px',
-          backgroundColor: '#fafafa',
-          border: 'none',
-          cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          textAlign: 'left',
+          padding: '12px 24px',
+          borderBottom: '1px solid #f0f0f0',
+          backgroundColor: '#fff',
           transition: 'background-color 0.2s',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = '#f0f0f0';
-        }}
-        onMouseLeave={(e) => {
           e.currentTarget.style.backgroundColor = '#fafafa';
         }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = '#fff';
+        }}
       >
-        <div>
-          <div style={{ fontSize: '14px', fontWeight: 500, color: '#333' }}>
-            {team.name}
+        {!readOnly && (
+          <div style={{ width: '50px', display: 'flex', justifyContent: 'center' }}>
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                onSelect(!isSelected);
+              }}
+              style={{
+                width: '18px',
+                height: '18px',
+                border: `2px solid ${isSelected ? '#1890ff' : '#d9d9d9'}`,
+                borderRadius: '3px',
+                backgroundColor: isSelected ? '#1890ff' : '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+              }}
+            >
+              {isSelected && (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              )}
+            </div>
           </div>
-          <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-            成员: {selectedMembers.length}人
-          </div>
+        )}
+        <div style={{ flex: 1, fontSize: '14px', color: '#333' }}>{team.name}</div>
+        <div style={{ width: '120px', fontSize: '14px', color: '#666' }}>{selectedMembers.length}人</div>
+        <div style={{ width: '200px', fontSize: '14px', color: '#999', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {team.members?.[0]?.department || '-'}
         </div>
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#999"
-          strokeWidth="2"
-          style={{
-            transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-            transition: 'transform 0.2s',
-          }}
-        >
-          <polyline points="6 9 12 15 18 9" />
-        </svg>
-      </button>
+        <div style={{ width: '60px' }}>
+          <button
+            onClick={onToggle}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#1890ff',
+              cursor: 'pointer',
+              fontSize: '13px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+          >
+            <span>{isExpanded ? '收起' : '展开'}</span>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              style={{
+                transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s',
+              }}
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+        </div>
+      </div>
 
+      {/* 展开的成员列表 */}
       {isExpanded && (
         <div
           style={{
-            padding: '12px 16px',
-            backgroundColor: '#fff',
-            borderTop: '1px solid #e8e8e8',
+            backgroundColor: '#fafafa',
+            borderBottom: '1px solid #f0f0f0',
           }}
         >
           {selectedMembers.length === 0 ? (
-            <div style={{ fontSize: '13px', color: '#999', textAlign: 'center', padding: '16px' }}>
+            <div style={{ padding: '16px 24px 16px 64px', fontSize: '13px', color: '#999' }}>
               暂无成员
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ padding: '8px 24px 8px 64px' }}>
               {selectedMembers.map((member, index) => (
-                <MemberItem
+                <div
                   key={member.employeeId}
-                  member={member}
-                  index={index + 1}
-                  onDelete={onMemberDelete ? (employeeId) => onMemberDelete(team.id, employeeId) : undefined}
-                />
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '8px 0',
+                    borderBottom: index < selectedMembers.length - 1 ? '1px dashed #e8e8e8' : 'none',
+                  }}
+                >
+                  <span style={{ width: '24px', fontSize: '12px', color: '#999' }}>{index + 1}</span>
+                  <span style={{ width: '80px', fontSize: '14px', color: '#333' }}>{member.name}</span>
+                  <span style={{ width: '100px', fontSize: '13px', color: '#666' }}>{member.employeeId}</span>
+                  <span style={{ flex: 1, fontSize: '13px', color: '#999', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {member.department}
+                  </span>
+                </div>
               ))}
             </div>
           )}
         </div>
       )}
-    </div>
+    </>
   );
 };
 
-interface MemberItemProps {
+// 成员表格行组件
+interface MemberTableRowProps {
   member: Recipient;
   index: number;
-  onDelete?: (employeeId: string) => void;
+  isSelected: boolean;
+  onSelect: (checked: boolean) => void;
+  readOnly?: boolean;
 }
 
-const MemberItem: React.FC<MemberItemProps> = ({ member, index, onDelete }) => {
-  const [isHovered, setIsHovered] = useState(false);
-
+const MemberTableRow: React.FC<MemberTableRowProps> = ({
+  member,
+  isSelected,
+  onSelect,
+  readOnly = false,
+}) => {
   return (
     <div
       style={{
         display: 'flex',
-        alignItems: 'flex-start',
-        gap: '12px',
-        padding: '10px 12px',
-        backgroundColor: '#f5f5f5',
-        borderRadius: '6px',
-        position: 'relative',
+        alignItems: 'center',
+        padding: '12px 24px',
+        borderBottom: '1px solid #f0f0f0',
+        backgroundColor: '#fff',
+        transition: 'background-color 0.2s',
       }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = '#fafafa';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = '#fff';
+      }}
     >
-      <span
-        style={{
-          width: '20px',
-          height: '20px',
-          borderRadius: '50%',
-          backgroundColor: '#e6f7ff',
-          color: '#1890ff',
-          fontSize: '11px',
-          fontWeight: 500,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-          marginTop: '2px',
-        }}
-      >
-        {index}
-      </span>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        {/* 第一行：姓名 + 工号 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '14px', fontWeight: 500, color: '#333' }}>
-            {member.name}
-          </span>
-          <span style={{ fontSize: '12px', color: '#666' }}>
-            {member.employeeId}
-          </span>
+      {!readOnly && (
+        <div style={{ width: '50px', display: 'flex', justifyContent: 'center' }}>
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect(!isSelected);
+            }}
+            style={{
+              width: '18px',
+              height: '18px',
+              border: `2px solid ${isSelected ? '#1890ff' : '#d9d9d9'}`,
+              borderRadius: '3px',
+              backgroundColor: isSelected ? '#1890ff' : '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+          >
+            {isSelected && (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            )}
+          </div>
         </div>
-        {/* 第二行：部门 */}
-        <div
-          style={{
-            fontSize: '12px',
-            color: '#999',
-            marginTop: '4px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-          title={member.department}
-        >
-          {member.department}
-        </div>
-      </div>
-      {/* 删除按钮 */}
-      {onDelete && isHovered && (
-        <button
-          onClick={() => onDelete(member.employeeId)}
-          style={{
-            padding: '4px 8px',
-            backgroundColor: '#ff4d4f',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            fontSize: '12px',
-            cursor: 'pointer',
-            flexShrink: 0,
-            marginLeft: '8px',
-          }}
-        >
-          删除
-        </button>
       )}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span style={{ fontSize: '14px', color: '#333' }}>{member.name}</span>
+      </div>
+      <div style={{ width: '120px', fontSize: '14px', color: '#666' }}>{member.employeeId}</div>
+      <div style={{ width: '200px', fontSize: '14px', color: '#999', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        {member.department}
+      </div>
     </div>
   );
 };
