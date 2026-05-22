@@ -30,6 +30,7 @@ export interface AddAwardModalProps {
   onConfirm: (selectedAwards: Award[]) => void;
   existingAwards?: Award[];
   externalDeptPath?: string[];
+  defaultYear?: string;
 }
 
 // 当前用户部门（用于计算当前部门获奖数）
@@ -97,8 +98,9 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
   onConfirm,
   existingAwards = [],
   externalDeptPath = [],
+  defaultYear = '2025',
 }) => {
-  const [selectedYear, setSelectedYear] = useState<string>('2025');
+  const [selectedYear, setSelectedYear] = useState<string>(defaultYear);
   const [selectedDeptPath, setSelectedDeptPath] = useState<string[]>([]);
   const [searchKeyword, setSearchKeyword] = useState<string>('');
   const [selectedAwardIds, setSelectedAwardIds] = useState<Set<string>>(new Set());
@@ -116,8 +118,9 @@ export const AddAwardModal: React.FC<AddAwardModalProps> = ({
       setSelectedDeptPath(externalDeptPath);
       setSearchKeyword('');
       setCurrentPage(1);
+      setSelectedYear(defaultYear);
     }
-  }, [visible, externalDeptPath]);
+  }, [visible, externalDeptPath, defaultYear]);
 
   useEffect(() => {
     if (!visible) {
