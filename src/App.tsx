@@ -38,10 +38,10 @@ function App() {
 
   const [addRecipientModalVisible, setAddRecipientModalVisible] = useState(false);
   const [teamSearchModalVisible, setTeamSearchModalVisible] = useState(false);
-  const [teamSearchViewOnly, setTeamSearchViewOnly] = useState(false);
-  const [currentAwardId, setCurrentAwardId] = useState<string>('');
-  const [currentAllRecipients, setCurrentAllRecipients] = useState<Recipient[]>([]);
-  const [currentSelectedRecipients, setCurrentSelectedRecipients] = useState<Recipient[]>([]);
+  const [teamSearchViewOnly] = useState(false);
+  const [currentAwardId] = useState<string>('');
+  const [currentAllRecipients] = useState<Recipient[]>([]);
+  const [currentSelectedRecipients] = useState<Recipient[]>([]);
 
   const searchInputRef = useRef<HTMLDivElement>(null);
 
@@ -1097,7 +1097,7 @@ function App() {
         onConfirm={() => setTeamSearchModalVisible(false)}
         currentDepartment={selectedDepartment === '全部部门' ? '' : selectedDepartment}
         viewOnly={teamSearchViewOnly}
-        onTeamUpdate={(updatedTeam) => {}}
+        onTeamUpdate={() => {}}
       />
     </div>
   );
