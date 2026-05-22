@@ -532,6 +532,10 @@ function App() {
                                       borderRadius: '4px',
                                       fontSize: '11px',
                                       fontWeight: 500,
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      minWidth: '28px',
                                     }}
                                   >
                                     {award.awardType === 'individual' ? '个人' : '团队'}
@@ -542,9 +546,6 @@ function App() {
                                   <svg width="16" height="16" viewBox="0 0 24 24" fill="#1890ff">
                                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
                                   </svg>
-                                </div>
-                                <div style={{ fontSize: '12px', color: '#999', marginTop: '4px', marginLeft: '48px' }}>
-                                  {award.issuingDepartment} · {award.recipients?.length || award.teams?.length || 0}{award.awardType === 'individual' ? '人' : '个团队'}
                                 </div>
                               </div>
                             ))}
