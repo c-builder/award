@@ -265,10 +265,16 @@ function App() {
     return searchResults.slice(startIndex, startIndex + searchPageSize);
   }, [searchResults, searchPage]);
 
-  // 当搜索结果变化时，重置页码
+  // 搜索条件变化时重置页码；添加/移除奖项不重置，保持当前页
   useEffect(() => {
     setSearchPage(1);
-  }, [searchResults]);
+  }, [awardSearchKeyword, selectedYear, selectedDepartment, awardTypeFilter, recipientSearchInput]);
+
+  // 结果变少导致当前页超出范围时，回退到最后一页
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(searchResults.length / searchPageSize));
+    setSearchPage((page) => (page > totalPages ? totalPages : page));
+  }, [searchResults.length, searchPageSize]);
 
   // 点击外部关闭下拉
   useEffect(() => {
@@ -284,12 +290,6 @@ function App() {
   // 添加奖项到列表
   const handleAddAwardToList = (award: Award) => {
     setAwards(prev => [...prev, award]);
-    setShowSearchDropdown(false);
-    setAwardSearchKeyword('');
-    setIsSearchInputFocused(false);
-    // 让搜索框失去焦点
-    const input = document.querySelector('input[placeholder*="已查询到"]') as HTMLInputElement;
-    if (input) input.blur();
   };
 
   // 从列表中移除奖项
@@ -642,7 +642,7 @@ function App() {
                       </svg>
                       <input
                         type="text"
-                        placeholder={`已查询到${totalAwardCount}个奖项，点击添加奖项`}
+                        placeholder={totalAwardCount === 0 ? `已查询到0个奖项，请尝试切换筛选条件进行查询` : `已查询到${totalAwardCount}个奖项，点击添加奖项`}
                         value={awardSearchKeyword}
                         onChange={(e) => setAwardSearchKeyword(e.target.value)}
                         onFocus={() => setIsSearchInputFocused(true)}
@@ -721,10 +721,31 @@ function App() {
                           </div>
                         ) : (
                           <>
+                            {/* 表头 - 固定在顶部 */}
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '8px 16px',
+                                backgroundColor: '#fafafa',
+                                borderBottom: '1px solid #e5e7eb',
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                color: '#6b7280',
+                                flexShrink: 0,
+                              }}
+                            >
+                              <span style={{ width: '40px', flexShrink: 0, textAlign: 'center' }}>序号</span>
+                              <span style={{ width: '40px', flexShrink: 0, textAlign: 'center' }}>类型</span>
+                              <span style={{ flex: 1 }}>奖项名称</span>
+                              <span style={{ width: '40px', flexShrink: 0, textAlign: 'center' }}>操作</span>
+                            </div>
                             {/* 奖项列表 - 可滚动区域，自适应高度 */}
                             <div style={{ overflow: 'auto', flex: 1, minHeight: 0 }}>
-                              {paginatedSearchResults.map((award) => {
+                              {paginatedSearchResults.map((award, index) => {
                                 const isAdded = awards.some(a => a.id === award.id);
+                                const serialNo = (searchPage - 1) * searchPageSize + index + 1;
                                 return (
                                   <div
                                     key={award.id}
@@ -753,7 +774,20 @@ function App() {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                       <span
                                         style={{
-                                          padding: '2px 8px',
+                                          width: '40px',
+                                          flexShrink: 0,
+                                          textAlign: 'center',
+                                          fontSize: '13px',
+                                          color: '#6b7280',
+                                        }}
+                                      >
+                                        {serialNo}
+                                      </span>
+                                      <span
+                                        style={{
+                                          width: '40px',
+                                          flexShrink: 0,
+                                          padding: '2px 0',
                                           backgroundColor: award.awardType === 'individual' ? '#e6f7ff' : '#fff7e6',
                                           color: award.awardType === 'individual' ? '#1890ff' : '#fa8c16',
                                           borderRadius: '4px',
@@ -762,7 +796,6 @@ function App() {
                                           display: 'inline-flex',
                                           alignItems: 'center',
                                           justifyContent: 'center',
-                                          minWidth: '28px',
                                         }}
                                       >
                                         {award.awardType === 'individual' ? '个人' : '团队'}
@@ -770,15 +803,25 @@ function App() {
                                       <span style={{ fontSize: '14px', color: '#1f2937', flex: 1 }}>
                                         {award.title}
                                       </span>
-                                      {isAdded ? (
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff4d4f">
-                                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/>
-                                        </svg>
-                                      ) : (
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#1890ff">
-                                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
-                                        </svg>
-                                      )}
+                                      <span
+                                        style={{
+                                          width: '40px',
+                                          flexShrink: 0,
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                        }}
+                                      >
+                                        {isAdded ? (
+                                          <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff4d4f">
+                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/>
+                                          </svg>
+                                        ) : (
+                                          <svg width="16" height="16" viewBox="0 0 24 24" fill="#1890ff">
+                                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                                          </svg>
+                                        )}
+                                      </span>
                                     </div>
                                   </div>
                                 );
@@ -816,7 +859,7 @@ function App() {
                   {awards.length === 0 ? (
                     <div style={{ padding: '40px 16px', textAlign: 'center', color: '#9ca3af' }}>
                       <div style={{ marginBottom: '8px', color: '#6b7280' }}>暂无奖项</div>
-                      <div style={{ fontSize: '12px' }}>搜索奖项新增奖项目</div>
+                      <div style={{ fontSize: '12px' }}>请尝试切换年份或更改其他筛选条件查询</div>
                     </div>
                   ) : (
                     filteredAwards.map((award) => (
@@ -1186,25 +1229,6 @@ function App() {
           gap: '16px',
         }}
       >
-        {currentStep === 0 && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '24px',
-              padding: '12px 20px',
-              backgroundColor: '#fff',
-              borderRadius: '8px',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
-              border: '1px solid #e5e7eb',
-            }}
-          >
-            <span style={{ fontSize: '14px', color: '#6b7280' }}>
-              已选 <strong style={{ color: '#1890ff', fontSize: '16px', fontWeight: 600 }}>{awards.length}</strong> 个奖项
-            </span>
-          </div>
-        )}
-
         {currentStep > 0 && (
           <button
             onClick={() => setCurrentStep(currentStep - 1)}
