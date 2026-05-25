@@ -165,43 +165,7 @@ function App() {
     return results.length;
   }, [selectedYear, selectedDepartment, awardTypeFilter, recipientSearchInput]);
 
-  // 计算根据"年份+部门"过滤后的可用奖项数量（用于下拉框显示，扣除已添加的）
-  const availableAwardCount = useMemo(() => {
-    let results = ALL_AWARDS.filter(award => {
-      // 已添加的奖项不再显示
-      if (awards.some(a => a.id === award.id)) return false;
-      return true;
-    });
 
-    // 根据年份过滤
-    results = results.filter(award => {
-      if (!award.issueDate) return false;
-      return award.issueDate.startsWith(selectedYear);
-    });
-
-    // 根据部门过滤
-    if (selectedDepartment !== '全部部门') {
-      results = results.filter(award => {
-        if (award.awardType === 'individual') {
-          // 个人奖：检查是否有获奖人来自该部门
-          return award.recipients?.some(r => {
-            const dept = r.department.split('/')[0];
-            return dept === selectedDepartment;
-          });
-        } else {
-          // 团队奖：检查是否有团队成员来自该部门
-          return award.teams?.some(t =>
-            t.members?.some(m => {
-              const dept = m.department.split('/')[0];
-              return dept === selectedDepartment;
-            })
-          );
-        }
-      });
-    }
-
-    return results.length;
-  }, [awards, selectedYear, selectedDepartment]);
 
   // 实时搜索奖项
   useEffect(() => {
