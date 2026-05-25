@@ -3,6 +3,7 @@ import {
   DataRangeFilter,
   AddRecipientModal,
   TeamSearchModal,
+  Pagination,
 } from './components';
 import { Award, Recipient } from './components/types';
 import awardsData from './mock/data/awards.json';
@@ -31,6 +32,17 @@ function App() {
   // 搜索到的奖项结果（未添加的）
   const [searchResults, setSearchResults] = useState<Award[]>([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [isSearchInputFocused, setIsSearchInputFocused] = useState(false);
+
+  // 搜索下拉框分页
+  const [searchPage, setSearchPage] = useState(1);
+  const searchPageSize = 8;
+
+  // 奖项分类筛选（个人/团队）
+  const [awardTypeFilter, setAwardTypeFilter] = useState<'all' | 'individual' | 'team'>('all');
+
+  // 获奖人搜索关键词
+  const [recipientSearchInput, setRecipientSearchInput] = useState('');
 
   // 选中的获奖人/团队ID集合
   const [selectedRecipientIds, setSelectedRecipientIds] = useState<Set<string>>(new Set());
@@ -56,7 +68,7 @@ function App() {
     '华为公司',
   ];
 
-  const [selectedDepartment, setSelectedDepartment] = useState<string>(currentUserDepartment);
+  const [selectedDepartment, setSelectedDepartment] = useState<string>('全部部门');
 
   const YEAR_OPTIONS = [
     { value: '2025', label: '2025年' },
@@ -94,33 +106,201 @@ function App() {
     return result;
   }, [awards, selectedDepartment]);
 
+  // 计算根据"年份+部门"过滤后的总奖项数量（用于placeholder，不扣除已添加的）
+  const totalAwardCount = useMemo(() => {
+    let results = [...ALL_AWARDS];
+
+    // 根据年份过滤
+    results = results.filter(award => {
+      if (!award.issueDate) return false;
+      return award.issueDate.startsWith(selectedYear);
+    });
+
+    // 根据部门过滤
+    if (selectedDepartment !== '全部部门') {
+      results = results.filter(award => {
+        if (award.awardType === 'individual') {
+          // 个人奖：检查是否有获奖人来自该部门
+          return award.recipients?.some(r => {
+            const dept = r.department.split('/')[0];
+            return dept === selectedDepartment;
+          });
+        } else {
+          // 团队奖：检查是否有团队成员来自该部门
+          return award.teams?.some(t =>
+            t.members?.some(m => {
+              const dept = m.department.split('/')[0];
+              return dept === selectedDepartment;
+            })
+          );
+        }
+      });
+    }
+
+    // 根据奖项分类过滤
+    if (awardTypeFilter !== 'all') {
+      results = results.filter(award => award.awardType === awardTypeFilter);
+    }
+
+    // 根据获奖人搜索过滤
+    if (recipientSearchInput.trim()) {
+      const keyword = recipientSearchInput.toLowerCase().trim();
+      results = results.filter(award => {
+        if (award.awardType === 'individual') {
+          return award.recipients?.some(r =>
+            r.name.toLowerCase().includes(keyword) ||
+            r.employeeId.includes(keyword)
+          );
+        } else {
+          return award.teams?.some(t =>
+            t.members?.some(m =>
+              m.name.toLowerCase().includes(keyword) ||
+              m.employeeId.includes(keyword)
+            )
+          );
+        }
+      });
+    }
+
+    return results.length;
+  }, [selectedYear, selectedDepartment, awardTypeFilter, recipientSearchInput]);
+
+  // 计算根据"年份+部门"过滤后的可用奖项数量（用于下拉框显示，扣除已添加的）
+  const availableAwardCount = useMemo(() => {
+    let results = ALL_AWARDS.filter(award => {
+      // 已添加的奖项不再显示
+      if (awards.some(a => a.id === award.id)) return false;
+      return true;
+    });
+
+    // 根据年份过滤
+    results = results.filter(award => {
+      if (!award.issueDate) return false;
+      return award.issueDate.startsWith(selectedYear);
+    });
+
+    // 根据部门过滤
+    if (selectedDepartment !== '全部部门') {
+      results = results.filter(award => {
+        if (award.awardType === 'individual') {
+          // 个人奖：检查是否有获奖人来自该部门
+          return award.recipients?.some(r => {
+            const dept = r.department.split('/')[0];
+            return dept === selectedDepartment;
+          });
+        } else {
+          // 团队奖：检查是否有团队成员来自该部门
+          return award.teams?.some(t =>
+            t.members?.some(m => {
+              const dept = m.department.split('/')[0];
+              return dept === selectedDepartment;
+            })
+          );
+        }
+      });
+    }
+
+    return results.length;
+  }, [awards, selectedYear, selectedDepartment]);
+
   // 实时搜索奖项
   useEffect(() => {
-    if (!awardSearchKeyword.trim()) {
-      setSearchResults([]);
+    // 获取焦点时显示所有数据（不扣除已添加的，在UI中显示状态）
+    let results = [...ALL_AWARDS];
+
+    // 根据年份过滤
+    results = results.filter(award => {
+      if (!award.issueDate) return false;
+      return award.issueDate.startsWith(selectedYear);
+    });
+
+    // 根据部门过滤
+    if (selectedDepartment !== '全部部门') {
+      results = results.filter(award => {
+        if (award.awardType === 'individual') {
+          // 个人奖：检查是否有获奖人来自该部门
+          return award.recipients?.some(r => {
+            const dept = r.department.split('/')[0];
+            return dept === selectedDepartment;
+          });
+        } else {
+          // 团队奖：检查是否有团队成员来自该部门
+          return award.teams?.some(t =>
+            t.members?.some(m => {
+              const dept = m.department.split('/')[0];
+              return dept === selectedDepartment;
+            })
+          );
+        }
+      });
+    }
+
+    // 根据奖项分类过滤
+    if (awardTypeFilter !== 'all') {
+      results = results.filter(award => award.awardType === awardTypeFilter);
+    }
+
+    // 根据获奖人搜索过滤
+    if (recipientSearchInput.trim()) {
+      const keyword = recipientSearchInput.toLowerCase().trim();
+      results = results.filter(award => {
+        if (award.awardType === 'individual') {
+          // 个人奖：搜索获奖人姓名或工号
+          return award.recipients?.some(r =>
+            r.name.toLowerCase().includes(keyword) ||
+            r.employeeId.includes(keyword)
+          );
+        } else {
+          // 团队奖：搜索团队成员姓名或工号
+          return award.teams?.some(t =>
+            t.members?.some(m =>
+              m.name.toLowerCase().includes(keyword) ||
+              m.employeeId.includes(keyword)
+            )
+          );
+        }
+      });
+    }
+
+    // 如果没有获取焦点，不显示下拉框
+    if (!isSearchInputFocused) {
       setShowSearchDropdown(false);
       return;
     }
 
-    const keyword = awardSearchKeyword.toLowerCase().trim();
-    const results = ALL_AWARDS.filter(award => {
-      // 已添加的奖项不再显示
-      if (awards.some(a => a.id === award.id)) return false;
+    // 如果有搜索关键词，进行过滤
+    if (awardSearchKeyword.trim()) {
+      const keyword = awardSearchKeyword.toLowerCase().trim();
+      const filteredResults = results.filter(award => {
+        // 关键词模糊搜索 - 支持标题、颁发部门、类型等
+        const searchText = [
+          award.title,
+          award.issuingDepartment,
+          award.awardType === 'individual' ? '个人奖' : '团队奖',
+          award.issueDate || '',
+        ].join(' ').toLowerCase();
 
-      // 关键词模糊搜索 - 支持标题、颁发部门、类型等
-      const searchText = [
-        award.title,
-        award.issuingDepartment,
-        award.awardType === 'individual' ? '个人奖' : '团队奖',
-        award.issueDate || '',
-      ].join(' ').toLowerCase();
+        return searchText.includes(keyword);
+      });
+      setSearchResults(filteredResults);
+      setShowSearchDropdown(true);
+    } else {
+      // 无关键词时显示所有可添加的奖项（包括空结果）
+      setSearchResults(results);
+      setShowSearchDropdown(true);
+    }
+  }, [awardSearchKeyword, awards, isSearchInputFocused, selectedYear, selectedDepartment, awardTypeFilter, recipientSearchInput]);
 
-      return searchText.includes(keyword);
-    });
+  // 搜索下拉框分页后的结果
+  const paginatedSearchResults = useMemo(() => {
+    const startIndex = (searchPage - 1) * searchPageSize;
+    return searchResults.slice(startIndex, startIndex + searchPageSize);
+  }, [searchResults, searchPage]);
 
-    setSearchResults(results);
-    setShowSearchDropdown(results.length > 0);
-  }, [awardSearchKeyword, awards]);
+  // 当搜索结果变化时，重置页码
+  useEffect(() => {
+    setSearchPage(1);
+  }, [searchResults]);
 
   // 点击外部关闭下拉
   useEffect(() => {
@@ -136,13 +316,17 @@ function App() {
   // 添加奖项到列表
   const handleAddAwardToList = (award: Award) => {
     setAwards(prev => [...prev, award]);
-    setSearchResults(prev => prev.filter(a => a.id !== award.id));
     setShowSearchDropdown(false);
     setAwardSearchKeyword('');
-    // 如果这是第一个添加的奖项，自动选中它
-    if (awards.length === 0) {
-      setSelectedAwardId(award.id);
-    }
+    setIsSearchInputFocused(false);
+    // 让搜索框失去焦点
+    const input = document.querySelector('input[placeholder*="已查询到"]') as HTMLInputElement;
+    if (input) input.blur();
+  };
+
+  // 从列表中移除奖项
+  const handleRemoveAwardFromList = (awardId: string) => {
+    setAwards(prev => prev.filter(a => a.id !== awardId));
   };
 
   // 第二列显示的数据：获奖人或团队
@@ -343,10 +527,11 @@ function App() {
             <div
               style={{
                 display: 'flex',
-                justifyContent: 'space-between',
+                justifyContent: 'flex-start',
                 alignItems: 'center',
                 marginBottom: '24px',
-                gap: '16px',
+                gap: '24px',
+                flexWrap: 'wrap',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -372,12 +557,54 @@ function App() {
                   ))}
                 </select>
               </div>
-              <DataRangeFilter
-                value={selectedDepartment}
-                onChange={handleDepartmentChange}
-                accessibleDepartments={accessibleDepartments}
-                currentUserDepartment={currentUserDepartment}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '14px', color: '#333', whiteSpace: 'nowrap' }}>部门:</span>
+                <DataRangeFilter
+                  value={selectedDepartment}
+                  onChange={handleDepartmentChange}
+                  accessibleDepartments={accessibleDepartments}
+                  currentUserDepartment={currentUserDepartment}
+                />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '14px', color: '#333', whiteSpace: 'nowrap' }}>奖项分类:</span>
+                <select
+                  value={awardTypeFilter}
+                  onChange={(e) => setAwardTypeFilter(e.target.value as 'all' | 'individual' | 'team')}
+                  style={{
+                    padding: '6px 12px',
+                    border: '1px solid #d9d9d9',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    backgroundColor: '#fff',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    minWidth: '100px',
+                  }}
+                >
+                  <option value="all">全部</option>
+                  <option value="individual">个人奖</option>
+                  <option value="team">团队奖</option>
+                </select>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '14px', color: '#333', whiteSpace: 'nowrap' }}>获奖人:</span>
+                <input
+                  type="text"
+                  placeholder="搜索获奖人姓名/工号"
+                  value={recipientSearchInput}
+                  onChange={(e) => setRecipientSearchInput(e.target.value)}
+                  style={{
+                    padding: '6px 12px',
+                    border: '1px solid #d9d9d9',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    backgroundColor: '#fff',
+                    outline: 'none',
+                    minWidth: '150px',
+                  }}
+                />
+              </div>
             </div>
 
             <div
@@ -437,10 +664,11 @@ function App() {
                       </svg>
                       <input
                         type="text"
-                        placeholder="搜索并添加奖项"
+                        placeholder={`已查询到${totalAwardCount}个奖项，点击添加奖项`}
                         value={awardSearchKeyword}
                         onChange={(e) => setAwardSearchKeyword(e.target.value)}
-                        onFocus={() => searchResults.length > 0 && setShowSearchDropdown(true)}
+                        onFocus={() => setIsSearchInputFocused(true)}
+                        onBlur={() => setIsSearchInputFocused(false)}
                         style={{
                           flex: 1,
                           border: 'none',
@@ -474,6 +702,7 @@ function App() {
                     {/* 搜索下拉结果 */}
                     {showSearchDropdown && (
                       <div
+                        onMouseDown={(e) => e.preventDefault()}
                         style={{
                           position: 'absolute',
                           top: '100%',
@@ -485,70 +714,120 @@ function App() {
                           borderRadius: '4px',
                           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                           zIndex: 100,
-                          maxHeight: '300px',
-                          overflow: 'auto',
+                          maxHeight: '360px',
+                          display: 'flex',
+                          flexDirection: 'column',
                         }}
                       >
                         {searchResults.length === 0 ? (
-                          <div style={{ padding: '12px 16px', color: '#999', fontSize: '14px' }}>
-                            未找到匹配的奖项
+                          <div style={{
+                            padding: '40px 24px',
+                            textAlign: 'center',
+                            color: '#999',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '12px'
+                          }}>
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d9d9d9" strokeWidth="1.5">
+                              <circle cx="11" cy="11" r="8" />
+                              <path d="m21 21-4.35-4.35" />
+                              <path d="M8 11h6" />
+                            </svg>
+                            <div style={{ fontSize: '14px', color: '#666' }}>
+                              暂无符合条件的奖项
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#999' }}>
+                              请尝试切换年份或部门筛选条件
+                            </div>
                           </div>
                         ) : (
                           <>
-                            <div
-                              style={{
-                                padding: '8px 16px',
-                                backgroundColor: '#fafafa',
-                                fontSize: '12px',
-                                color: '#999',
-                                borderBottom: '1px solid #f0f0f0',
-                              }}
-                            >
-                              找到 {searchResults.length} 个奖项，点击添加
-                            </div>
-                            {searchResults.map((award) => (
-                              <div
-                                key={award.id}
-                                onClick={() => handleAddAwardToList(award)}
-                                style={{
-                                  padding: '12px 16px',
-                                  cursor: 'pointer',
-                                  borderBottom: '1px solid #f0f0f0',
-                                  transition: 'background-color 0.2s',
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.backgroundColor = '#e6f7ff';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.backgroundColor = '#fff';
-                                }}
-                              >
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                  <span
+                            {/* 奖项列表 - 可滚动区域，固定高度 */}
+                            <div style={{ overflow: 'auto', height: '400px' }}>
+                              {paginatedSearchResults.map((award) => {
+                                const isAdded = awards.some(a => a.id === award.id);
+                                return (
+                                  <div
+                                    key={award.id}
+                                    onMouseDown={(e) => {
+                                      e.preventDefault();
+                                      if (isAdded) {
+                                        handleRemoveAwardFromList(award.id);
+                                      } else {
+                                        handleAddAwardToList(award);
+                                      }
+                                    }}
                                     style={{
-                                      padding: '2px 8px',
-                                      backgroundColor: award.awardType === 'individual' ? '#e6f7ff' : '#f6ffed',
-                                      color: award.awardType === 'individual' ? '#1890ff' : '#52c41a',
-                                      borderRadius: '4px',
-                                      fontSize: '11px',
-                                      fontWeight: 500,
-                                      display: 'inline-flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'center',
-                                      minWidth: '28px',
+                                      padding: '12px 16px',
+                                      cursor: 'pointer',
+                                      borderBottom: '1px solid #f0f0f0',
+                                      transition: 'background-color 0.2s',
+                                      backgroundColor: isAdded ? '#f6ffed' : '#fff',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.backgroundColor = isAdded ? '#f6ffed' : '#e6f7ff';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.backgroundColor = isAdded ? '#f6ffed' : '#fff';
                                     }}
                                   >
-                                    {award.awardType === 'individual' ? '个人' : '团队'}
-                                  </span>
-                                  <span style={{ fontSize: '14px', color: '#333', flex: 1 }}>
-                                    {award.title}
-                                  </span>
-                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="#1890ff">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
-                                  </svg>
-                                </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                      <span
+                                        style={{
+                                          padding: '2px 8px',
+                                          backgroundColor: award.awardType === 'individual' ? '#e6f7ff' : '#fff7e6',
+                                          color: award.awardType === 'individual' ? '#1890ff' : '#fa8c16',
+                                          borderRadius: '4px',
+                                          fontSize: '11px',
+                                          fontWeight: 500,
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          minWidth: '28px',
+                                        }}
+                                      >
+                                        {award.awardType === 'individual' ? '个人' : '团队'}
+                                      </span>
+                                      <span style={{ fontSize: '14px', color: '#333', flex: 1 }}>
+                                        {award.title}
+                                      </span>
+                                      {isAdded ? (
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#ff4d4f">
+                                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11H7v-2h10v2z"/>
+                                        </svg>
+                                      ) : (
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#1890ff">
+                                          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                                        </svg>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            {/* 分页组件 - 固定在底部 */}
+                            {searchResults.length > searchPageSize && (
+                              <div
+                                style={{
+                                  padding: '8px 12px',
+                                  borderTop: '1px solid #f0f0f0',
+                                  flexShrink: 0,
+                                  backgroundColor: '#fff',
+                                }}
+                              >
+                                <Pagination
+                                  current={searchPage}
+                                  pageSize={searchPageSize}
+                                  total={searchResults.length}
+                                  onChange={setSearchPage}
+                                  showTotal={false}
+                                  style={{
+                                    justifyContent: 'center',
+                                  }}
+                                />
                               </div>
-                            ))}
+                            )}
                           </>
                         )}
                       </div>
@@ -591,7 +870,7 @@ function App() {
                             <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                           </svg>
                         ) : (
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="#52c41a">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="#fa8c16">
                             <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
                           </svg>
                         )}
